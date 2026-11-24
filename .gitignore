@@ -1,0 +1,35 @@
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs et temporaires
+*.log
+*.tmp
+*.bak
+
+# Machines virtuelles et images (ne jamais versionner)
+*.iso
+*.vmdk
+*.vdi
+*.ova
+*.ovf
+*.vmx
+*.vmem
+*.vmsd
+*.vmss
+*.nvram
+*.lck/
+
+# Secrets
+.env
+*.pem
+id_rsa
+id_ed25519

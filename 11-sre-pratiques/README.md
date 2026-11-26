@@ -18,6 +18,7 @@ Il s'appuie sur **tous les modules précédents** et prépare aux rôles de **SR
 | [06 Réseaux](../06-reseaux-devops/README.md) | Ports, DNS, timeouts, diagnostic de panne |
 | [07 Git](../07-git-branching-interactif/README.md) | `revert`, workflows (retours arrière, gestion du changement) |
 | [08 Docker](../08-docker-approfondi/README.md) / [09 Kubernetes](../09-kubernetes-approfondi/README.md) | Pods, Deployments, probes (support du chaos et de l'auto-guérison) |
+| [12 CI/CD](../12-cicd/README.md) | Déploiements progressifs, retours arrière, GitOps (la fiabilité se joue aussi à la livraison) |
 | [**10 Monitoring et observabilité**](../10-monitoring-observabilite/README.md) | **Indispensable** : SLI, PromQL, alertes (les SLO se mesurent avec Prometheus) |
 
 ## Cours

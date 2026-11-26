@@ -5,7 +5,7 @@
 # Usage :
 #   scripts/export-killercoda-repos.sh [--all] [dossier_de_sortie]
 #
-#   (sans option)  modules 08, 09, 10, 11  →  4 dépôts : docker, kubernetes, monitoring, sre
+#   (sans option)  modules 08, 09, 10, 11, 12  →  5 dépôts : docker, kubernetes, monitoring, sre, cicd
 #   --all          ajoute les modules Linux 01 à 04  →  + 1 dépôt « linux » (8 scénarios)
 #   dossier_de_sortie : défaut = ../worketyamo-killercoda-export (HORS du dépôt courant)
 #
@@ -30,7 +30,7 @@ for arg in "$@"; do
 done
 SORTIE="${SORTIE:-$RACINE/../worketyamo-killercoda-export}"
 
-MODULES="08-docker-approfondi 09-kubernetes-approfondi 10-monitoring-observabilite 11-sre-pratiques"
+MODULES="08-docker-approfondi 09-kubernetes-approfondi 10-monitoring-observabilite 11-sre-pratiques 12-cicd"
 [[ "$TOUT" -eq 1 ]] && MODULES="01-linux-fondamentaux 02-linux-intermediaire 03-linux-avance 04-linux-expert $MODULES"
 
 depot_pour() {                # module -> nom du dépôt de destination
@@ -40,6 +40,7 @@ depot_pour() {                # module -> nom du dépôt de destination
         09-*) echo "worketyamo-killercoda-kubernetes" ;;
         10-*) echo "worketyamo-killercoda-monitoring" ;;
         11-*) echo "worketyamo-killercoda-sre" ;;
+        12-*) echo "worketyamo-killercoda-cicd" ;;
         *) echo "worketyamo-killercoda-autre" ;;
     esac
 }

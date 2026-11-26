@@ -12,6 +12,10 @@
     { "path": "10-monitoring-observabilite/ateliers-killercoda/atelier-04-monitoring-kubernetes" },
     { "path": "11-sre-pratiques/ateliers-killercoda/atelier-01-definir-slo-et-error-budget" },
     { "path": "11-sre-pratiques/ateliers-killercoda/atelier-02-postmortem-blameless" },
-    { "path": "11-sre-pratiques/ateliers-killercoda/atelier-03-chaos-engineering-basique" }
+    { "path": "11-sre-pratiques/ateliers-killercoda/atelier-03-chaos-engineering-basique" },
+    { "path": "12-cicd/ateliers-killercoda/atelier-01-premier-workflow-actions" },
+    { "path": "12-cicd/ateliers-killercoda/atelier-02-pipeline-build-test-push" },
+    { "path": "12-cicd/ateliers-killercoda/atelier-03-securite-sast-sbom" },
+    { "path": "12-cicd/ateliers-killercoda/atelier-04-deploiement-canary-kubernetes" }
   ]
 }

@@ -1,0 +1,29 @@
+{
+  "title": "CI/CD : déploiement canary sur Kubernetes",
+  "description": "Déployez une version stable et un canari derrière un même Service, mesurez la répartition du trafic, puis promouvez le canari.",
+  "difficulty": "advanced",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Stable (v1) et canari (v2) derrière un même Service",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Augmenter le canari puis le promouvoir",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "CI/CD : sécurité, scan Trivy et SBOM CycloneDX",
+  "description": "Scannez une image vulnérable avec Trivy, produisez un rapport JSON et un seuil bloquant, puis générez un SBOM CycloneDX avec Syft.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Scanner une image avec Trivy",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Générer un SBOM CycloneDX avec Syft",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

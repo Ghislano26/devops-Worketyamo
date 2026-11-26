@@ -1,0 +1,29 @@
+{
+  "title": "CI/CD : votre premier workflow GitHub Actions avec act",
+  "description": "Écrivez un workflow GitHub Actions et exécutez-le en local avec act : job simple, puis matrice et dépendance entre jobs.",
+  "difficulty": "beginner",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Écrire et exécuter un premier workflow",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Ajouter une matrice et une dépendance entre jobs",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

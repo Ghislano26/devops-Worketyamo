@@ -9,7 +9,7 @@ et automatiser sa livraison avec un **pipeline CI/CD**. C'est une **introduction
 |---|---|---|
 | Git | [Git et workflows collaboratifs](cours/01-git-workflow.md) | [Module 07 — Git branching interactif](../07-git-branching-interactif/README.md) |
 | Docker | [Docker : les fondamentaux](cours/02-docker-fondamentaux.md) | [Module 08 — Docker approfondi](../08-docker-approfondi/README.md) |
-| CI/CD | [Principes du CI/CD](cours/03-ci-cd-principes.md) | [Module 10 — Monitoring](../10-monitoring-observabilite/README.md) et [Module 11 — SRE](../11-sre-pratiques/README.md) (livrer et exploiter de façon fiable) |
+| CI/CD | [Principes du CI/CD](cours/03-ci-cd-principes.md) | [Module 12 — CI/CD complet](../12-cicd/README.md) (pipelines, sécurité, déploiements, GitOps ; se lit après Kubernetes) |
 
 ## Prérequis
 

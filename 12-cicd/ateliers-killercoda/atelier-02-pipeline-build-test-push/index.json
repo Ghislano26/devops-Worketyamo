@@ -1,0 +1,34 @@
+{
+  "title": "CI/CD : pipeline build, test et push vers un registry",
+  "description": "Construisez une pipeline locale pilotée par un Makefile : tests, build d'une image et publication dans un registry local.",
+  "difficulty": "intermediate",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Registry local, application et tests",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Construire l'image",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      },
+      {
+        "title": "Publier dans le registry",
+        "text": "step3/text.md",
+        "verify": "step3/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

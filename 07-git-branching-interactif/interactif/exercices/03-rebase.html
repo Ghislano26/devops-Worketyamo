@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rebase — Git interactif</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Navigation des exercices">
+      <a href="../index.html">← Sommaire des exercices</a>
+      <a href="02-merge.html">← Merge</a>
+      <a href="04-cherry-pick.html">Cherry-pick →</a>
+      <a href="../../cours/03-merge-rebase-cherry-pick.md#3-rebase--rejouer-ses-commits-ailleurs">📖 Cours associé</a>
+      <a href="?autoplay=1">▶ Voir la démo animée</a>
+    </nav>
+
+    <h1>3. Rebase : rejouer ses commits sur une nouvelle base</h1>
+    <p class="lead">Même situation que l'exercice précédent, mais on veut un historique <strong>linéaire</strong>, sans commit de fusion. Regardez les commits <code>C4</code> et <code>C5</code> être <em>recréés</em> (<code>C4'</code>, <code>C5'</code>) : leur empreinte change.</p>
+
+    <div id="app"></div>
+    <noscript><p><strong>JavaScript est nécessaire</strong> pour cet exercice interactif. Activez-le dans votre navigateur.</p></noscript>
+
+    <section aria-label="À retenir">
+      <h2>📌 À retenir</h2>
+      <ul>
+        <li><code>git rebase main</code> (depuis <code>feature</code>) <strong>rejoue</strong> les commits de <code>feature</code> au-dessus de <code>main</code> : ce sont de <strong>nouveaux commits</strong> (<code>C4'</code>).</li>
+        <li>Les anciens commits restent visibles en <strong>pointillés</strong> (orphelins) : ils existent encore, ils ne sont plus référencés.</li>
+        <li><strong>Règle d'or</strong> : ne rebasez jamais une branche que d'autres utilisent.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../js/git-graph.js"></script>
+  <script>
+    GitGraph.exercise({
+      "mount": "#app",
+      "id": "03-rebase",
+      "initial": {
+        "commits": [
+          {
+            "id": "C1",
+            "parents": [],
+            "msg": "Initialise le dépôt"
+          },
+          {
+            "id": "C2",
+            "parents": [
+              "C1"
+            ],
+            "msg": "Ajoute sante.sh"
+          },
+          {
+            "id": "C3",
+            "parents": [
+              "C2"
+            ],
+            "msg": "main : corrige le disque"
+          },
+          {
+            "id": "C4",
+            "parents": [
+              "C2"
+            ],
+            "msg": "feature : ajoute la mémoire"
+          },
+          {
+            "id": "C5",
+            "parents": [
+              "C4"
+            ],
+            "msg": "feature : ajoute l'uptime"
+          }
+        ],
+        "branches": {
+          "main": "C3",
+          "feature": "C5"
+        },
+        "head": "main"
+      },
+      "goal": {
+        "html": "<p>Obtenez un historique <strong>linéaire</strong> : <code>main</code> et <code>feature</code> doivent pointer sur le <strong>même commit</strong>, avec la chaîne <code>C1 ← C2 ← C3 ← C4' ← C5'</code> et <strong>aucun commit de fusion</strong>.</p>"
+      },
+      "hints": [
+        "Le rebase se lance depuis la branche à déplacer : git switch feature.",
+        "Puis git rebase main : C4 et C5 sont rejoués sur C3 (C4', C5').",
+        "main n'a pas bougé depuis : revenez dessus (git switch main) et faites git merge feature, ce sera un fast-forward."
+      ],
+      "solution": [
+        "git switch feature",
+        "git rebase main",
+        "git switch main",
+        "git merge feature"
+      ],
+      "demo": [
+        "git switch feature",
+        "git rebase main",
+        "git switch main",
+        "git merge feature"
+      ],
+      "next": {
+        "href": "04-cherry-pick.html",
+        "label": "Exercice suivant →"
+      },
+      check: function (repo) {
+        var m = repo.tip('main');
+        if (!m || m !== repo.tip('feature')) { return false; }
+        var anc = repo.ancestors(m), ids = Object.keys(anc);
+        var linear = ids.every(function (id) { return repo.commits[id].parents.length <= 1; });
+        return linear && ids.length === 5 && !!anc["C4'"] && !!anc["C5'"];
+      }
+    });
+  </script>
+</body>
+</html>

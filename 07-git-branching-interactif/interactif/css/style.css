@@ -1,0 +1,202 @@
+/*
+ * style.css — styles des exercices Git interactifs
+ * Contrastes ≥ 4,5:1 (texte), focus visibles, thème clair/sombre automatique,
+ * animations désactivées si l'utilisateur le demande (prefers-reduced-motion).
+ */
+
+/* ---------- Variables de thème ---------- */
+:root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #cbd5e1;
+  --accent: #1d4ed8;
+  --accent-text: #ffffff;
+  --good: #166534;
+  --good-bg: #dcfce7;
+  --bad: #991b1b;
+  --console-bg: #0f172a;
+  --console-text: #e2e8f0;
+  --commit-fill: #e0f2fe;
+  --commit-stroke: #0369a1;
+  --edge: #475569;
+  --graph-bg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --panel: #111a2e;
+    --text: #e5edf8;
+    --muted: #a7b4c8;
+    --border: #2b3a55;
+    --accent: #60a5fa;
+    --accent-text: #0b1220;
+    --good: #86efac;
+    --good-bg: #123524;
+    --bad: #fca5a5;
+    --console-bg: #050a14;
+    --console-text: #e2e8f0;
+    --commit-fill: #123049;
+    --commit-stroke: #7dd3fc;
+    --edge: #94a3b8;
+    --graph-bg: #0e1729;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.page { max-width: 1040px; margin: 0 auto; padding: 16px; }
+
+a { color: var(--accent); }
+h1 { font-size: 1.6rem; margin: .4rem 0 .6rem; }
+h2 { font-size: 1.15rem; margin: 0 0 .4rem; }
+code, kbd { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .92em; background: rgba(100, 116, 139, .18); padding: 1px 5px; border-radius: 4px; }
+[hidden] { display: none !important; }
+
+/* Focus clairement visible partout */
+:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+
+.topnav { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: .95rem; margin-bottom: 8px; }
+.lead { color: var(--muted); margin-top: 0; }
+
+/* ---------- Sommaire (index.html) ---------- */
+.cards { list-style: none; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.card {
+  display: block; padding: 16px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; text-decoration: none; color: inherit; transition: all 0.3s ease;
+  animation: fadeIn .5s ease both;
+}
+.card:hover, .card:focus-visible { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 18px rgba(0, 0, 0, .12); }
+.card strong { display: block; font-size: 1.05rem; }
+.card span { color: var(--muted); font-size: .92rem; }
+.card .done { display: none; color: var(--good); font-weight: 600; margin-top: 6px; }
+.card.is-done .done { display: block; }
+.card.is-done { border-color: var(--good); }
+
+/* ---------- Objectif ---------- */
+.gg-goal {
+  background: var(--panel); border: 1px solid var(--border); border-left: 6px solid var(--accent);
+  border-radius: 10px; padding: 12px 16px; margin: 12px 0;
+}
+.gg-goal p { margin: .3rem 0; }
+.gg-status { font-weight: 700; color: var(--muted); }
+.gg-status.gg-ok { color: var(--good); animation: pop .5s ease both; }
+
+.gg-banner {
+  background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; border-radius: 8px;
+  padding: 8px 12px; margin: 8px 0; cursor: pointer; animation: fadeIn .4s ease both;
+}
+
+/* ---------- Graphe ---------- */
+.gg-graph {
+  background: var(--graph-bg); border: 1px solid var(--border); border-radius: 12px;
+  overflow: auto; min-height: 280px; padding: 4px; margin: 10px 0;
+}
+.gg-svg { display: block; max-width: none; }
+
+.gg-commit {
+  transition: transform 0.5s ease, opacity 0.4s ease;
+}
+.gg-commit circle {
+  fill: var(--commit-fill); stroke: var(--commit-stroke); stroke-width: 2.5;
+  transition: all 0.3s ease;
+}
+.gg-commit .gg-id { fill: var(--text); font: 700 13px ui-monospace, Menlo, Consolas, monospace; }
+.gg-commit .gg-msg { fill: var(--muted); font: 11px system-ui, sans-serif; }
+.gg-commit.gg-head-commit circle { stroke: #d97706; stroke-width: 5; }
+.gg-commit.gg-orphan { opacity: .5; }
+.gg-commit.gg-orphan circle { stroke-dasharray: 5 4; }
+
+.gg-edge { fill: none; stroke: var(--edge); stroke-width: 2.2; transition: all 0.3s ease; }
+.gg-edge.gg-second { stroke-dasharray: none; stroke: #7c3aed; }
+.gg-edge.gg-orphan { opacity: .4; stroke-dasharray: 5 4; }
+.gg-arrowhead { fill: var(--edge); }
+
+.gg-label { transition: transform 0.5s ease; }
+.gg-label rect { stroke: rgba(15, 23, 42, .35); stroke-width: 1; transition: all 0.3s ease; }
+.gg-label text { font: 600 12.5px ui-monospace, Menlo, Consolas, monospace; }
+.gg-label.gg-current rect { stroke: #0f172a; stroke-width: 2.5; }
+
+/* Les éléments créés ont une animation d'apparition ; celle-ci est retirée une fois terminée (JS). */
+.gg-pop { animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both; transform-box: fill-box; transform-origin: center; }
+.gg-draw { animation: drawLine .7s ease both; marker-end: none; } /* la pointe de flèche apparaît une fois le trait tracé */
+
+/* ---------- Barre d'outils et boutons ---------- */
+.gg-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.gg-btn {
+  font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
+  background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 14px; transition: all 0.3s ease;
+}
+.gg-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.gg-btn.gg-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+/* ---------- Console ---------- */
+.gg-console { background: var(--console-bg); border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; }
+.gg-output {
+  height: 210px; overflow: auto; padding: 10px 14px; color: var(--console-text);
+  font: 13.5px/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+.gg-line { white-space: pre-wrap; overflow-wrap: anywhere; animation: fadeIn .3s ease both; }
+.gg-cmd { color: #93c5fd; }
+.gg-out { color: #e2e8f0; }
+.gg-info { color: #fde68a; }
+.gg-good { color: #86efac; font-weight: 700; }
+.gg-err { color: #fca5a5; }
+
+.gg-form { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid #1e293b; background: #0b1324; }
+.gg-label-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* lisible par les lecteurs d'écran */
+.gg-prompt { color: #86efac; font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; }
+.gg-input {
+  flex: 1; min-width: 0; font: 15px ui-monospace, Menlo, Consolas, monospace; color: #f8fafc;
+  background: #111c33; border: 1px solid #334155; border-radius: 6px; padding: 8px 10px;
+}
+.gg-input::placeholder { color: #94a3b8; }
+
+/* ---------- Message de succès ---------- */
+.gg-success {
+  margin: 14px 0; padding: 18px; background: var(--good-bg); color: var(--good);
+  border: 2px solid var(--good); border-radius: 14px; text-align: center;
+}
+.gg-success.gg-success-in { animation: pop .6s cubic-bezier(.2, 1.4, .4, 1) both; }
+.gg-success p { margin: .3rem 0; }
+.gg-success-title { font-size: 1.3rem; font-weight: 800; }
+.gg-success-links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px; }
+.gg-check { width: 72px; height: 72px; }
+.gg-check-circle { fill: none; stroke: var(--good); stroke-width: 3; stroke-dasharray: var(--len); animation: drawLine .7s ease both; }
+.gg-check-mark { fill: none; stroke: var(--good); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: var(--len); animation: drawLine .5s ease .6s both; }
+
+/* ---------- Animations ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0%   { opacity: 0; transform: scale(.2); }
+  70%  { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes drawLine {
+  from { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+  to   { stroke-dasharray: var(--len); stroke-dashoffset: 0; }
+}
+
+/* Respect du réglage « réduire les animations » */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+}
+
+@media (max-width: 600px) {
+  .page { padding: 10px; }
+  .gg-output { height: 180px; }
+  .gg-form { flex-wrap: wrap; }
+}

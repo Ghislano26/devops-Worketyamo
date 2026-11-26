@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cherry-pick — Git interactif</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Navigation des exercices">
+      <a href="../index.html">← Sommaire des exercices</a>
+      <a href="03-rebase.html">← Rebase</a>
+      <a href="../../cours/03-merge-rebase-cherry-pick.md#4-cherry-pick--prélever-un-commit">📖 Cours associé</a>
+      <a href="?autoplay=1">▶ Voir la démo animée</a>
+    </nav>
+
+    <h1>4. Cherry-pick : prélever des commits précis</h1>
+    <p class="lead">La branche <code>experience</code> contient du travail inachevé (<code>C3</code>) mais aussi un correctif de sécurité (<code>C4</code>) et de la documentation (<code>C5</code>). Récupérez <strong>uniquement</strong> ces deux derniers dans <code>main</code>.</p>
+
+    <div id="app"></div>
+    <noscript><p><strong>JavaScript est nécessaire</strong> pour cet exercice interactif. Activez-le dans votre navigateur.</p></noscript>
+
+    <section aria-label="À retenir">
+      <h2>📌 À retenir</h2>
+      <ul>
+        <li><code>git cherry-pick</code> <strong>copie</strong> un commit sur la branche courante : le nouveau commit a un <strong>autre identifiant</strong> (<code>C4'</code>).</li>
+        <li>On peut en prélever plusieurs : <code>git cherry-pick C4 C5</code> (l'ordre compte).</li>
+        <li>Cas typique : <strong>rétroporter</strong> un correctif vers une branche de maintenance.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../js/git-graph.js"></script>
+  <script>
+    GitGraph.exercise({
+      "mount": "#app",
+      "id": "04-cherry-pick",
+      "initial": {
+        "commits": [
+          {
+            "id": "C1",
+            "parents": [],
+            "msg": "Initialise le dépôt"
+          },
+          {
+            "id": "C2",
+            "parents": [
+              "C1"
+            ],
+            "msg": "Version stable"
+          },
+          {
+            "id": "C3",
+            "parents": [
+              "C2"
+            ],
+            "msg": "WIP expérimental"
+          },
+          {
+            "id": "C4",
+            "parents": [
+              "C3"
+            ],
+            "msg": "Correctif de sécurité"
+          },
+          {
+            "id": "C5",
+            "parents": [
+              "C4"
+            ],
+            "msg": "Ajoute la doc"
+          }
+        ],
+        "branches": {
+          "main": "C2",
+          "experience": "C5"
+        },
+        "head": "main"
+      },
+      "goal": {
+        "html": "<p>Faites en sorte que <code>main</code> contienne des <strong>copies</strong> de <code>C4</code> et <code>C5</code> (dans cet ordre) posées directement sur <code>C2</code>, <strong>sans</strong> <code>C3</code>. <code>experience</code> reste inchangée et vous terminez sur <code>main</code>.</p>"
+      },
+      "hints": [
+        "Vous êtes déjà sur main : c'est là que les copies doivent atterrir.",
+        "git cherry-pick C4 copie le correctif de sécurité sur main (il devient C4').",
+        "Ajoutez C5 : git cherry-pick C5. Ne touchez pas à C3."
+      ],
+      "solution": [
+        "git cherry-pick C4",
+        "git cherry-pick C5"
+      ],
+      "demo": [
+        "git cherry-pick C4",
+        "git cherry-pick C5"
+      ],
+      "next": {
+        "href": "../index.html",
+        "label": "Retour au sommaire →"
+      },
+      check: function (repo) {
+        var m = repo.tip('main'), c = repo.commits[m];
+        if (!c || c.id === 'C5' || c.msg !== 'Ajoute la doc') { return false; }
+        var p = repo.commits[c.parents[0]];
+        return !!p && p.id !== 'C4' && p.msg === 'Correctif de sécurité' && p.parents[0] === 'C2' &&
+               repo.tip('experience') === 'C5' && repo.head.branch === 'main';
+      }
+    });
+  </script>
+</body>
+</html>

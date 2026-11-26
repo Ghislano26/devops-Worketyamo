@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Branches de base — Git interactif</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Navigation des exercices">
+      <a href="../index.html">← Sommaire des exercices</a>
+      <a href="02-merge.html">Merge →</a>
+      <a href="../../cours/02-branches-et-checkout.md">📖 Cours associé</a>
+      <a href="?autoplay=1">▶ Voir la démo animée</a>
+    </nav>
+
+    <h1>1. Branches de base : créer, se déplacer, committer</h1>
+    <p class="lead">Une branche n'est qu'un <strong>pointeur</strong> sur un commit. Créez-en une, basculez dessus, committez, puis revenez sur <code>main</code> : observez quel pointeur avance, et lequel reste en place.</p>
+
+    <div id="app"></div>
+    <noscript><p><strong>JavaScript est nécessaire</strong> pour cet exercice interactif. Activez-le dans votre navigateur.</p></noscript>
+
+    <section aria-label="À retenir">
+      <h2>📌 À retenir</h2>
+      <ul>
+        <li><code>git branch</code> <strong>crée</strong> un pointeur, <code>git switch</code> <strong>s'y déplace</strong> ; <code>git switch -c</code> fait les deux.</li>
+        <li>Un commit n'avance que la <strong>branche courante</strong> (celle que <code>HEAD</code> désigne).</li>
+        <li>Deux branches qui avancent séparément <strong>divergent</strong> : l'historique devient un graphe.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../js/git-graph.js"></script>
+  <script>
+    GitGraph.exercise({
+      "mount": "#app",
+      "id": "01-branches-de-base",
+      "initial": {
+        "commits": [
+          {
+            "id": "C1",
+            "parents": [],
+            "msg": "Initialise le dépôt"
+          },
+          {
+            "id": "C2",
+            "parents": [
+              "C1"
+            ],
+            "msg": "Ajoute le README"
+          },
+          {
+            "id": "C3",
+            "parents": [
+              "C2"
+            ],
+            "msg": "Ajoute sante.sh"
+          }
+        ],
+        "branches": {
+          "main": "C3"
+        },
+        "head": "main"
+      },
+      "goal": {
+        "html": "<p>Amenez <code>main</code> à <strong>2 commits d'avance</strong> sur <code>C3</code>, et <code>bugfix</code> à <strong>1 commit d'avance</strong> sur <code>C3</code> : les deux branches doivent diverger à partir de <code>C3</code>. Terminez <strong>sur <code>main</code></strong>.</p>"
+      },
+      "hints": [
+        "Commencez par créer la branche : git branch bugfix. Elle pointe sur C3, mais HEAD reste sur main.",
+        "Déplacez-vous avec git switch bugfix, puis faites UN commit : git commit -m \"Corrige le bug\".",
+        "Revenez avec git switch main : le fichier de travail revient à l'état de C3. Faites alors DEUX commits."
+      ],
+      "solution": [
+        "git branch bugfix",
+        "git switch bugfix",
+        "git commit -m \"Corrige le bug\"",
+        "git switch main",
+        "git commit -m \"Fonction A\"",
+        "git commit -m \"Fonction B\""
+      ],
+      "demo": [
+        "git branch bugfix",
+        "git switch bugfix",
+        "git commit -m \"Corrige le bug\"",
+        "git switch main",
+        "git commit -m \"Fonction A\"",
+        "git commit -m \"Fonction B\""
+      ],
+      "next": {
+        "href": "02-merge.html",
+        "label": "Exercice suivant →"
+      },
+      check: function (repo) {
+        var b = repo.tip('bugfix'), m = repo.tip('main');
+        if (!b || !m) { return false; }
+        return repo.parentOf(b) === 'C3' && repo.parentOf(repo.parentOf(m)) === 'C3' && repo.head.branch === 'main';
+      }
+    });
+  </script>
+</body>
+</html>

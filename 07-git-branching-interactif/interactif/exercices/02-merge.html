@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Merge — Git interactif</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Navigation des exercices">
+      <a href="../index.html">← Sommaire des exercices</a>
+      <a href="01-branches-de-base.html">← Branches</a>
+      <a href="03-rebase.html">Rebase →</a>
+      <a href="../../cours/03-merge-rebase-cherry-pick.md">📖 Cours associé</a>
+      <a href="?autoplay=1">▶ Voir la démo animée</a>
+    </nav>
+
+    <h1>2. Merge : fusionner deux historiques</h1>
+    <p class="lead"><code>main</code> et <code>feature</code> ont <strong>divergé</strong> depuis <code>C2</code>. Intégrez la fonctionnalité dans <code>main</code> avec une fusion à trois points, puis voyez ce qu'est un <em>fast-forward</em>.</p>
+
+    <div id="app"></div>
+    <noscript><p><strong>JavaScript est nécessaire</strong> pour cet exercice interactif. Activez-le dans votre navigateur.</p></noscript>
+
+    <section aria-label="À retenir">
+      <h2>📌 À retenir</h2>
+      <ul>
+        <li>Le commit de fusion a <strong>deux parents</strong> ; aucun commit existant n'est modifié.</li>
+        <li><code>git merge</code> fusionne la branche <strong>nommée</strong> dans la branche <strong>courante</strong> : placez-vous d'abord sur la branche qui doit recevoir.</li>
+        <li>Si la branche courante est un <strong>ancêtre</strong> de l'autre, Git avance simplement le pointeur : c'est le <em>fast-forward</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../js/git-graph.js"></script>
+  <script>
+    GitGraph.exercise({
+      "mount": "#app",
+      "id": "02-merge",
+      "initial": {
+        "commits": [
+          {
+            "id": "C1",
+            "parents": [],
+            "msg": "Initialise le dépôt"
+          },
+          {
+            "id": "C2",
+            "parents": [
+              "C1"
+            ],
+            "msg": "Ajoute sante.sh"
+          },
+          {
+            "id": "C3",
+            "parents": [
+              "C2"
+            ],
+            "msg": "main : corrige le disque"
+          },
+          {
+            "id": "C4",
+            "parents": [
+              "C2"
+            ],
+            "msg": "feature : ajoute la mémoire"
+          },
+          {
+            "id": "C5",
+            "parents": [
+              "C4"
+            ],
+            "msg": "feature : ajoute l'uptime"
+          }
+        ],
+        "branches": {
+          "main": "C3",
+          "feature": "C5"
+        },
+        "head": "main"
+      },
+      "goal": {
+        "html": "<p>1) Fusionnez <code>feature</code> dans <code>main</code> : <code>main</code> doit pointer sur un <strong>commit de fusion à deux parents</strong> (<code>C3</code> et <code>C5</code>).<br>2) Faites ensuite <strong>avancer <code>feature</code></strong> jusqu'à ce même commit de fusion, <strong>sans créer de nouveau commit</strong> (<em>fast-forward</em>).</p>"
+      },
+      "hints": [
+        "Vous êtes sur main : git merge feature crée le commit de fusion.",
+        "Pour la seconde partie, placez-vous sur feature : git switch feature.",
+        "Puis git merge main : feature est un ancêtre de main, c'est donc un fast-forward."
+      ],
+      "solution": [
+        "git merge feature",
+        "git switch feature",
+        "git merge main"
+      ],
+      "demo": [
+        "git merge feature",
+        "git switch feature",
+        "git merge main"
+      ],
+      "next": {
+        "href": "03-rebase.html",
+        "label": "Exercice suivant →"
+      },
+      check: function (repo) {
+        var m = repo.tip('main'), c = repo.commits[m];
+        return !!c && c.parents.length === 2 && c.parents.indexOf('C3') >= 0 && c.parents.indexOf('C5') >= 0 &&
+               repo.tip('feature') === m;
+      }
+    });
+  </script>
+</body>
+</html>

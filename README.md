@@ -28,6 +28,8 @@ aux outils DevOps (Git, Docker, CI/CD).
 | [`03-linux-avance/`](03-linux-avance/) | Scripting Bash, `awk`/`sed`/`grep`, LVM, durcissement | Avancé |
 | [`04-linux-expert/`](04-linux-expert/) | Noyau et performance, namespaces/cgroups, journalisation centralisée | Expert |
 | [`05-devops-outils/`](05-devops-outils/) | Git, Docker, CI/CD | Ouverture DevOps |
+| [`06-reseaux-devops/`](06-reseaux-devops/README.md) | Cours et ateliers réseaux orientés DevOps : DNS, ports, routage, TLS, diagnostic. Diagrammes animés. | Intermédiaire à avancé |
+| [`07-git-branching-interactif/`](07-git-branching-interactif/README.md) | Cours Git avancé + exercices interactifs animés (mini learngitbranching). | Intermédiaire |
 | [`ressources/`](ressources/liens-utiles.md) | Cheatsheets (commandes, Vim, Bash) et liens utiles | Transverse |
 
 Chaque module `01` à `05` contient un dossier `cours/` (théorie) et un dossier

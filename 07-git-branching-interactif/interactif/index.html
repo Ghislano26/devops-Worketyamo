@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Git interactif — Sommaire des exercices</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Navigation">
+      <a href="../README.md">← Module 07</a>
+      <a href="README.md">📘 Mode d'emploi</a>
+    </nav>
+
+    <h1>🌿 Git en images : exercices interactifs</h1>
+    <p class="lead">
+      Tapez de vraies commandes Git (fictives) et regardez le <strong>graphe des commits</strong> évoluer avec animation :
+      un cercle apparaît pour chaque commit, une flèche se dessine vers son parent, les étiquettes de branches glissent
+      d'un commit à l'autre. Inspiré de <em>Learn Git Branching</em>, en plus simple et sans aucune dépendance.
+    </p>
+
+    <h2>Les exercices</h2>
+    <ul class="cards">
+      <li><a class="card" href="exercices/01-branches-de-base.html" data-id="01-branches-de-base">
+        <strong>1. Branches de base</strong>
+        <span>Créer une branche, basculer, committer, diverger.</span>
+        <span class="done">✅ Réussi</span></a></li>
+      <li><a class="card" href="exercices/02-merge.html" data-id="02-merge">
+        <strong>2. Merge</strong>
+        <span>Fusion à trois points puis fast-forward.</span>
+        <span class="done">✅ Réussi</span></a></li>
+      <li><a class="card" href="exercices/03-rebase.html" data-id="03-rebase">
+        <strong>3. Rebase</strong>
+        <span>Rejouer des commits, obtenir un historique linéaire.</span>
+        <span class="done">✅ Réussi</span></a></li>
+      <li><a class="card" href="exercices/04-cherry-pick.html" data-id="04-cherry-pick">
+        <strong>4. Cherry-pick</strong>
+        <span>Prélever des commits précis sur une autre branche.</span>
+        <span class="done">✅ Réussi</span></a></li>
+    </ul>
+
+    <h2>Démos animées</h2>
+    <p>Chaque exercice possède un mode démo qui <strong>rejoue la solution en boucle</strong> : un bon moyen de voir le graphe évoluer avant de pratiquer.</p>
+    <ul>
+      <li><a href="exercices/01-branches-de-base.html?autoplay=1">Démo : branches de base</a></li>
+      <li><a href="exercices/02-merge.html?autoplay=1">Démo : merge</a></li>
+      <li><a href="exercices/03-rebase.html?autoplay=1">Démo : rebase</a></li>
+      <li><a href="exercices/04-cherry-pick.html?autoplay=1">Démo : cherry-pick</a></li>
+    </ul>
+
+    <h2>Comment lire le graphe ?</h2>
+    <ul>
+      <li>Un <strong>cercle</strong> est un commit (<code>C1</code>, <code>C2</code>…) ; la <strong>flèche</strong> va du commit vers son <strong>parent</strong>.</li>
+      <li>Un <strong>rectangle coloré</strong> est une branche : un simple pointeur sur un commit. <code>HEAD → main</code> indique la branche courante.</li>
+      <li>Un cercle <strong>en pointillés</strong> est un commit <strong>orphelin</strong> : plus aucune branche ne l'atteint (après un rebase ou un <code>reset --hard</code>), mais il existe encore.</li>
+      <li>Un commit avec une apostrophe (<code>C4'</code>) est une <strong>copie</strong> créée par un rebase ou un cherry-pick : même contenu, autre empreinte.</li>
+      <li>Une flèche <strong>violette</strong> relie un commit de fusion à son second parent.</li>
+    </ul>
+
+    <p>Tapez <code>help</code> dans la console d'un exercice pour la liste des commandes.</p>
+  </main>
+
+  <script>
+    /* Affiche une coche sur les exercices déjà réussis (progression stockée dans le navigateur). */
+    (function () {
+      try {
+        document.querySelectorAll('.card').forEach(function (a) {
+          if (window.localStorage.getItem('gitgraph:' + a.getAttribute('data-id'))) { a.classList.add('is-done'); }
+        });
+      } catch (e) { /* stockage indisponible : on n'affiche simplement pas la progression */ }
+    })();
+  </script>
+</body>
+</html>

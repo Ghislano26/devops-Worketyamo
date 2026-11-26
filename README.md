@@ -18,6 +18,8 @@ aux outils DevOps (Git, Docker, CI/CD).
 - comprendre ce qui se cache derrière un conteneur (namespaces, cgroups) ;
 - utiliser Git, construire une image Docker et écrire un pipeline CI/CD simple.
 
+> 🧗 **Cursus Linux orienté Linux Upskill Challenge** : les modules Linux (01 à 04) se suivent comme un défi quotidien de **14 jours** sur *ton* serveur Ubuntu : un jour = un cours + un atelier + un **défi du jour**, avec des ateliers Killercoda pour s'échauffer sans VM. Voir [**RESTRUCTURATION-LUC.md**](RESTRUCTURATION-LUC.md).
+
 ## 🗂️ Structure du dépôt
 
 | Dossier | Contenu | Niveau |

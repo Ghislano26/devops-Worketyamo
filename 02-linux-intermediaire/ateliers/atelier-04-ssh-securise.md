@@ -193,4 +193,62 @@ sed -i '/deploy@kamer-atelier/d' ~/.ssh/authorized_keys
 - **Défi 3** : limitez la clé de `deploy` à une seule commande avec `command="…"` dans `authorized_keys`.
 - **Défi 4** : utilisez `ProxyJump` pour atteindre une seconde VM via la première.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Configurer un **alias SSH** avec une clé dédiée, puis l'utiliser pour une synchronisation `rsync`.
+
+**Contexte** : Tu administres plusieurs serveurs et tu en as assez de taper des options à rallonge. Tu veux une clé dédiée à ce serveur, un alias court et un transfert de fichiers sécurisé, sans mot de passe.
+
+**Consignes** :
+- Génère une paire **ed25519** dédiée `~/.ssh/id_ed25519_defi` (avec ou sans passphrase) ; installe sa partie publique avec `ssh-copy-id -i … ton-utilisateur@localhost`.
+- Crée (ou complète) `~/.ssh/config` avec un alias `serveur-defi` pointant vers `localhost`, ton utilisateur et cette clé (`IdentityFile`). Droits `600` sur le fichier.
+- Vérifie `ssh serveur-defi hostname` **sans mot de passe de compte**.
+- Synchronise un dossier `~/defi-ssh-source/` (avec 2 fichiers) vers `serveur-defi:~/defi-ssh-copie/` avec `rsync -avz`, puis prouve la copie avec `ssh serveur-defi ls ~/defi-ssh-copie`.
+- Contrôle les droits : `~/.ssh` en `700`, clé privée en `600`.
+
+**Indices** (à consulter seulement si bloqué) :
+- `ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_defi` ; `ssh-copy-id -i ~/.ssh/id_ed25519_defi.pub $USER@localhost`.
+- Dans `config` : `Host`, `HostName`, `User`, `IdentityFile`, et éventuellement `IdentitiesOnly yes`.
+- `rsync -avz dossier-source/ alias:chemin/` : le `/` final de la source copie son **contenu**.
+
+**Critères de réussite** :
+- [ ] `ssh serveur-defi hostname` affiche le nom de la machine sans demander le mot de passe du compte.
+- [ ] `ssh serveur-defi ls ~/defi-ssh-copie` liste les 2 fichiers.
+- [ ] `stat -c %a ~/.ssh ~/.ssh/config ~/.ssh/id_ed25519_defi` affiche `700`, `600`, `600`.
+- [ ] La clé privée n'a jamais quitté ta machine.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_defi -N "" -C "defi-j4"
+ssh-copy-id -i ~/.ssh/id_ed25519_defi.pub "$USER@localhost"
+
+cat >> ~/.ssh/config <<EOF
+Host serveur-defi
+    HostName localhost
+    User $USER
+    IdentityFile ~/.ssh/id_ed25519_defi
+    IdentitiesOnly yes
+EOF
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/config ~/.ssh/id_ed25519_defi
+
+ssh serveur-defi hostname
+
+mkdir -p ~/defi-ssh-source && echo a > ~/defi-ssh-source/a.txt && echo b > ~/defi-ssh-source/b.txt
+rsync -avz ~/defi-ssh-source/ serveur-defi:~/defi-ssh-copie/
+ssh serveur-defi ls ~/defi-ssh-copie              # a.txt  b.txt
+stat -c '%a %n' ~/.ssh ~/.ssh/config ~/.ssh/id_ed25519_defi
+```
+
+`-N ""` crée la clé sans passphrase (acceptable ici, **déconseillé** pour une vraie clé). `IdentitiesOnly yes` force SSH à n'utiliser que la clé indiquée.
+
+</details>
+
+---
+
 Module suivant : [Scripting Bash](../../03-linux-avance/cours/01-scripting-bash.md).

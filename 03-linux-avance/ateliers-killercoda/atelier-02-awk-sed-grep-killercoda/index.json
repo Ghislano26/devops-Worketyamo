@@ -1,0 +1,29 @@
+{
+  "title": "Linux : analyser du texte avec grep, awk et sed",
+  "description": "Comptez et classez avec awk et grep, puis transformez un fichier de configuration avec sed sans rien casser.",
+  "difficulty": "intermediate",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Compter avec grep et awk",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Transformer avec sed",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

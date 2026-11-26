@@ -148,4 +148,58 @@ sudo apt autoremove --purge -y
 - **Défi 3** : ajoutez un dépôt tiers (par exemple celui d'un outil que vous utilisez) avec une clé dans `/etc/apt/keyrings/` et `Signed-By`.
 - **Défi 4** : comparez l'installation de `btop` via `apt` et via `snap` (taille, emplacement, `snap list`).
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Retrouver l'**origine** d'un binaire et d'un fichier de configuration, puis maîtriser le cycle `hold` / `unhold`.
+
+**Contexte** : Un audit demande : « à quel paquet appartient `sshd`, dans quelle version est-il installé, et combien de paquets dépendent du client SSH ? » Tu dois répondre avec des commandes, pas de mémoire.
+
+**Consignes** :
+- Crée `~/defi-apt.txt` avec 4 lignes générées par commandes : le **paquet** propriétaire de `/usr/sbin/sshd` ; le **paquet** propriétaire de `/etc/ssh/sshd_config` ; la ligne `Installed:` de `apt policy openssh-server` ; le nombre de lignes renvoyées par `apt-cache rdepends openssh-client`.
+- Installe `tree`, **gèle**-le avec `apt-mark hold`, vérifie qu'il apparaît dans `apt-mark showhold`, puis **dégèle**-le.
+- Supprime `tree` en conservant la configuration, puis vérifie son état avec `dpkg -l tree` (indice : `ii` ou `rc`).
+
+**Indices** (à consulter seulement si bloqué) :
+- `dpkg -S /chemin` répond « quel paquet possède ce fichier ? ».
+- `apt policy paquet | grep Installed`.
+- `apt remove` garde la configuration, `apt purge` la supprime ; la première colonne de `dpkg -l` vaut `ii` (installé) ou `rc` (supprimé, configuration conservée).
+
+**Critères de réussite** :
+- [ ] `~/defi-apt.txt` contient 4 lignes, la première mentionnant `openssh-server`.
+- [ ] `apt-mark showhold` ne liste plus `tree` à la fin.
+- [ ] `dpkg -l tree` n'affiche pas `ii`.
+- [ ] Tu peux expliquer la différence entre `remove` et `purge`.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+{
+  dpkg -S /usr/sbin/sshd
+  dpkg -S /etc/ssh/sshd_config
+  apt policy openssh-server | grep Installed
+  echo "rdepends openssh-client : $(apt-cache rdepends openssh-client | wc -l) lignes"
+} > ~/defi-apt.txt
+cat ~/defi-apt.txt
+
+sudo apt install -y tree
+sudo apt-mark hold tree
+apt-mark showhold                      # tree
+sudo apt-mark unhold tree
+apt-mark showhold                      # (vide)
+
+sudo apt remove -y tree
+dpkg -l tree | tail -n 1               # « rc » : supprimé, configuration conservée ; « ii » = installé
+```
+
+`dpkg -S` interroge la base des fichiers installés ; `apt-mark hold` empêche toute mise à jour du paquet (utile pour figer une version, au prix de ne plus recevoir ses correctifs de sécurité).
+
+</details>
+
+---
+
 Atelier suivant : [Diagnostic réseau](atelier-03-diagnostic-reseau.md).

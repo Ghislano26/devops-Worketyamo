@@ -226,4 +226,70 @@ Rédigez ensuite `rapport.md` avec : score avant/après, mesures appliquées, ri
 - **Défi 3** : écrivez un script qui vérifie automatiquement la checklist de durcissement et renvoie un code d'erreur si un contrôle échoue.
 - **Défi 4** : consultez les recommandations CIS ou ANSSI et choisissez 5 mesures supplémentaires à appliquer.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Écrire un **script d'audit** qui vérifie cinq règles de durcissement et renvoie en code de retour le nombre de règles non respectées.
+
+**Contexte** : Ton responsable veut pouvoir contrôler en 5 secondes que chaque serveur respecte le socle de sécurité, sans relire les configurations à la main. Un script lisible et rejouable fera l'affaire.
+
+**Consignes** :
+- Écris `~/audit.sh` (mode strict **sans** `-e` : une vérification qui échoue ne doit pas arrêter le script).
+- Contrôle 1 : `sshd` refuse la connexion de root (`sudo sshd -T`). Contrôle 2 : l'authentification par mot de passe SSH est désactivée.
+- Contrôle 3 : `ufw` est actif. Contrôle 4 : `unattended-upgrades` est activé (`systemctl is-enabled`).
+- Contrôle 5 : un **seul** compte a l'UID 0 (`awk -F: '$3==0' /etc/passwd`).
+- Pour chaque contrôle, affiche `OK  <description>` ou `KO  <description>`. Le code de retour est le **nombre de KO**.
+- Lance-le avant et après avoir appliqué les mesures de l'atelier : le nombre de KO doit diminuer.
+
+**Indices** (à consulter seulement si bloqué) :
+- `sudo sshd -T | grep -qi '^permitrootlogin no'` renvoie 0 si la ligne existe.
+- `sudo ufw status | grep -q 'Status: active'`.
+- Une petite fonction `controle "description" commande…` évite de répéter le code : elle exécute la commande et affiche OK/KO.
+
+**Critères de réussite** :
+- [ ] `~/audit.sh` affiche exactement 5 lignes commençant par `OK` ou `KO`.
+- [ ] `~/audit.sh ; echo $?` donne un nombre égal au nombre de lignes `KO`.
+- [ ] Après l'atelier de durcissement, le nombre de `KO` est inférieur à celui d'avant.
+- [ ] `shellcheck ~/audit.sh` ne renvoie aucune erreur ni avertissement (les messages `info` SC2329 sur des fonctions appelées indirectement par `controle` sont normaux).
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+cat > ~/audit.sh <<'EOF'
+#!/usr/bin/env bash
+# audit.sh — 5 contrôles de durcissement ; code de retour = nombre de KO
+set -uo pipefail
+ko=0
+controle() {                    # controle "description" commande...
+    local desc="$1"; shift
+    if "$@" >/dev/null 2>&1; then echo "OK  $desc"; else echo "KO  $desc"; ko=$((ko + 1)); fi
+}
+ssh_sans_root()    { sudo sshd -T | grep -qi '^permitrootlogin no'; }
+ssh_sans_mdp()     { sudo sshd -T | grep -qi '^passwordauthentication no'; }
+ufw_actif()        { sudo ufw status | grep -q 'Status: active'; }
+maj_auto()         { systemctl is-enabled --quiet unattended-upgrades; }
+un_seul_root()     { [[ "$(awk -F: '$3==0' /etc/passwd | wc -l)" -eq 1 ]]; }
+
+controle "SSH : connexion root refusée"          ssh_sans_root
+controle "SSH : mot de passe désactivé"          ssh_sans_mdp
+controle "Pare-feu ufw actif"                    ufw_actif
+controle "Mises à jour automatiques activées"    maj_auto
+controle "Un seul compte UID 0"                  un_seul_root
+exit "$ko"
+EOF
+chmod +x ~/audit.sh
+shellcheck ~/audit.sh
+~/audit.sh ; echo "KO = $?"
+```
+
+Pourquoi pas `set -e` ? Un contrôle négatif ne doit pas interrompre l'audit : on veut **tous** les résultats. Le script réutilise les commandes de l'atelier (`sshd -T`, `ufw status`, `awk` sur `/etc/passwd`).
+
+</details>
+
+---
+
 Module suivant : [Noyau et performance](../../04-linux-expert/cours/01-noyau-performance.md).

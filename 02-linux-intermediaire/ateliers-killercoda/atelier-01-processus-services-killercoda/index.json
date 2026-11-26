@@ -1,0 +1,29 @@
+{
+  "title": "Linux : processus et services systemd",
+  "description": "Repérez et arrêtez un processus, puis créez un service systemd qui redémarre tout seul.",
+  "difficulty": "intermediate",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Trouver et arrêter un processus",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Un service systemd qui redémarre seul",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

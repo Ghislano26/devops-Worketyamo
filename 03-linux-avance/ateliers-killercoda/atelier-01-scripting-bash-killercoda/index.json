@@ -1,0 +1,29 @@
+{
+  "title": "Linux : écrire des scripts Bash robustes",
+  "description": "Écrivez un script avec mode strict et codes de retour, puis un second qui valide ses arguments.",
+  "difficulty": "intermediate",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Un premier script robuste",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Arguments et codes de retour",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

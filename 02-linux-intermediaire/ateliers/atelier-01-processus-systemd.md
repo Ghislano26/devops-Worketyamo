@@ -208,4 +208,69 @@ systemd-analyze security suivi-colis --no-pager | tail -5
 
 Nettoyage (optionnel) : `sudo systemctl disable --now suivi-colis && sudo rm /etc/systemd/system/suivi-colis.service && sudo systemctl daemon-reload`.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Créer un service systemd **résistant aux pannes**, le faire planter volontairement et ajuster son comportement avec un *drop-in*.
+
+**Contexte** : Un script de « battement de cœur » doit écrire l'heure toutes les 5 secondes dans un fichier, pour que la supervision détecte que le serveur est vivant. Il ne doit **jamais** rester arrêté, même si quelqu'un le tue.
+
+**Consignes** :
+- Crée `/etc/systemd/system/heartbeat.service` : `ExecStart=/bin/bash -c 'while true; do date >> /tmp/heartbeat.log; sleep 5; done'`, `Restart=always`, `RestartSec=2`, `WantedBy=multi-user.target`.
+- Active-le et démarre-le d'un coup ; vérifie que `/tmp/heartbeat.log` grandit.
+- Note son `MainPID`, tue-le avec `kill -9`, attends 3 secondes et prouve que le service est reparti avec un **autre PID**.
+- Avec `systemctl edit`, passe `RestartSec` à 5 secondes **sans toucher** au fichier d'origine, et vérifie la valeur avec `systemctl show -p RestartUSec`.
+- Retrouve dans `journalctl -u heartbeat` la trace du redémarrage automatique.
+
+**Indices** (à consulter seulement si bloqué) :
+- `systemctl show -p MainPID --value heartbeat` affiche le PID principal.
+- N'oublie pas `sudo systemctl daemon-reload` après avoir créé le fichier d'unité.
+- `sudo systemctl edit heartbeat` ouvre un éditeur : écris `[Service]` puis `RestartSec=5`.
+
+**Critères de réussite** :
+- [ ] `systemctl is-active heartbeat` → `active` et `systemctl is-enabled heartbeat` → `enabled`.
+- [ ] Après le `kill -9`, le PID principal a changé.
+- [ ] `systemctl show -p RestartUSec heartbeat` affiche `5s`.
+- [ ] Le journal contient une ligne `Scheduled restart job` (ou `Failed with result 'signal'`).
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+sudo tee /etc/systemd/system/heartbeat.service > /dev/null <<'EOF'
+[Unit]
+Description=Battement de coeur (defi)
+
+[Service]
+ExecStart=/bin/bash -c 'while true; do date >> /tmp/heartbeat.log; sleep 5; done'
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable --now heartbeat
+tail -n 3 /tmp/heartbeat.log
+
+AVANT=$(systemctl show -p MainPID --value heartbeat)
+sudo kill -9 "$AVANT"
+sleep 3
+APRES=$(systemctl show -p MainPID --value heartbeat)
+echo "avant=$AVANT après=$APRES"                    # deux PID différents
+
+sudo systemctl edit heartbeat                       # saisir : [Service]  puis  RestartSec=5
+systemctl show -p RestartUSec heartbeat             # RestartUSec=5s
+journalctl -u heartbeat --no-pager | grep -iE "restart|signal" | tail -n 3
+```
+
+`Restart=always` : systemd relance le processus quelle que soit la cause de l'arrêt. Le *drop-in* (`/etc/systemd/system/heartbeat.service.d/override.conf`) modifie l'unité sans toucher au fichier d'origine.
+
+</details>
+
+---
+
 Atelier suivant : [APT](atelier-02-apt-gestion-paquets.md).

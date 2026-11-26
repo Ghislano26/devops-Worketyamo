@@ -161,4 +161,60 @@ rm -r sauvegardes/src-*                # supprime la copie datée
 - **Défi 3** : utilisez `tee` pour afficher à l'écran et enregistrer dans `rapport.txt` le résultat d'un `grep`.
 - **Défi 4** : créez 20 fichiers vides d'un coup avec `touch fichier{01..20}.txt`, puis supprimez uniquement les pairs.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Mettre en place une sauvegarde datée d'un petit projet, simuler une suppression accidentelle et **restaurer** le fichier perdu.
+
+**Contexte** : Un collègue vient de supprimer `app.conf` d'un projet avec `rm`. Il n'y a **pas de corbeille** sous Linux : heureusement, tu avais fait une copie de sécurité juste avant.
+
+**Consignes** :
+- Crée l'arborescence `~/defi-j2/projet/{conf,logs,docs}` en une commande.
+- Dans `conf/app.conf`, écris `port=8080` ; dans `logs/app.log`, écris 4 lignes : `INFO demarrage`, `ERROR disque plein`, `INFO fin`, `ERROR timeout`.
+- Fais une **copie d'archive** du projet nommée `projet-sauvegarde-AAAA-MM-JJ` (date du jour obtenue avec `date +%F`) à côté de `projet`.
+- Supprime `projet/conf/app.conf`, puis **restaure-le** depuis la sauvegarde.
+- Crée `projet/docs/erreurs.txt` contenant **uniquement** les lignes `ERROR` du journal.
+
+**Indices** (à consulter seulement si bloqué) :
+- `mkdir -p dossier/{a,b,c}` crée plusieurs sous-dossiers d'un coup.
+- `cp -a` copie un dossier en conservant droits et dates.
+- `grep ERROR fichier > sortie` extrait les lignes contenant ERROR ; `cmp fichier1 fichier2` compare deux fichiers.
+
+**Critères de réussite** :
+- [ ] `projet/conf/app.conf` existe et contient `port=8080`.
+- [ ] Le dossier `projet-sauvegarde-<date du jour>` existe et contient lui aussi `conf/app.conf`.
+- [ ] `projet/docs/erreurs.txt` contient exactement 2 lignes, toutes `ERROR`.
+- [ ] `cmp projet/conf/app.conf projet-sauvegarde-*/conf/app.conf` ne renvoie rien.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+mkdir -p ~/defi-j2/projet/{conf,logs,docs}
+cd ~/defi-j2
+echo "port=8080" > projet/conf/app.conf
+printf 'INFO demarrage\nERROR disque plein\nINFO fin\nERROR timeout\n' > projet/logs/app.log
+
+cp -a projet "projet-sauvegarde-$(date +%F)"      # sauvegarde datée
+
+rm projet/conf/app.conf                           # l'accident
+ls projet/conf                                    # vide
+
+cp -a projet-sauvegarde-*/conf/app.conf projet/conf/     # restauration
+cat projet/conf/app.conf
+
+grep ERROR projet/logs/app.log > projet/docs/erreurs.txt
+wc -l projet/docs/erreurs.txt                     # 2
+cmp projet/conf/app.conf projet-sauvegarde-*/conf/app.conf && echo "identiques"
+```
+
+Leçon : sans corbeille, **la sauvegarde est la seule protection** ; `cp -a` conserve droits et dates, ce qui rend la restauration fidèle.
+
+</details>
+
+---
+
 Atelier suivant : [Permissions](atelier-03-permissions.md).

@@ -223,4 +223,75 @@ sudo systemctl restart rsyslog
 - **Défi 3** : écrivez un script qui lit les journaux centralisés et affiche les 5 erreurs les plus fréquentes du jour.
 - **Défi 4** : déployez Loki + Grafana avec Docker (après le [module 05](../../05-devops-outils/cours/02-docker-fondamentaux.md)) et envoyez-y vos journaux.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Router les journaux d'une application vers **son propre fichier** avec une règle `rsyslog`, puis en configurer la **rotation**.
+
+**Contexte** : L'équipe applicative envoie ses messages avec `logger -p local5.*`. Ils doivent atterrir dans `/var/log/defi.log` (et pas noyés dans `syslog`), et ce fichier ne doit pas grossir indéfiniment.
+
+**Consignes** :
+- Crée `/etc/rsyslog.d/30-defi.conf` avec la règle `local5.*  /var/log/defi.log`, recharge `rsyslog`.
+- Émets trois messages : `logger -t defi-app -p local5.info`, `local5.warning` et `local5.err`, puis retrouve-les dans le fichier **et** avec `journalctl -t defi-app -p warning`.
+- Crée `/etc/logrotate.d/defi` (hebdomadaire, 4 rotations, compressé, `create 0640 syslog adm`, rechargement de rsyslog dans `postrotate`).
+- Force la rotation avec `sudo logrotate -f /etc/logrotate.d/defi` et prouve qu'un `defi.log.1` existe et que `defi.log` est repartie vide ou presque.
+- Nettoie (règle, configuration logrotate, fichiers).
+
+**Indices** (à consulter seulement si bloqué) :
+- `sudo systemctl restart rsyslog` après la création de la règle ; `sudo rsyslogd -N1` valide la syntaxe.
+- `logger -p local5.warning -t defi-app "message"`.
+- Dans `postrotate` : `/usr/lib/rsyslog/rsyslog-rotate` (fourni par Ubuntu).
+
+**Critères de réussite** :
+- [ ] `grep -c defi-app /var/log/defi.log` affiche au moins `3` avant la rotation.
+- [ ] `journalctl -t defi-app -p warning` affiche les messages `warning` et `err` (pas `info`).
+- [ ] Après `logrotate -f`, `/var/log/defi.log.1` existe.
+- [ ] Les fichiers et configurations de l'exercice sont supprimés à la fin.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+echo 'local5.*    /var/log/defi.log' | sudo tee /etc/rsyslog.d/30-defi.conf
+sudo rsyslogd -N1 && sudo systemctl restart rsyslog
+
+logger -t defi-app -p local5.info    "demarrage de l'application"
+logger -t defi-app -p local5.warning "disque a 85 pour cent"
+logger -t defi-app -p local5.err     "echec de la connexion a la base"
+sleep 1
+sudo grep -c defi-app /var/log/defi.log                      # 3
+journalctl -t defi-app -p warning --no-pager                 # warning et err
+
+sudo tee /etc/logrotate.d/defi > /dev/null <<'EOF'
+/var/log/defi.log {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 syslog adm
+    postrotate
+        /usr/lib/rsyslog/rsyslog-rotate
+    endscript
+}
+EOF
+sudo logrotate -d /etc/logrotate.d/defi | head                # simulation
+sudo logrotate -f /etc/logrotate.d/defi
+ls -l /var/log/defi.log*                                      # defi.log et defi.log.1
+
+# Nettoyage
+sudo rm -f /etc/rsyslog.d/30-defi.conf /etc/logrotate.d/defi /var/log/defi.log*
+sudo systemctl restart rsyslog
+```
+
+Le **filtre** `local5.*` choisit la facilité (`local0`…`local7` sont réservées aux applications) ; `delaycompress` laisse la dernière rotation non compressée tant que rsyslog peut encore y écrire ; `postrotate` lui demande de rouvrir son fichier.
+
+</details>
+
+---
+
 Module suivant : [Git et workflow](../../05-devops-outils/cours/01-git-workflow.md).

@@ -1,0 +1,29 @@
+{
+  "title": "Linux : permissions, propriétaire, setgid et sticky",
+  "description": "Rendez un script exécutable, changez son propriétaire, puis créez des dossiers partagés avec setgid (2770) et sticky bit (1777).",
+  "difficulty": "beginner",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Exécutable et propriétaire",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Dossiers partagés : setgid et sticky bit",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

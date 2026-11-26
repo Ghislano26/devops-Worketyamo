@@ -179,4 +179,59 @@ sudo rm -rf /srv/projet
 - **Défi 3** : exigez une durée de vie de 90 jours pour le mot de passe d'alice avec `chage`.
 - **Défi 4** : lisez `/etc/pam.d/sudo` et identifiez la ligne qui active l'authentification.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Appliquer des permissions précises et vérifier l'effet du `umask`, puis repérer les binaires `setuid` du système.
+
+**Contexte** : Tu prépares un dossier de déploiement : une clé privée qui ne doit être lisible que par toi, un script exécutable par le groupe, et des fichiers de rapport qui ne doivent pas être lisibles par tout le monde.
+
+**Consignes** :
+- Crée le dossier `~/defi-j3`.
+- `cle-privee.pem` (contenu `FAUSSE CLE`) doit être créée **directement** avec les droits `600`, sans jamais être lisible par d'autres, même une fraction de seconde : utilise le `umask` dans un sous-shell.
+- `deploy.sh` (une ligne `echo deploiement`) en `750`.
+- `rapport.txt` créé avec un `umask 027` (sans `chmod`) : il doit résulter en `640`.
+- `setuid.txt` : la liste des fichiers **setuid** de `/usr/bin`.
+
+**Indices** (à consulter seulement si bloqué) :
+- `(umask 077; echo texte > fichier)` : les parenthèses lancent un sous-shell, le `umask` ne change pas ton shell.
+- Un fichier est créé avec 666 − umask : 666 − 027 = 640.
+- `find /usr/bin -perm -4000 -type f` liste les fichiers dont le bit setuid est positionné.
+
+**Critères de réussite** :
+- [ ] `stat -c %a ~/defi-j3/cle-privee.pem` affiche `600`.
+- [ ] `stat -c %a ~/defi-j3/deploy.sh` affiche `750` et `./deploy.sh` s'exécute.
+- [ ] `stat -c %a ~/defi-j3/rapport.txt` affiche `640`.
+- [ ] `setuid.txt` contient `/usr/bin/passwd`.
+- [ ] Ton `umask` du shell courant est inchangé (`umask` affiche toujours `0002`).
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+mkdir -p ~/defi-j3 && cd ~/defi-j3
+
+(umask 077; echo "FAUSSE CLE" > cle-privee.pem)      # créé directement en 600
+
+echo 'echo deploiement' > deploy.sh
+chmod 750 deploy.sh && ./deploy.sh
+
+(umask 027; echo "rapport" > rapport.txt)            # 666 - 027 = 640
+
+find /usr/bin -perm -4000 -type f > setuid.txt
+
+stat -c '%a %n' cle-privee.pem deploy.sh rapport.txt
+grep passwd setuid.txt
+umask                                                 # inchangé : le sous-shell l'a isolé
+```
+
+Pourquoi le `umask` plutôt que `touch` puis `chmod 600` ? Entre les deux commandes, le fichier existe avec des droits plus larges : une fenêtre de vulnérabilité. Le `umask` supprime cette fenêtre.
+
+</details>
+
+---
+
 Module suivant : [Processus et services](../../02-linux-intermediaire/cours/01-processus-services.md).

@@ -220,4 +220,62 @@ sudo apt purge -y nginx && sudo apt autoremove -y
 - **Défi 3** : interrogez les enregistrements MX et NS d'un domaine avec `dig`.
 - **Défi 4** : utilisez `mtr -rw -c 10 ubuntu.com` pour repérer un saut avec perte de paquets.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Diagnostiquer, couche par couche, un service « injoignable par son nom » dont la panne vient d'une entrée `/etc/hosts` erronée.
+
+**Contexte** : Un collègue affirme que « l'intranet est tombé » : `http://intranet.kamer.test:8088/` ne répond pas. Le service tourne pourtant. À toi de prouver où est la panne.
+
+**Consignes** :
+- Lance un petit serveur local : `python3 -m http.server 8088 --bind 127.0.0.1 &`.
+- Ajoute **volontairement** la mauvaise entrée `127.0.0.9 intranet.kamer.test` à `/etc/hosts`.
+- Constate que `curl --max-time 3 http://intranet.kamer.test:8088/` échoue, puis établis le diagnostic : que renvoie `getent hosts intranet.kamer.test` ? Sur quelle adresse le serveur écoute-t-il (`ss`) ? Que donne `curl http://127.0.0.1:8088/` ?
+- Écris dans `~/defi-reseau.txt` : la cause en une phrase, l'IP de ta passerelle par défaut (`ip route`) et le serveur DNS utilisé (`resolvectl`).
+- Corrige `/etc/hosts` (l'entrée doit pointer vers `127.0.0.1`) et vérifie que `curl` répond `200`.
+
+**Indices** (à consulter seulement si bloqué) :
+- `ss -tlnp | grep 8088` montre l'adresse d'écoute : `127.0.0.1:8088`.
+- `curl: (7) Failed to connect` (« refused ») = personne n'écoute à cette adresse ; ici 127.0.0.9 ≠ 127.0.0.1.
+- `ip route | grep default` donne la passerelle ; `resolvectl status | grep 'Current DNS'` le DNS.
+
+**Critères de réussite** :
+- [ ] `curl -s -o /dev/null -w '%{http_code}' http://intranet.kamer.test:8088/` renvoie `200`.
+- [ ] `getent hosts intranet.kamer.test` renvoie `127.0.0.1`.
+- [ ] `~/defi-reseau.txt` nomme la cause (entrée `/etc/hosts` erronée), la passerelle et le DNS.
+- [ ] Le serveur de test est arrêté à la fin (`kill %1`).
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+python3 -m http.server 8088 --bind 127.0.0.1 >/dev/null 2>&1 &
+sleep 1
+echo "127.0.0.9 intranet.kamer.test" | sudo tee -a /etc/hosts
+
+curl --max-time 3 http://intranet.kamer.test:8088/ ; echo "code=$?"      # échec (7)
+getent hosts intranet.kamer.test                                         # 127.0.0.9  ← mauvaise adresse
+ss -tlnp | grep 8088                                                      # écoute sur 127.0.0.1:8088
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/          # 200 : le service est sain
+
+{
+  echo "Cause : /etc/hosts envoie intranet.kamer.test vers 127.0.0.9 alors que le service écoute sur 127.0.0.1."
+  echo "Passerelle : $(ip route | grep default | cut -d' ' -f3)"
+  echo "DNS : $(resolvectl status | grep -m1 'Current DNS')"
+} > ~/defi-reseau.txt
+
+sudo sed -i 's/^127.0.0.9 intranet.kamer.test/127.0.0.1 intranet.kamer.test/' /etc/hosts
+curl -s -o /dev/null -w '%{http_code}\n' http://intranet.kamer.test:8088/   # 200
+kill %1
+```
+
+Méthode : **nom → adresse → port → application**. Ici la couche DNS/résolution (le fichier `hosts`, consulté avant le DNS) était en cause ; le service, lui, n'a jamais été en panne.
+
+</details>
+
+---
+
 Atelier suivant : [SSH sécurisé](atelier-04-ssh-securise.md).

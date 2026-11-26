@@ -214,4 +214,57 @@ Complétez le tableau suivant dans `~/perf/diagnostic.md` à partir de vos obser
 
 Nettoyage : `sudo rm /etc/sysctl.d/60-perf-atelier.conf && sudo sysctl --system`.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Appliquer la méthode du « diagnostic en 60 secondes » pendant une surcharge CPU et nommer **le coupable**.
+
+**Contexte** : À 3 h du matin, l'astreinte t'appelle : « le serveur rame ». Tu n'as qu'une minute avant l'escalade. Tu dois documenter l'état du système et désigner le processus responsable.
+
+**Consignes** :
+- Lance une charge : `stress-ng --cpu 2 --timeout 60s &` (paquet `stress-ng`).
+- Pendant qu'elle tourne, produis `~/defi-perf.txt` avec, dans cet ordre : `uptime`, `nproc`, `vmstat 1 3`, `ps aux --sort=-%cpu | head -n 4`, `cat /proc/pressure/cpu`.
+- Ajoute une dernière ligne `CONCLUSION : …` qui nomme le processus le plus gourmand et dit si le CPU est **saturé** (file d'exécution `r` supérieure au nombre de CPU, ou `id` proche de 0).
+- Attends la fin de la charge et vérifie que la machine est revenue au calme (`uptime`, `pgrep stress-ng`).
+
+**Indices** (à consulter seulement si bloqué) :
+- `{ cmd1; cmd2; … } > fichier 2>&1` regroupe les sorties.
+- Dans `vmstat`, la colonne `r` (processus prêts) et `id` (CPU inactif) permettent de conclure.
+- Le champ `some avg10` de `/proc/pressure/cpu` mesure le temps d'attente du CPU.
+
+**Critères de réussite** :
+- [ ] `~/defi-perf.txt` contient la sortie de `uptime`, `vmstat`, la liste de processus et la pression CPU.
+- [ ] Le fichier mentionne `stress-ng` parmi les processus les plus gourmands.
+- [ ] La ligne `CONCLUSION` nomme `stress-ng` et justifie la saturation par une valeur observée.
+- [ ] `pgrep stress-ng` ne renvoie plus rien après 60 s.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+sudo apt install -y stress-ng sysstat
+stress-ng --cpu 2 --timeout 60s &
+sleep 5
+{
+  echo "== uptime ==";   uptime
+  echo "== nproc ==";    nproc
+  echo "== vmstat ==";   vmstat 1 3
+  echo "== top CPU ==";  ps aux --sort=-%cpu | head -n 4
+  echo "== pression CPU =="; cat /proc/pressure/cpu
+} > ~/defi-perf.txt 2>&1
+echo "CONCLUSION : stress-ng consomme tout le CPU ; la file d'exécution (colonne r de vmstat) dépasse nproc, le CPU est saturé." >> ~/defi-perf.txt
+cat ~/defi-perf.txt
+wait
+uptime ; pgrep stress-ng || echo "plus de charge"
+```
+
+Méthode **USE** (Utilisation, Saturation, Erreurs) : `r` > nombre de CPU = saturation ; `ps --sort=-%cpu` désigne le coupable ; la pression PSI confirme que des tâches attendent le CPU.
+
+</details>
+
+---
+
 Atelier suivant : [Namespaces et cgroups](atelier-02-namespaces-cgroups.md).

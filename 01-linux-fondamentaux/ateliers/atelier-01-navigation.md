@@ -156,4 +156,50 @@ Contrôle automatique :
 - **Défi 3** : expliquez la différence entre `/run` et `/tmp` après avoir exploré `df -h /run /tmp`.
 - **Défi 4** : trouvez tous les liens symboliques de `/` : `find / -maxdepth 1 -type l -ls`.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Produire en quelques minutes un petit rapport sur le contenu de `/var/log`, uniquement avec `ls`, `find`, `grep` et `wc`.
+
+**Contexte** : Le responsable sécurité doit intervenir sur ton serveur et veut savoir, avant de se connecter, combien de journaux `.log` existent, lequel est le plus gros et où se trouve le journal d'installation des paquets (`dpkg.log`).
+
+**Consignes** :
+- Crée le fichier `~/defi-j1.txt` **sans l'écrire à la main** : chaque ligne doit être produite par une commande.
+- Ligne 1 : `Nombre de fichiers .log : N` (fichiers ordinaires dont le nom se termine par `.log`, dans `/var/log` et ses sous-dossiers).
+- Ligne 2 : `Plus gros fichier : ` suivi de la ligne `ls -l` du fichier ordinaire le plus volumineux **directement** dans `/var/log`.
+- Ligne 3 : `Chemin de dpkg.log : ` suivi du chemin absolu trouvé avec `find`.
+
+**Indices** (à consulter seulement si bloqué) :
+- `find /var/log -type f -name '*.log' 2>/dev/null | wc -l` compte les fichiers (`2>/dev/null` masque les « Permission denied »).
+- `ls -lS` trie par taille décroissante ; `grep '^-'` ne garde que les fichiers ordinaires (premier caractère `-`) ; `head -n 1` garde le premier.
+- Pour regrouper plusieurs `echo` dans un seul fichier : `{ echo … ; echo … ; } > fichier`.
+
+**Critères de réussite** :
+- [ ] `~/defi-j1.txt` existe et contient exactement 3 lignes.
+- [ ] La ligne 1 contient un nombre supérieur ou égal à 1.
+- [ ] La ligne 3 se termine par `/var/log/dpkg.log`.
+- [ ] Tu as produit le fichier avec des commandes (pas de nombre écrit à la main).
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+{
+  echo "Nombre de fichiers .log : $(find /var/log -type f -name '*.log' 2>/dev/null | wc -l)"
+  echo "Plus gros fichier : $(ls -lS /var/log | grep '^-' | head -n 1)"
+  echo "Chemin de dpkg.log : $(find /var/log -name dpkg.log 2>/dev/null)"
+} > ~/defi-j1.txt
+cat ~/defi-j1.txt
+wc -l ~/defi-j1.txt        # 3
+```
+
+`$(…)` insère la sortie d'une commande dans le texte ; `{ … } > fichier` redirige l'ensemble des trois `echo` vers un seul fichier.
+
+</details>
+
+---
+
 Atelier suivant : [Gestion de fichiers](atelier-02-gestion-fichiers.md).

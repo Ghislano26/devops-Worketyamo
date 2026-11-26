@@ -171,4 +171,69 @@ column -t -s, ventes.csv
 - **Défi 3** : avec `sed`, anonymisez les IP des journaux (`s/[0-9]\+\.[0-9]\+$/X.X/`) avant de les partager.
 - **Défi 4** : travaillez sur le vrai `/var/log/auth.log` de la VM : `sudo grep -c "session opened" /var/log/auth.log`.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Analyser un journal web avec `awk`, `grep` et `sed`, puis l'**anonymiser** avant de le partager.
+
+**Contexte** : Un prestataire externe doit analyser ton trafic, mais tu n'as pas le droit de lui transmettre les adresses IP complètes des visiteurs. Tu dois lui fournir un résumé chiffré et une version anonymisée du journal.
+
+**Consignes** :
+- Crée le fichier de test :
+  ```bash
+  mkdir -p ~/defi-texte && cd ~/defi-texte
+  cat > acces.log <<'EOF'
+10.0.0.5 GET /a 200
+10.0.0.7 GET /b 404
+10.0.0.5 POST /login 401
+10.0.0.9 GET /a 200
+10.0.0.5 GET /c 500
+10.0.0.7 GET /a 200
+10.0.0.9 POST /login 401
+10.0.0.5 GET /a 200
+10.0.0.12 GET /b 404
+10.0.0.7 GET /c 200
+10.0.0.9 GET /a 200
+10.0.0.5 GET /b 200
+  EOF
+  ```
+- `awk` : écris dans `resume.txt` l'**IP la plus active** avec son nombre de requêtes (format `NOMBRE IP`).
+- `awk` : ajoute à `resume.txt` une ligne `Erreurs : N sur 12 (P %)` où N est le nombre de requêtes dont le code (4e champ) est **≥ 400**, et P le pourcentage arrondi à une décimale.
+- `sed` : produis `acces-anonyme.log` où le **dernier octet** de chaque IP est remplacé par `x` (`10.0.0.5` → `10.0.0.x`).
+- `grep` : affiche (sans fichier) le nombre de lignes `POST` dans `acces.log`.
+
+**Indices** (à consulter seulement si bloqué) :
+- `awk '{c[$1]++} END {for (i in c) print c[i], i}' acces.log | sort -nr | head -n 1`.
+- `awk '$4 >= 400 {n++} END {printf "Erreurs : %d sur %d (%.1f %%)\n", n, NR, 100*n/NR}' acces.log`.
+- `sed 's/\.[0-9]* / x /'` ne convient pas tel quel : cible le **dernier** nombre de la première colonne, par ex. `sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.[0-9]*/\1.x/'`.
+
+**Critères de réussite** :
+- [ ] `resume.txt` contient la ligne `5 10.0.0.5`.
+- [ ] `resume.txt` contient `Erreurs : 5 sur 12 (41.7 %)`.
+- [ ] `acces-anonyme.log` ne contient plus aucune adresse complète (`grep -E '10\.0\.0\.[0-9]+ ' acces-anonyme.log` ne renvoie rien).
+- [ ] `grep -c POST acces.log` affiche `2`.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+cd ~/defi-texte
+awk '{c[$1]++} END {for (i in c) print c[i], i}' acces.log | sort -nr | head -n 1 > resume.txt
+awk '$4 >= 400 {n++} END {printf "Erreurs : %d sur %d (%.1f %%)\n", n, NR, 100*n/NR}' acces.log >> resume.txt
+sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.[0-9]*/\1.x/' acces.log > acces-anonyme.log
+grep -c POST acces.log
+
+cat resume.txt           # 5 10.0.0.5   puis   Erreurs : 5 sur 12 (41.7 %)
+head -n 3 acces-anonyme.log
+```
+
+`awk` compte avec un tableau associatif (équivalent d'un `GROUP BY`) ; `sed` capture les trois premiers octets dans un groupe `\(...\)` et les réutilise avec `\1` ; `grep -c` compte les lignes correspondantes.
+
+</details>
+
+---
+
 Atelier suivant : [LVM](atelier-03-lvm.md).

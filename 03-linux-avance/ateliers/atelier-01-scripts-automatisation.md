@@ -239,4 +239,74 @@ crontab -l
 - **Défi 3** : remplacez cron par un **timer systemd** (`sauvegarde.service` + `sauvegarde.timer`).
 - **Défi 4** : écrivez `deploy.sh` qui rejette l'exécution en root (`[[ $EUID -ne 0 ]]`) et verrouille l'exécution simultanée avec `flock`.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Écrire un script d'alerte disque **robuste** (mode strict, options, code de retour) qui passe `shellcheck`.
+
+**Contexte** : La supervision interroge ton serveur toutes les minutes : elle veut un script qui renvoie le **code 0** si tout va bien et **1** si un disque dépasse un seuil, avec un seuil réglable.
+
+**Consignes** :
+- Écris `~/alerte-disque.sh` : shebang, `set -euo pipefail`, option `-s seuil` (défaut 80) avec `getopts`.
+- Refuse un seuil non numérique (message sur la sortie d'erreur, code **2**).
+- Parcours les systèmes de fichiers réels avec `df --output=pcent,target -x tmpfs -x devtmpfs`, affiche `ALERTE : <point de montage> à N %` pour chacun au-dessus du seuil.
+- Code de retour : `0` si aucune alerte, `1` sinon. Le script doit passer `shellcheck` sans avertissement.
+- Prouve le fonctionnement avec `-s 0` (alerte, code 1), `-s 101` (rien, code 0) et `-s abc` (code 2).
+
+**Indices** (à consulter seulement si bloqué) :
+- `pct="${pct%\%}"` retire le `%` final ; `(( pct >= SEUIL ))` compare des entiers.
+- `while read -r pct cible; do … done < <(df … | tail -n +2)` lit la sortie ligne par ligne (`tail -n +2` saute l'en-tête).
+- `[[ "$SEUIL" =~ ^[0-9]+$ ]]` teste qu'une chaîne est un entier.
+
+**Critères de réussite** :
+- [ ] `shellcheck ~/alerte-disque.sh` ne renvoie rien.
+- [ ] `./alerte-disque.sh -s 101 ; echo $?` → `0`.
+- [ ] `./alerte-disque.sh -s 0 ; echo $?` → `1` et au moins une ligne `ALERTE`.
+- [ ] `./alerte-disque.sh -s abc ; echo $?` → `2`.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+cat > ~/alerte-disque.sh <<'EOF'
+#!/usr/bin/env bash
+# alerte-disque.sh [-s seuil] — code 0 : tout va bien, 1 : alerte, 2 : mauvais usage
+set -euo pipefail
+
+SEUIL=80
+while getopts ":s:" opt; do
+    case "$opt" in
+        s) SEUIL="$OPTARG" ;;
+        *) echo "Usage : $0 [-s seuil]" >&2; exit 2 ;;
+    esac
+done
+[[ "$SEUIL" =~ ^[0-9]+$ ]] || { echo "Le seuil doit être un entier" >&2; exit 2; }
+
+alerte=0
+while read -r pct cible; do
+    pct="${pct%\%}"
+    if (( pct >= SEUIL )); then
+        echo "ALERTE : $cible à ${pct} %"
+        alerte=1
+    fi
+done < <(df --output=pcent,target -x tmpfs -x devtmpfs | tail -n +2)
+
+exit "$alerte"
+EOF
+chmod +x ~/alerte-disque.sh
+shellcheck ~/alerte-disque.sh && echo "shellcheck OK"
+~/alerte-disque.sh -s 101 ; echo "code=$?"     # 0
+~/alerte-disque.sh -s 0   ; echo "code=$?"     # 1 + lignes ALERTE
+~/alerte-disque.sh -s abc ; echo "code=$?"     # 2
+```
+
+Le **code de retour** est ce qu'exploite un outil de supervision ; `set -euo pipefail` évite les échecs silencieux ; `getopts` rend le seuil configurable sans modifier le script.
+
+</details>
+
+---
+
 Atelier suivant : [awk, sed, grep](atelier-02-awk-sed-grep.md).

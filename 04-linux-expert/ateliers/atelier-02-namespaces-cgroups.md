@@ -256,4 +256,69 @@ sudo rm -rf /srv/rootfs-prison
 - **Défi 3** : écrivez un script `mini-docker.sh run <rootfs> <commande>` qui automatise toutes ces étapes.
 - **Défi 4** : utilisez `systemd-nspawn` (paquet `systemd-container`) pour obtenir le même résultat en une commande.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Construire une **mini-prison** : un service web qui tourne dans son propre namespace réseau, avec un cgroup qui plafonne sa mémoire.
+
+**Contexte** : Tu dois démontrer à ton équipe qu'un « conteneur » n'est qu'un processus Linux avec des isolations. Pas de Docker : uniquement `ip netns`, `veth` et les cgroups v2.
+
+**Consignes** :
+- Crée le namespace réseau `cage` et une paire `veth` : `v-hote` (10.77.0.1/24, côté hôte) et `v-cage` (10.77.0.2/24, dans `cage`). Active les interfaces.
+- Lance `python3 -m http.server 8077 --bind 10.77.0.2` **dans** le namespace (`ip netns exec cage …`) et interroge-le depuis l'hôte avec `curl`.
+- Prouve l'isolation : compare `readlink /proc/$$/ns/net` (hôte) avec celui du processus serveur.
+- Crée le cgroup `/sys/fs/cgroup/defi` avec `memory.max` = 50 Mo et `pids.max` = 20, et vérifie les valeurs relues.
+- Nettoie tout (processus, namespace, cgroup).
+
+**Indices** (à consulter seulement si bloqué) :
+- `ip link add v-hote type veth peer name v-cage` puis `ip link set v-cage netns cage`.
+- Il faut aussi activer `lo` et `v-cage` **dans** le namespace (`ip netns exec cage ip link set … up`).
+- `echo "+memory +pids" | sudo tee /sys/fs/cgroup/cgroup.subtree_control` active les contrôleurs avant d'écrire dans le sous-groupe.
+
+**Critères de réussite** :
+- [ ] `curl -s -o /dev/null -w '%{http_code}' http://10.77.0.2:8077/` renvoie `200`.
+- [ ] Les identifiants `net:[…]` de l'hôte et du serveur sont **différents**.
+- [ ] `cat /sys/fs/cgroup/defi/memory.max` affiche `52428800` et `pids.max` affiche `20`.
+- [ ] Après nettoyage, `ip netns list` est vide et `/sys/fs/cgroup/defi` n'existe plus.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+sudo ip netns add cage
+sudo ip link add v-hote type veth peer name v-cage
+sudo ip link set v-cage netns cage
+sudo ip addr add 10.77.0.1/24 dev v-hote && sudo ip link set v-hote up
+sudo ip netns exec cage ip addr add 10.77.0.2/24 dev v-cage
+sudo ip netns exec cage ip link set v-cage up
+sudo ip netns exec cage ip link set lo up
+
+sudo ip netns exec cage python3 -m http.server 8077 --bind 10.77.0.2 >/dev/null 2>&1 &
+sleep 1
+curl -s -o /dev/null -w '%{http_code}\n' http://10.77.0.2:8077/          # 200
+
+PID=$(pgrep -f "http.server 8077" | head -n 1)
+readlink /proc/$$/ns/net ; sudo readlink /proc/$PID/ns/net                  # deux identifiants différents
+
+echo "+memory +pids" | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+sudo mkdir /sys/fs/cgroup/defi
+echo 50M | sudo tee /sys/fs/cgroup/defi/memory.max
+echo 20  | sudo tee /sys/fs/cgroup/defi/pids.max
+cat /sys/fs/cgroup/defi/memory.max /sys/fs/cgroup/defi/pids.max             # 52428800 et 20
+
+# Nettoyage
+sudo pkill -f "http.server 8077"
+sudo ip netns del cage
+sudo rmdir /sys/fs/cgroup/defi
+```
+
+Le serveur n'est qu'un **processus de l'hôte** : seul son namespace réseau diffère (voir `readlink`). La limite mémoire est un simple fichier du cgroup v2 : c'est ce que fait Docker sous le capot.
+
+</details>
+
+---
+
 Atelier suivant : [Journalisation centralisée](atelier-03-journalisation-centralisee.md).

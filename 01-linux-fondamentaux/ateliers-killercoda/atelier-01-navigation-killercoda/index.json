@@ -1,0 +1,29 @@
+{
+  "title": "Linux : naviguer et s'aider soi-même",
+  "description": "Repérez-vous dans l'arborescence, trouvez un fichier avec find, lisez l'aide d'une commande et créez un alias persistant.",
+  "difficulty": "beginner",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Naviguer dans /var/log et trouver un fichier",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Lire l'aide et créer un alias persistant",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

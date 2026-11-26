@@ -190,4 +190,68 @@ grep documents /etc/fstab || echo "fstab propre"
 - **Défi 3** : si votre hyperviseur le permet, ajoutez un vrai second disque virtuel à la VM et refaites l'extension avec lui.
 - **Défi 4** : testez un RAID 1 avec `mdadm` sur deux périphériques *loop*.
 
+---
+
+## 🏆 Défi du jour
+
+**Objectif** : Répartir un groupe de volumes en **deux volumes logiques**, les monter durablement par **UUID** et valider avec `mount -a`.
+
+**Contexte** : Le serveur doit séparer les données applicatives des journaux pour que ces derniers ne saturent plus les données. Tu disposes d'un « disque » de 400 Mo (un fichier monté en périphérique *loop*).
+
+**Consignes** :
+- Crée un fichier de 400 Mo `/var/defi-lvm.img` (avec `truncate`), associe-le à un périphérique *loop* et fabrique un PV, puis un VG `vg_defi`.
+- Crée `lv_data` de **150 Mo**, puis `lv_logs` avec **tout l'espace restant** (`-l 100%FREE`).
+- Formate-les en ext4 et monte-les sur `/mnt/defi-data` et `/mnt/defi-logs`.
+- Ajoute-les à `/etc/fstab` **par UUID** avec l'option `nofail`, démonte-les puis revalide avec `sudo mount -a`.
+- Écris dans `~/defi-lvm.txt` la sortie de `sudo lvs -o lv_name,lv_size`.
+- Nettoie tout (fstab, montages, LV, VG, PV, loop, fichier image).
+
+**Indices** (à consulter seulement si bloqué) :
+- `D=$(sudo losetup -f --show /var/defi-lvm.img)` mémorise le nom du périphérique.
+- `sudo lvcreate -n lv_logs -l 100%FREE vg_defi` ; `sudo blkid -s UUID -o value /dev/vg_defi/lv_logs`.
+- Teste **toujours** `mount -a` avant de redémarrer.
+
+**Critères de réussite** :
+- [ ] `lvs` montre `lv_data` (≈ 150 Mo) et `lv_logs` (le reste, ≈ 240 Mo).
+- [ ] `findmnt /mnt/defi-data` et `findmnt /mnt/defi-logs` répondent après `mount -a`.
+- [ ] Les deux lignes de `/etc/fstab` utilisent `UUID=` et `nofail`.
+- [ ] Après nettoyage, `grep defi /etc/fstab` ne renvoie rien et `losetup -a` ne liste plus l'image.
+
+**Solution** (dans un bloc `<details>`) :
+
+<details>
+<summary>Voir la solution</summary>
+
+```bash
+sudo apt install -y lvm2
+sudo truncate -s 400M /var/defi-lvm.img
+D=$(sudo losetup -f --show /var/defi-lvm.img)
+sudo pvcreate "$D" && sudo vgcreate vg_defi "$D"
+
+sudo lvcreate -n lv_data -L 150M vg_defi
+sudo lvcreate -n lv_logs -l 100%FREE vg_defi
+sudo mkfs.ext4 -q /dev/vg_defi/lv_data
+sudo mkfs.ext4 -q /dev/vg_defi/lv_logs
+sudo mkdir -p /mnt/defi-data /mnt/defi-logs
+
+for lv in data logs; do
+  U=$(sudo blkid -s UUID -o value /dev/vg_defi/lv_$lv)
+  echo "UUID=$U /mnt/defi-$lv ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+done
+sudo mount -a && findmnt /mnt/defi-data && findmnt /mnt/defi-logs
+sudo lvs -o lv_name,lv_size | tee ~/defi-lvm.txt
+
+# Nettoyage
+sudo umount /mnt/defi-data /mnt/defi-logs
+sudo sed -i '/defi-data\|defi-logs/d' /etc/fstab
+sudo lvremove -y vg_defi && sudo vgremove -y vg_defi && sudo pvremove -y "$D"
+sudo losetup -d "$D" && sudo rm /var/defi-lvm.img
+```
+
+`-l 100%FREE` alloue **tout l'espace libre** du groupe ; l'UUID est stable alors que le nom du périphérique ne l'est pas ; `nofail` évite un démarrage bloqué si le volume est absent.
+
+</details>
+
+---
+
 Atelier suivant : [Durcissement d'un serveur](atelier-04-durcissement-serveur.md).

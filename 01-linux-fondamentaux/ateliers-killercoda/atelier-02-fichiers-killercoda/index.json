@@ -1,0 +1,29 @@
+{
+  "title": "Linux : créer, copier, déplacer, supprimer",
+  "description": "Construisez une arborescence de travail puis manipulez ses fichiers : copie, déplacement, renommage, suppression.",
+  "difficulty": "beginner",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Construire une arborescence",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Copier, renommer, déplacer, supprimer",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

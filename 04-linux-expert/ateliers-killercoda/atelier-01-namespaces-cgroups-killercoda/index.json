@@ -1,0 +1,29 @@
+{
+  "title": "Linux expert : namespaces et cgroups",
+  "description": "Isolez un shell avec unshare (PID et hostname), puis plafonnez la mémoire et les processus avec un cgroup v2.",
+  "difficulty": "advanced",
+  "time": "10 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Un shell dans ses propres namespaces",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Plafonner un cgroup v2",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

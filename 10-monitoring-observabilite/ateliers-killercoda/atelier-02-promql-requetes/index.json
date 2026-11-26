@@ -1,0 +1,29 @@
+{
+  "title": "PromQL : interroger Prometheus",
+  "description": "Calculez l'utilisation CPU avec rate(), classez les conteneurs les plus gourmands avec topk() et validez vos requêtes via l'API.",
+  "difficulty": "intermediate",
+  "time": "20 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Taux d'utilisation CPU avec rate()",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Les 3 consommateurs de CPU avec topk()",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

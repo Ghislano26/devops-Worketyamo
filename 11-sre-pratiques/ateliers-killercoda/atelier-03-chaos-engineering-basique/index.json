@@ -1,0 +1,29 @@
+{
+  "title": "SRE : chaos engineering basique sur Kubernetes",
+  "description": "Déployez une application, formulez une hypothèse, supprimez un pod, observez la réparation automatique, puis injectez de la latence réseau.",
+  "difficulty": "advanced",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Déployer l'application et définir l'état stable",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Injecter le chaos : tuer un pod, puis ajouter de la latence",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

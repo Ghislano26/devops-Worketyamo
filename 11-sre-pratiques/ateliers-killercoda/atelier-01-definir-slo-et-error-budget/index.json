@@ -1,0 +1,29 @@
+{
+  "title": "SRE : définir un SLO et calculer le budget d'erreur",
+  "description": "À partir d'un jeu de métriques simulé, mesurez un SLI de disponibilité en PromQL, écrivez le SLO et calculez le budget d'erreur restant.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Mesurer un SLI de disponibilité et écrire le SLO",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Calculer le budget d'erreur et décider",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

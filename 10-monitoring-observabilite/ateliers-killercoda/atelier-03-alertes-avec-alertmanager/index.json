@@ -1,0 +1,29 @@
+{
+  "title": "Alertes : règles Prometheus et Alertmanager",
+  "description": "Écrivez une règle HighCPUUsage, déclenchez-la avec stress-ng et suivez l'alerte de Prometheus jusqu'à Alertmanager.",
+  "difficulty": "advanced",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Écrire et charger une règle d'alerte",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Déclencher l'alerte : de pending à firing",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "SRE : rédiger un postmortem blameless",
+  "description": "À partir de notes d'incident brutes, rédigez un postmortem structuré sans blâme, identifiez les facteurs contributifs et reformulez une phrase accusatrice.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Structurer le postmortem",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Facteurs contributifs et reformulation sans blâme",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

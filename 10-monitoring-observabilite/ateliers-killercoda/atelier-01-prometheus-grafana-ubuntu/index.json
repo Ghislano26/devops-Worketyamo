@@ -1,0 +1,34 @@
+{
+  "title": "Prometheus et Grafana : votre première pile de monitoring",
+  "description": "Exposez les métriques d'une machine avec node_exporter, collectez-les avec Prometheus et visualisez-les dans Grafana.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "node_exporter : exposer les métriques de la machine",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Prometheus : collecter (scrape) les métriques",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      },
+      {
+        "title": "Grafana : visualiser avec un dashboard communautaire",
+        "text": "step3/text.md",
+        "verify": "step3/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

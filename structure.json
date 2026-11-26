@@ -1,0 +1,17 @@
+{
+  "items": [
+    { "path": "08-docker-approfondi/ateliers-killercoda/atelier-01-premiers-pas" },
+    { "path": "08-docker-approfondi/ateliers-killercoda/atelier-02-dockerfile-multistage" },
+    { "path": "08-docker-approfondi/ateliers-killercoda/atelier-03-compose-reseau" },
+    { "path": "09-kubernetes-approfondi/ateliers-killercoda/atelier-01-premier-pod-et-deployment" },
+    { "path": "09-kubernetes-approfondi/ateliers-killercoda/atelier-02-service-et-nodeport" },
+    { "path": "09-kubernetes-approfondi/ateliers-killercoda/atelier-03-configmap-secret-et-rbac" },
+    { "path": "10-monitoring-observabilite/ateliers-killercoda/atelier-01-prometheus-grafana-ubuntu" },
+    { "path": "10-monitoring-observabilite/ateliers-killercoda/atelier-02-promql-requetes" },
+    { "path": "10-monitoring-observabilite/ateliers-killercoda/atelier-03-alertes-avec-alertmanager" },
+    { "path": "10-monitoring-observabilite/ateliers-killercoda/atelier-04-monitoring-kubernetes" },
+    { "path": "11-sre-pratiques/ateliers-killercoda/atelier-01-definir-slo-et-error-budget" },
+    { "path": "11-sre-pratiques/ateliers-killercoda/atelier-02-postmortem-blameless" },
+    { "path": "11-sre-pratiques/ateliers-killercoda/atelier-03-chaos-engineering-basique" }
+  ]
+}

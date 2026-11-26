@@ -1,0 +1,29 @@
+{
+  "title": "Kubernetes : ConfigMap, Secret et RBAC",
+  "description": "Injectez de la configuration et un secret dans un pod (variables et fichiers), puis limitez un ServiceAccount avec RBAC.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "ConfigMap et Secret dans un Pod",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "ServiceAccount, Role et RoleBinding",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

@@ -30,6 +30,8 @@ aux outils DevOps (Git, Docker, CI/CD).
 | [`05-devops-outils/`](05-devops-outils/) | Git, Docker, CI/CD | Ouverture DevOps |
 | [`06-reseaux-devops/`](06-reseaux-devops/README.md) | Cours et ateliers réseaux orientés DevOps : DNS, ports, routage, TLS, diagnostic. Diagrammes animés. | Intermédiaire à avancé |
 | [`07-git-branching-interactif/`](07-git-branching-interactif/README.md) | Cours Git avancé + exercices interactifs animés (mini learngitbranching). | Intermédiaire |
+| [`08-docker-approfondi/`](08-docker-approfondi/README.md) | Cours Docker approfondis (architecture, images, Dockerfile, réseau, Compose, sécurité) + ateliers Killercoda interactifs. | Intermédiaire à avancé |
+| [`09-kubernetes-approfondi/`](09-kubernetes-approfondi/README.md) | Cours Kubernetes approfondis (architecture, workloads, réseau, stockage, config, scheduling, sécurité) + ateliers Killercoda interactifs. | Avancé |
 | [`ressources/`](ressources/liens-utiles.md) | Cheatsheets (commandes, Vim, Bash) et liens utiles | Transverse |
 
 Chaque module `01` à `05` contient un dossier `cours/` (théorie) et un dossier

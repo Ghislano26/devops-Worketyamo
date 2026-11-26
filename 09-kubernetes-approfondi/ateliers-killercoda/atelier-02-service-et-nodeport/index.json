@@ -1,0 +1,29 @@
+{
+  "title": "Kubernetes : Service ClusterIP et NodePort",
+  "description": "Exposez un Deployment nginx par un Service ClusterIP, testez-le depuis le cluster, puis ouvrez-le avec un NodePort.",
+  "difficulty": "beginner",
+  "time": "20 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Service ClusterIP",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Exposer en NodePort",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

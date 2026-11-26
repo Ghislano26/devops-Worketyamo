@@ -1,0 +1,29 @@
+{
+  "title": "Dockerfile : de l'image naïve au multi-stage",
+  "description": "Construisez une image Python volumineuse, puis réduisez-la nettement avec un build multi-stage et un utilisateur non-root.",
+  "difficulty": "intermediate",
+  "time": "20 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Un Dockerfile naïf",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Réécrire en multi-stage",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "Docker : premiers pas, conteneurs éphémères et volumes",
+  "description": "Lancez nginx, constatez qu'un conteneur est éphémère, puis rendez des données persistantes avec un volume nommé.",
+  "difficulty": "beginner",
+  "time": "15 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Lancer nginx et le tester",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Éphémère ou persistant ?",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "title": "Kubernetes : premier Pod, Deployment, rollout et rollback",
+  "description": "Lancez un pod, passez à un Deployment de 3 réplicas, scalez, mettez à jour l'image puis revenez en arrière.",
+  "difficulty": "beginner",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Un premier Pod",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Un Deployment de 3 réplicas",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      },
+      {
+        "title": "Scaler, mettre à jour, revenir en arrière",
+        "text": "step3/text.md",
+        "verify": "step3/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

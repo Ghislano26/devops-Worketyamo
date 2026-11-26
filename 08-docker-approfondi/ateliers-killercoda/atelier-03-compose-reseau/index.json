@@ -1,0 +1,29 @@
+{
+  "title": "Docker Compose : réseau personnalisé et DNS interne",
+  "description": "Déployez un backend et un Redis sur un réseau Compose personnalisé, vérifiez le DNS interne puis publiez un port.",
+  "difficulty": "intermediate",
+  "time": "20 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Deux services sur un réseau personnalisé",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Publier un port et utiliser exec",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

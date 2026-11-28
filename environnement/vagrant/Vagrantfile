@@ -1,0 +1,31 @@
+# Vagrantfile — environnement de formation Rocky Linux 9 (VM « devops-lab »).
+# Usage étudiant : voir GUIDE-ENVIRONNEMENT.md à la racine du dépôt.
+#   cd environnement/vagrant && vagrant up && vagrant ssh
+Vagrant.configure("2") do |config|
+  config.vm.box = "rocky9-devops"
+  config.vm.box_version = "1.0.0"
+  config.vm.box_check_update = false
+  config.vm.hostname = "devops-lab"
+
+  # Réseau « host-only » : la VM est joignable depuis l'hôte à 192.168.56.10 (en plus du NAT).
+  config.vm.network "private_network", ip: "192.168.56.10"
+
+  # /vagrant = RACINE DU DÉPÔT (deux niveaux au-dessus de ce fichier), pas le dossier personnel.
+  config.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "4096"
+    vb.cpus = 2
+    vb.name = "devops-lab"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Vérification des outils DevOps..."
+    for tool in kubectl helm trivy syft act shellcheck podman git yq; do
+      if ! command -v $tool &> /dev/null; then
+        echo "ERREUR : $tool non installé"; exit 1
+      fi
+    done
+    echo "Environnement prêt. Utilisez 'vagrant ssh' pour vous connecter."
+  SHELL
+end

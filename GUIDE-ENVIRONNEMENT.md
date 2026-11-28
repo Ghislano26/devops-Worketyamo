@@ -186,7 +186,7 @@ git clone https://github.com/Ghislano26/devops-Worketyamo.git
 cd devops-Worketyamo
 ```
 
-2. **Télécharge la box** (≈ 1,5 Go) depuis la page des *Releases* : <https://github.com/Ghislano26/devops-Worketyamo/releases>. Choisis la **dernière version** et télécharge le fichier **`rocky9-devops-1.0.0.box`** (le numéro de version peut être plus récent). Place-le **dans un dossier simple**, sans espaces ni accents, par exemple `C:\formation\` ou `~/formation/`.
+2. **Télécharge la box** (≈ 1,5 Go) depuis la page des *Releases* (la box est **publiée par le formateur** ; le **lien exact du fichier sera communiqué à la promotion**) : <https://github.com/Ghislano26/devops-Worketyamo/releases>. Choisis la **dernière version** et télécharge le fichier **`rocky9-devops-1.0.0.box`** (le numéro de version peut être plus récent). Place-le **dans un dossier simple**, sans espaces ni accents, par exemple `C:\formation\` ou `~/formation/`.
 
 3. **Vérifie l'intégrité** du téléchargement si la page de la release publie une empreinte (SHA-256) :
 
@@ -223,7 +223,7 @@ cd environnement/vagrant        # depuis la racine du dépôt cloné
 vagrant up
 ```
 
-Au premier démarrage, Vagrant crée la VM dans VirtualBox, configure le réseau (NAT), le dossier partagé et lance le *provisioning* éventuel. **2 à 5 minutes.** Tu dois voir à la fin :
+Au premier démarrage, Vagrant crée la VM dans VirtualBox, configure le réseau (NAT + réseau privé `192.168.56.10`), monte le dossier partagé et lance un *provisioning* qui **vérifie la présence des outils DevOps**. **2 à 5 minutes.** Tu dois voir à la fin :
 
 ```text
 ==> default: Machine booted and ready!
@@ -248,7 +248,7 @@ Ton invite devient `[vagrant@devops-lab ~]$` : **tu es dans la VM**. Pour en sor
 
 ### Étape 7 — Valider l'environnement
 
-Dans la VM, vérifie le système et les **12 outils** attendus :
+Dans la VM, vérifie le système puis les **9 outils DevOps** installés dans la box :
 
 ```bash
 cat /etc/rocky-release          # Rocky Linux release 9.x
@@ -257,27 +257,36 @@ whoami                          # vagrant
 ```
 
 ```bash
-for outil in git curl wget vim nano tmux jq tree rsync unzip tar python3; do
+for outil in kubectl helm trivy syft act shellcheck podman git yq; do
   if command -v "$outil" >/dev/null 2>&1; then
-    printf '✅ %-8s %s\n' "$outil" "$(command -v "$outil")"
+    printf '✅ %-10s %s\n' "$outil" "$(command -v "$outil")"
   else
-    printf '❌ %-8s ABSENT\n' "$outil"
+    printf '❌ %-10s ABSENT\n' "$outil"
   fi
 done
 ```
 
-Les 12 lignes doivent afficher ✅. Vérifie aussi :
+Les **9 lignes** doivent afficher ✅ (c'est la même liste que celle contrôlée par le `Vagrantfile` au `vagrant up`). Les **outils de base** (`vim`, `nano`, `tmux`, `jq`, `tree`, `curl`, `wget`, `rsync`, `unzip`, `tar`, `make`, `gcc`, `python3`…) sont installés aussi ; vérifie-les à part si besoin :
+
+```bash
+for outil in vim nano tmux jq tree curl wget rsync unzip tar make gcc python3; do
+  command -v "$outil" >/dev/null 2>&1 && echo "✅ $outil" || echo "❌ $outil ABSENT"
+done
+```
+
+Vérifie aussi les ressources et le réseau :
 
 ```bash
 free -h | head -n 2     # RAM disponible (≈ 4 Go)
 nproc                   # nombre de vCPU (2 par défaut)
 df -h /                 # espace disque (≈ 40 Go)
 ping -c 2 rockylinux.org   # accès Internet depuis la VM
+ls /vagrant                # la racine du dépôt est visible (dossiers 01-…, 02-…, GUIDE-ENVIRONNEMENT.md)
 ```
 
-> 📌 **À retenir** : si un outil est ❌ ou si `ping` échoue, **ne continue pas** : passe au [dépannage](#10-dépannage), puis reviens ici. Les cours supposent un environnement conforme.
+> 📌 **À retenir** : si un outil est ❌, si `ls /vagrant` est vide ou si `ping` échoue, **ne continue pas** : passe au [dépannage](#10-dépannage), puis reviens ici. Les cours supposent un environnement conforme.
 
-- [ ] Les 12 outils répondent ✅.
+- [ ] Les 9 outils DevOps répondent ✅.
 - [ ] La VM accède à Internet.
 
 ### Étape 8 — Faire le tout premier snapshot
@@ -305,7 +314,7 @@ vagrant snapshot list
 | 4 | Box ajoutée | `vagrant box list` |
 | 5 | VM démarrée | `vagrant status` → `running` |
 | 6 | Connexion | `vagrant ssh` |
-| 7 | Validation | boucle des 12 outils ✅ |
+| 7 | Validation | boucle des 9 outils DevOps ✅ |
 | 8 | Snapshot | `vagrant snapshot list` → `clean` |
 
 ---
@@ -335,7 +344,7 @@ vagrant snapshot list
 
 1. Vagrant lit le **Vagrantfile** du dossier courant.
 2. Il demande à VirtualBox de **créer** (la première fois) puis **démarrer** la VM.
-3. Il configure le **réseau NAT** (accès Internet) et la **redirection de port SSH** (`2222` sur l'hôte → `22` dans la VM).
+3. Il configure le **réseau NAT** (accès Internet), un **réseau privé** (`192.168.56.10`, accessible depuis l'hôte) et la **redirection de port SSH** (`2222` sur l'hôte → `22` dans la VM).
 4. Il **monte le dossier partagé** (`/vagrant`).
 5. Il attend que SSH réponde, puis annonce `Machine booted and ready!`.
 
@@ -348,11 +357,11 @@ vagrant snapshot list
 | Utilisateur | `vagrant` | Pas `root` |
 | Répertoire personnel | `/home/vagrant` | Ton espace de travail (`~`) |
 | `sudo` | **NOPASSWD** | `sudo` ne demande **pas** de mot de passe |
-| Dossier partagé | `/vagrant` | Le dépôt, vu depuis la VM |
+| Dossier partagé | `/vagrant` | **Racine du dépôt** côté hôte (`synced_folder "../.."`), pas ton dossier personnel |
 | Accès SSH | `127.0.0.1:2222` | Redirection de port gérée par Vagrant |
-| Réseau | NAT | La VM accède à Internet ; elle n'est pas joignable depuis le réseau local par défaut |
+| Réseau | NAT + réseau privé `192.168.56.10` | La VM accède à Internet (NAT) et est joignable **depuis ton ordinateur** à `192.168.56.10` ; pas depuis le reste du réseau local |
 
-> 💡 Rocky Linux est un **clone** de RHEL (Red Hat Enterprise Linux). Les commandes sont les mêmes qu'ailleurs, mais **les paquets s'installent avec `dnf`** (au lieu d'`apt`), les services sont gérés par `systemd`, et **SELinux** est actif. Les cours expliquent les équivalences quand elles comptent.
+> 💡 Rocky Linux est un **clone** de RHEL (Red Hat Enterprise Linux). Les commandes sont les mêmes qu'ailleurs, mais **les paquets s'installent avec `dnf`** (au lieu d'`apt`), les services sont gérés par `systemd`, et **SELinux** est présent (en mode *permissive* dans la box du cours : il journalise sans bloquer). Les cours expliquent les équivalences quand elles comptent.
 
 ### 3.3 Les commandes de base pour naviguer
 
@@ -494,7 +503,7 @@ Tu auras besoin d'échanger des fichiers : récupérer un énoncé, sauvegarder 
 
 ### 5.1 Méthode 1 : le dossier synchronisé `/vagrant`
 
-Par défaut, Vagrant **partage le dossier du projet** (celui qui contient le `Vagrantfile`, ou la racine du dépôt selon la configuration) avec la VM, monté sur **`/vagrant`**.
+Par défaut, Vagrant **partage le dossier du projet** (la **racine du dépôt** du cours : `synced_folder "../.."` depuis `environnement/vagrant/`) avec la VM, monté sur **`/vagrant`**.
 
 ```bash
 # Dans la VM
@@ -697,14 +706,15 @@ Les ressources de la VM (RAM, CPU, disque) sont définies dans le **`Vagrantfile
 # Extrait du Vagrantfile (environnement/vagrant/Vagrantfile)
 Vagrant.configure("2") do |config|
   config.vm.box = "rocky9-devops"
+  config.vm.box_version = "1.0.0"
   config.vm.hostname = "devops-lab"
-  config.vm.synced_folder "../..", "/vagrant"
+  config.vm.network "private_network", ip: "192.168.56.10"
+  config.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
 
   config.vm.provider "virtualbox" do |vb|
-    vb.name   = "devops-lab"
     vb.memory = "4096"      # RAM en Mo
     vb.cpus   = 2           # nombre de vCPU
-    vb.gui    = false       # pas de fenêtre graphique
+    vb.name   = "devops-lab"
   end
 end
 ```
@@ -852,7 +862,7 @@ df -h                          # espaces disque (alerte au-delà de 85 %)
 free -h                        # mémoire
 uptime                         # charge moyenne (load average)
 sudo dmesg --level=err,warn | tail   # messages du noyau
-getenforce                     # état de SELinux (Enforcing attendu)
+getenforce                     # état de SELinux (Permissive attendu dans cette box)
 ```
 
 ### 8.5 Recommandation
@@ -1149,7 +1159,7 @@ sudo hostnamectl set-hostname devops-lab
 ```
 
 5. Installe les outils : `sudo dnf install -y git curl wget vim nano tmux jq tree rsync unzip tar python3`.
-6. Valide avec la boucle des 12 outils ([étape 7](#étape-7--valider-lenvironnement)) et prends un snapshot UTM.
+6. Installe les outils DevOps (`kubectl`, `helm`, `trivy`, `syft`, `act`, `shellcheck`, `yq`, `podman`) en version **arm64** — les versions de référence sont dans [`environnement/README.md`](environnement/README.md) — puis valide avec la boucle des 9 outils ([étape 7](#étape-7--valider-lenvironnement)) et prends un snapshot UTM.
 
 **Limites** : certaines **images Docker** ne sont disponibles qu'en `amd64` (une erreur `exec format error` ou « no matching manifest for linux/arm64 » apparaît). Utilise des images multi-architecture ou `--platform linux/amd64` (émulation lente). Les dossiers partagés Vagrant n'existent pas : utilise `scp` ou Git ([chapitre 5](#5-partager-des-fichiers-entre-lhôte-et-la-vm)).
 
@@ -1234,7 +1244,7 @@ Si la box est **déjà ajoutée**, `vagrant up` fonctionne **sans Internet** (ho
 Oui pour tout ce qui ne demande pas de téléchargement : commandes, scripts, permissions, processus, LVM… En revanche `dnf install`, `git clone` ou `curl` vers Internet exigent le réseau.
 
 **Comment accéder à la VM depuis un autre appareil de mon réseau ?**
-Par défaut (NAT) la VM n'est **pas** joignable depuis le réseau. Pour un service web, ajoute une redirection : `config.vm.network "forwarded_port", guest: 80, host: 8080` (accessible sur `http://<IP-de-ton-PC>:8080` si le pare-feu l'autorise), ou un réseau en pont : `config.vm.network "public_network"` (la VM obtient une IP de ton réseau). **À éviter sur un réseau public.**
+Par défaut la VM n'est joignable que **depuis ton ordinateur** (réseau privé `192.168.56.10`), pas depuis le reste du réseau. Pour un service web, ajoute une redirection : `config.vm.network "forwarded_port", guest: 80, host: 8080` (accessible sur `http://<IP-de-ton-PC>:8080` si le pare-feu l'autorise), ou un réseau en pont : `config.vm.network "public_network"` (la VM obtient une IP de ton réseau). **À éviter sur un réseau public.**
 
 ### Environnement et outils
 
@@ -1369,7 +1379,7 @@ VBoxManage list hostonlyifs                       # réseaux « host-only »
 | **Hyper-V** | Hyperviseur de Windows |
 | **WSL2** | Sous-système Linux de Windows, basé sur une VM légère |
 | **`dnf`** | Gestionnaire de paquets de la famille Red Hat (Rocky, RHEL, Fedora) |
-| **SELinux** | Module de sécurité Linux (contrôle d'accès obligatoire), actif par défaut sur Rocky |
+| **SELinux** | Module de sécurité Linux (contrôle d'accès obligatoire), présent sur Rocky (en mode permissif dans la box du cours) |
 | **Rocky Linux** | Distribution communautaire compatible RHEL, successeur de CentOS |
 | **SSH** | Protocole de connexion sécurisée à distance |
 | **Idempotent** | Une commande qui, répétée, donne le même résultat sans effet de bord |
@@ -1397,7 +1407,7 @@ VBoxManage list hostonlyifs                       # réseaux « host-only »
 
 | Version | Date | Contenu |
 |---|---|---|
-| **1.0.0** | 2026-11 | Version initiale : Rocky Linux 9, utilisateur `vagrant` (sudo NOPASSWD), nom d'hôte `devops-lab`, outils de base (`git`, `curl`, `wget`, `vim`, `nano`, `tmux`, `jq`, `tree`, `rsync`, `unzip`, `tar`, `python3`), dossier partagé `/vagrant`, 4 Go de RAM, 2 vCPU, 40 Go de disque |
+| **1.0.0** | *à remplir à la date du premier build réussi* | Version initiale : Rocky Linux 9, utilisateur `vagrant` (sudo NOPASSWD), nom d'hôte `devops-lab`, outils de base (`vim`, `nano`, `git`, `curl`, `wget`, `tmux`, `jq`, `tree`, `podman`, `buildah`, `skopeo`, `make`, `gcc`, `python3`, `rsync`, `unzip`, `tar`), outils DevOps épinglés (`kubectl` v1.30.5, `helm` v3.16.1, `trivy` 0.56.1, `syft` v1.14.0, `act` 0.2.68, `shellcheck` v0.10.0, `yq` v4.44.3), `firewalld` + SSH par clé, SELinux permissif, dossier partagé `/vagrant` = racine du dépôt, 4 Go de RAM, 2 vCPU, 40 Go de disque |
 | *1.1.0* | *à venir* | *Modèle de ligne : ajout de X, correction de Y. Le formateur renseigne ce tableau à chaque publication d'une release.* |
 
 > 📌 Chaque nouvelle version de la box est annoncée sur la page des [Releases](https://github.com/Ghislano26/devops-Worketyamo/releases) ; **ne mets à jour que si ton formateur l'indique** ([§ 8.2](#82-mettre-à-jour-la-box-elle-même)).

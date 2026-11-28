@@ -1,5 +1,8 @@
 # Module 04 — Linux expert
 
+> 📘 **Prérequis** : avoir suivi le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) et disposer de la VM Rocky 9 fonctionnelle.
+> Les commandes de ce module s'exécutent dans la VM (`vagrant ssh`).
+
 Ce module couvre la performance du noyau, les namespaces et cgroups (ce qu'est un conteneur) et la journalisation centralisée.
 
 ## Philosophie du module

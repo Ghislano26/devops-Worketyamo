@@ -1,5 +1,8 @@
 # Module 02 — Linux intermédiaire
 
+> 📘 **Prérequis** : avoir suivi le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) et disposer de la VM Rocky 9 fonctionnelle.
+> Les commandes de ce module s'exécutent dans la VM (`vagrant ssh`).
+
 Ce module couvre les processus et systemd, les paquets APT, le réseau de base et SSH.
 
 ## Philosophie du module

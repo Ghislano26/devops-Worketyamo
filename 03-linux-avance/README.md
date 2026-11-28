@@ -1,5 +1,8 @@
 # Module 03 — Linux avancé
 
+> 📘 **Prérequis** : avoir suivi le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) et disposer de la VM Rocky 9 fonctionnelle.
+> Les commandes de ce module s'exécutent dans la VM (`vagrant ssh`).
+
 Ce module couvre le scripting Bash, le traitement de texte (`grep`, `sed`, `awk`), le stockage LVM et le durcissement.
 
 ## Philosophie du module

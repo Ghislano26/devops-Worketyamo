@@ -1,5 +1,8 @@
 # Module 01 — Linux fondamentaux
 
+> 📘 **Prérequis** : avoir suivi le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) et disposer de la VM Rocky 9 fonctionnelle.
+> Les commandes de ce module s'exécutent dans la VM (`vagrant ssh`).
+
 Ce module couvre la console, le système de fichiers, les commandes de base, les utilisateurs et les permissions.
 
 ## Philosophie du module

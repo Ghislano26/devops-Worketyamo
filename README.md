@@ -4,6 +4,29 @@ Bienvenue dans le **cursus DevOps de Worketyamo** : un parcours complet, en fran
 
 **Public visé** : étudiants, autodidactes et professionnels (admin système, développeurs, futurs DevOps/SRE) qui veulent apprendre à **administrer, déployer, observer et fiabiliser** des systèmes réels. Aucune connaissance préalable de Linux n'est exigée.
 
+## 🚀 Commence ici
+
+**Avant de lire le moindre cours, tu dois installer et configurer ton environnement.**
+
+👉 **[📘 Guide complet de l'environnement (GUIDE-ENVIRONNEMENT.md)](./GUIDE-ENVIRONNEMENT.md)**
+
+Ce guide t'accompagne **de l'installation jusqu'aux cas avancés** :
+
+- 📦 Installation pas-à-pas (VirtualBox + Vagrant + box Rocky 9)
+- 🎯 Premier contact avec ta VM
+- 🔄 Workflow quotidien (comment travailler efficacement)
+- 💾 Snapshots et sauvegardes (ne jamais perdre son travail)
+- 🛠️ Dépannage (tous les problèmes courants)
+- 🚚 Migration et changement de machine
+- ❓ FAQ et cheatsheet
+
+**Compléments utiles** :
+
+- [📋 Cheatsheet des commandes](./environnement/CHEATSHEET.md) (à imprimer)
+- [🎬 Scénarios concrets](./environnement/SCENARIOS.md) (situations réelles)
+
+Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
+
 ## 🧠 Philosophie pédagogique
 
 - **Théorie avant pratique** : chaque atelier est précédé d'un cours qui explique le *pourquoi*, y compris le fonctionnement interne (inodes, namespaces, netfilter, TSDB…).
@@ -495,6 +518,8 @@ Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux
 
 ## 🛠️ Environnement de travail
 
+> 📘 L'environnement de référence (VM, snapshots, dépannage, migration) est décrit en détail dans le [**Guide de l'environnement**](GUIDE-ENVIRONNEMENT.md), avec sa [cheatsheet](environnement/CHEATSHEET.md) et ses [scénarios](environnement/SCENARIOS.md). Le tableau ci-dessous en rappelle les prérequis matériels.
+
 Tout le cursus Linux se pratique sur une **VM Ubuntu 24.04 LTS** que vous installez au [module 00](00-installation-ubuntu-vm/README.md).
 
 | Élément | Minimum | Recommandé |
@@ -515,6 +540,8 @@ Tout le cursus Linux se pratique sur une **VM Ubuntu 24.04 LTS** que vous instal
 
 | Ressource | Contenu |
 |---|---|
+| [`GUIDE-ENVIRONNEMENT.md`](GUIDE-ENVIRONNEMENT.md) | Guide compagnon de l'environnement : installation, usage quotidien, snapshots, dépannage, migration, FAQ |
+| [`environnement/CHEATSHEET.md`](environnement/CHEATSHEET.md) · [`environnement/SCENARIOS.md`](environnement/SCENARIOS.md) | Cheatsheet imprimable · scénarios concrets |
 | [`ressources/cheatsheets/commandes-linux.md`](ressources/cheatsheets/commandes-linux.md) | Aide-mémoire des commandes Linux |
 | [`ressources/cheatsheets/vim.md`](ressources/cheatsheets/vim.md) | Aide-mémoire Vim |
 | [`ressources/cheatsheets/bash-scripting.md`](ressources/cheatsheets/bash-scripting.md) | Aide-mémoire scripting Bash |
@@ -547,5 +574,5 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
 | Scénarios Killercoda | **25** (17 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 34 000** |
+| Lignes de contenu (approximatif) | **≈ 35 900** |
 

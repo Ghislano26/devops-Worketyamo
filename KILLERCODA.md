@@ -1,6 +1,6 @@
 # Publier les scénarios sur Killercoda
 
-Ce document explique **comment faire détecter** par [Killercoda](https://killercoda.com/) les scénarios des modules **08 (Docker)**, **09 (Kubernetes)**, **10 (Monitoring)**, **11 (SRE)**, **12 (CI/CD)**, **13 (IaC)**, **14 (Cloud AWS)**, **15 (GitOps Argo CD)**, **16 (DevSecOps)** et **17 (Platform Engineering)**, avec deux options, puis la procédure d'import, de mise à jour et de test.
+Ce document explique **comment faire détecter** par [Killercoda](https://killercoda.com/) les scénarios des modules **08 (Docker)**, **09 (Kubernetes)**, **10 (Monitoring)**, **11 (SRE)**, **12 (CI/CD)**, **13 (IaC)**, **14 (Cloud AWS)**, **15 (GitOps Argo CD)**, **16 (DevSecOps)**, **17 (Platform Engineering)** et **18 (FinOps)**, avec deux options, puis la procédure d'import, de mise à jour et de test.
 
 > 📌 **Ce qui est vérifié, ce qui ne l'est pas.** Le format de `structure.json` ci-dessous est confirmé par les dépôts d'exemple **officiels** de Killercoda ([`scenario-examples-groups`](https://github.com/killercoda/scenario-examples-groups), [`scenarios-kubernetes`](https://github.com/killercoda/scenarios-kubernetes)). En revanche, le **parcours exact dans l'interface Killercoda** (menus, boutons) n'a pas pu être vérifié depuis cette machine (la documentation est rendue en JavaScript) : suivez la documentation officielle <https://killercoda.com/creators> pour ces écrans. Les points non confirmés sont marqués **⚠️ à confirmer**.
 
@@ -75,7 +75,9 @@ Le fichier [`structure.json`](structure.json) est déjà créé à la racine :
     { "path": "16-devsecops/ateliers-killercoda/atelier-02-signature-image-cosign" },
     { "path": "16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies" },
     { "path": "17-platform-engineering/ateliers-killercoda/atelier-01-backstage-catalogue" },
-    { "path": "17-platform-engineering/ateliers-killercoda/atelier-02-crossplane-premier-composite" }
+    { "path": "17-platform-engineering/ateliers-killercoda/atelier-02-crossplane-premier-composite" },
+    { "path": "18-finops/ateliers-killercoda/atelier-01-opencost-installation" },
+    { "path": "18-finops/ateliers-killercoda/atelier-02-rightsizing-requests" }
   ]
 }
 ```
@@ -92,6 +94,7 @@ Le fichier [`structure.json`](structure.json) est déjà créé à la racine :
 | 15 — GitOps Argo CD | `kubernetes-kubeadm-1node` (1 à 3) | `atelier-01-argo-cd-installation-premier-deploiement`, `atelier-02-selfheal-et-prune`, `atelier-03-applicationset-multi-env` |
 | 16 — DevSecOps | `ubuntu` (1 et 2), `kubernetes-kubeadm-1node` (3) | `atelier-01-sbom-et-scan-vulnerabilites`, `atelier-02-signature-image-cosign`, `atelier-03-kyverno-policies` |
 | 17 — Platform Engineering | `kubernetes-kubeadm-1node` (1 et 2) | `atelier-01-backstage-catalogue`, `atelier-02-crossplane-premier-composite` |
+| 18 — FinOps | `kubernetes-kubeadm-1node` (1 et 2) | `atelier-01-opencost-installation`, `atelier-02-rightsizing-requests` |
 
 Les chemins sont **relatifs au fichier** `structure.json` (donc à la racine du dépôt). Les titres viennent des `index.json` : on ne les répète pas ici pour éviter toute divergence.
 
@@ -132,12 +135,12 @@ et, par exemple, `08-docker-approfondi/ateliers-killercoda/structure.json` :
 Le script [`scripts/export-killercoda-repos.sh`](scripts/export-killercoda-repos.sh) copie les scénarios **à la racine** de dépôts dédiés, avec un `structure.json` à plat, un `README.md` et la `LICENSE` :
 
 ```bash
-scripts/export-killercoda-repos.sh                    # modules 08, 09, 10, 11, 12, 13, 14, 15, 16, 17 → ../worketyamo-killercoda-export/
+scripts/export-killercoda-repos.sh                    # modules 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18 → ../worketyamo-killercoda-export/
 scripts/export-killercoda-repos.sh --all              # + modules Linux 01 à 04 (dépôt « linux »)
 scripts/export-killercoda-repos.sh /chemin/de/sortie  # dossier de sortie au choix
 ```
 
-Résultat (mode par défaut, 10 dépôts) :
+Résultat (mode par défaut, 11 dépôts) :
 
 ```text
 worketyamo-killercoda-export/
@@ -150,7 +153,8 @@ worketyamo-killercoda-export/
 ├── worketyamo-killercoda-cloud-aws/     (3 scénarios)
 ├── worketyamo-killercoda-gitops/        (3 scénarios)
 ├── worketyamo-killercoda-devsecops/     (3 scénarios)
-└── worketyamo-killercoda-platform/      (2 scénarios)
+├── worketyamo-killercoda-platform/      (2 scénarios)
+└── worketyamo-killercoda-finops/        (2 scénarios)
       ├── structure.json   ← { "items": [ { "path": "atelier-01-…" }, … ] }
       ├── README.md   LICENSE
       └── atelier-01-…/   atelier-02-…/ …   (même structure dans chaque dépôt)
@@ -203,9 +207,11 @@ Les liens du contenu des scénarios (vers les cours) sont des **URL absolues** v
 | 29 | 16 — DevSecOps | `atelier-03-kyverno-policies` | `kubernetes-kubeadm-1node` | ✅ |
 | 30 | 17 — Platform Engineering | `atelier-01-backstage-catalogue` | `kubernetes-kubeadm-1node` | ✅ |
 | 31 | 17 — Platform Engineering | `atelier-02-crossplane-premier-composite` | `kubernetes-kubeadm-1node` | ✅ |
-| 32-39 | 01 à 04 — Linux | 8 scénarios `*-killercoda` (voir la [section 5](#5-et-les-scénarios-linux-01-à-04-)) | `ubuntu` | ❌ **non déclarés** (donc ignorés par Killercoda) |
+| 32 | 18 — FinOps | `atelier-01-opencost-installation` | `kubernetes-kubeadm-1node` | ✅ |
+| 33 | 18 — FinOps | `atelier-02-rightsizing-requests` | `kubernetes-kubeadm-1node` | ✅ |
+| 34-41 | 01 à 04 — Linux | 8 scénarios `*-killercoda` (voir la [section 5](#5-et-les-scénarios-linux-01-à-04-)) | `ubuntu` | ❌ **non déclarés** (donc ignorés par Killercoda) |
 
-**31 scénarios sont déclarés** (modules 08 à 17). Les 8 scénarios Linux existent dans le dépôt mais ne sont pas dans `structure.json` : décision à prendre (section 5). Vérifiez à tout moment avec `python3 scripts/check-killercoda.py`.
+**33 scénarios sont déclarés** (modules 08 à 18). Les 8 scénarios Linux existent dans le dépôt mais ne sont pas dans `structure.json` : décision à prendre (section 5). Vérifiez à tout moment avec `python3 scripts/check-killercoda.py`.
 
 > **Note — module 12 (CI/CD)** : le module 12 utilise `act` pour exécuter GitHub Actions localement, car Killercoda ne peut pas déclencher de vrais workflows GitHub (il n'est pas relié à votre dépôt et n'a pas vos secrets). `act` imite GitHub sans être identique ; voir [`12-cicd/ateliers-killercoda/README.md`](12-cicd/ateliers-killercoda/README.md).
 
@@ -218,6 +224,8 @@ Les liens du contenu des scénarios (vers les cours) sont des **URL absolues** v
 > **Note — module 16 (DevSecOps)** : les scénarios 1 et 2 (`ubuntu`) **installent eux-mêmes** Syft `v1.14.0`, Trivy `v0.57.0` et cosign `v2.4.1` ; le scénario 3 (`kubernetes-kubeadm-1node`) installe Helm puis **Kyverno** (chart `3.3.4`), ce qui prend **2 à 4 minutes**. Le scénario 2 signe **avec une clé locale et sans journal Rekor** et **simule** l'admission par un script (le mode keyless exige un fournisseur d'identité interactif) ; la base de vulnérabilités de Trivy est téléchargée au premier scan. Voir [`16-devsecops/ateliers-killercoda/README.md`](16-devsecops/ateliers-killercoda/README.md).
 
 > **Note — module 17 (Platform Engineering, module senior)** : les 2 scénarios utilisent le backend `kubernetes-kubeadm-1node` et **installent eux-mêmes** Helm puis **Backstage** (chart Helm, image de démonstration lourde, **3 à 10 minutes**) et **Crossplane** `1.18.0` avec `provider-kubernetes` et `function-patch-and-transform` (paquets `xpkg.upbound.io`, **3 à 5 minutes**). Le scénario Crossplane utilise `provider-kubernetes` **faute de compte cloud** (le provider AWS exigerait des identifiants) ; le scénario Backstage désactive l'authentification de l'API et utilise une base en mémoire (**atelier uniquement**). Voir [`17-platform-engineering/ateliers-killercoda/README.md`](17-platform-engineering/ateliers-killercoda/README.md).
+
+> **Note — module 18 (FinOps, module senior)** : les 2 scénarios utilisent le backend `kubernetes-kubeadm-1node` et **installent eux-mêmes** Helm, **Prometheus** (avec kube-state-metrics et node-exporter) puis **OpenCost** (**4 à 8 minutes**, charts non épinglés). Il n'y a **aucun compte cloud** : OpenCost utilise des **prix fictifs** (montants comparables, pas une facture). Prévoyez **quelques minutes de collecte** avant d'avoir des chiffres, et des attentes de **6 et 7 minutes** dans le scénario de rightsizing. Voir [`18-finops/ateliers-killercoda/README.md`](18-finops/ateliers-killercoda/README.md).
 
 ## 3. Procédure d'import
 

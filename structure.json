@@ -30,6 +30,8 @@
     { "path": "16-devsecops/ateliers-killercoda/atelier-02-signature-image-cosign" },
     { "path": "16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies" },
     { "path": "17-platform-engineering/ateliers-killercoda/atelier-01-backstage-catalogue" },
-    { "path": "17-platform-engineering/ateliers-killercoda/atelier-02-crossplane-premier-composite" }
+    { "path": "17-platform-engineering/ateliers-killercoda/atelier-02-crossplane-premier-composite" },
+    { "path": "18-finops/ateliers-killercoda/atelier-01-opencost-installation" },
+    { "path": "18-finops/ateliers-killercoda/atelier-02-rightsizing-requests" }
   ]
 }

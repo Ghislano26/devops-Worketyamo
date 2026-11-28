@@ -60,5 +60,5 @@ Cours 01 → Cours 02 → Cours 03 → Atelier 01 (Backstage)
 ## Navigation
 
 - [← Module 16 — DevSecOps](../16-devsecops/README.md)
-- [→ Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md) (étape suivante du parcours)
+- [→ Module 18 — FinOps](../18-finops/README.md) (module senior, facultatif) puis [Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md)
 - [← README principal](../README.md)

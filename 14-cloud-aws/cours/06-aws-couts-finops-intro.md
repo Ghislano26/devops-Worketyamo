@@ -159,5 +159,6 @@ Principes : **tout le monde est responsable** de son coût, les décisions sont 
 
 - FinOps Foundation : <https://www.finops.org/> ; *AWS Well-Architected, pilier Optimisation des coûts* ; <https://calculator.aws/> ; page officielle du **Free Tier**.
 - Outils : **Infracost**, **OpenCost** / **Kubecost** (Kubernetes), **Cloud Custodian** (politiques d'automatisation).
+- **Approfondir** : le [module 18 — FinOps](../../18-finops/README.md) (module senior) détaille l'allocation des coûts, OpenCost / Kubecost pour Kubernetes, le rightsizing, le Spot, la gouvernance et les KPI (coût par transaction), avec deux ateliers Killercoda.
 - Retour au [sommaire du module 14](../README.md), puis le module [Monitoring et observabilité](../../10-monitoring-observabilite/README.md) pour observer ce que vous avez construit.
 - Pratique : refaites les [ateliers](../ateliers-killercoda/README.md) en vous demandant, pour chaque ressource créée, **combien elle coûterait** sur un vrai compte.

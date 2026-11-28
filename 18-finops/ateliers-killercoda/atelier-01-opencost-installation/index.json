@@ -1,0 +1,29 @@
+{
+  "title": "FinOps : installer OpenCost et lire les coûts",
+  "description": "Installez Prometheus et OpenCost avec Helm, accédez à l'interface, identifiez les namespaces les plus coûteux et repérez les charges inefficaces.",
+  "difficulty": "advanced",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Installer Prometheus et OpenCost",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Identifier les namespaces coûteux et l'inefficience",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

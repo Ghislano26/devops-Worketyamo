@@ -1,0 +1,29 @@
+{
+  "title": "FinOps : rightsizing des requests avec OpenCost",
+  "description": "Déployez une charge surdimensionnée, mesurez le gaspillage dans OpenCost, réduisez les requests puis comparez coût et efficience avant et après.",
+  "difficulty": "advanced",
+  "time": "40 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Une charge surdimensionnée et sa mesure",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Réduire les requests et comparer",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

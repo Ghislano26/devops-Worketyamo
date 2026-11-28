@@ -1,6 +1,7 @@
 # 🎬 Scénarios concrets : que faire quand… ?
 
-> Huit situations réelles, chacune avec **symptôme → diagnostic → solution → prévention**.
+> Neuf situations réelles, chacune avec **symptôme → diagnostic → solution → prévention**.
+> `make up` = `cd vagrant && vagrant up` (sous Windows sans `make` : voir le [guide, étape 4](../GUIDE-ENVIRONNEMENT.md#étape-4--cloner-le-dépôt-et-se-placer-dans-environnement)).
 > Guide complet : [`GUIDE-ENVIRONNEMENT.md`](../GUIDE-ENVIRONNEMENT.md) · Aide-mémoire : [`CHEATSHEET.md`](CHEATSHEET.md)
 
 | # | Situation |
@@ -13,6 +14,7 @@
 | 6 | [Je suis sur Mac ARM et je n'ai pas VirtualBox](#scénario-6--je-suis-sur-mac-arm-et-je-nai-pas-virtualbox) |
 | 7 | [Je change d'ordinateur](#scénario-7--je-change-dordinateur) |
 | 8 | [J'ai cassé ma VM et je veux repartir de zéro](#scénario-8--jai-cassé-ma-vm-et-je-veux-repartir-de-zéro) |
+| 9 | [Le provisioning échoue au milieu du `make up`](#scénario-9--le-provisioning-échoue-au-milieu-du-make-up) |
 
 ---
 
@@ -107,18 +109,20 @@ vagrant status                  # running / poweroff / aborted / not created
 VBoxManage list runningvms      # la VM tourne-t-elle côté VirtualBox ?
 ```
 
-2. **Lire l'erreur** en entier ; consulte la table du [guide § 10](../GUIDE-ENVIRONNEMENT.md#10-dépannage). Erreurs classiques : « VT-x is not available » (BIOS), « Hyper-V » (Windows), « box not found » (box non ajoutée), « Permission denied (publickey) » (`vagrant reload`).
+2. **Le `make up` s'est-il arrêté pendant le provisioning ?** Si le message contient `==> [01-base]`, `[02-devops-tools]`, `[03-hardening]` ou `ERREUR : … non installé`, ce n'est pas un problème de démarrage : la VM existe, **seul un script a échoué**. Passe au [scénario 9](#scénario-9--le-provisioning-échoue-au-milieu-du-make-up), ou, pour repartir proprement : `vagrant destroy -f && make up`.
 
-3. **Voir la console de la VM** : dans le `Vagrantfile`, mets `vb.gui = true`, puis `vagrant reload`. Une fenêtre s'ouvre : tu vois si le système plante au démarrage (écran d'erreur, `fsck`, `emergency mode`).
+3. **Lire l'erreur** en entier ; consulte la table du [guide § 10](../GUIDE-ENVIRONNEMENT.md#10-dépannage). Erreurs classiques : « VT-x is not available » (BIOS), « Hyper-V » (Windows), « Box 'rockylinux/9' could not be found » (réseau ou catalogue injoignable : `vagrant box add rockylinux/9 --provider virtualbox`), « Permission denied (publickey) » (`vagrant reload`).
 
-4. **Journaux détaillés** :
+4. **Voir la console de la VM** : dans le `Vagrantfile`, mets `vb.gui = true`, puis `vagrant reload`. Une fenêtre s'ouvre : tu vois si le système plante au démarrage (écran d'erreur, `fsck`, `emergency mode`).
+
+5. **Journaux détaillés** :
 
 ```bash
 vagrant up --debug 2>&1 | tee debug.log
 tail -n 40 debug.log
 ```
 
-5. **Machine fantôme ou verrou** : `vagrant global-status --prune`, puis dans VirtualBox, vérifie qu'aucune VM `devops-lab` en état « Aborted » ne bloque.
+6. **Machine fantôme ou verrou** : `vagrant global-status --prune`, puis dans VirtualBox, vérifie qu'aucune VM `devops-lab` en état « Aborted » ne bloque.
 
 **Solution — du plus doux au plus radical**
 
@@ -128,10 +132,10 @@ tail -n 40 debug.log
 | 2 | Forcer un rechargement | `vagrant reload` |
 | 3 | Redémarrer l'ordinateur hôte | (règle beaucoup de problèmes de pilotes) |
 | 4 | Restaurer un snapshot | `vagrant snapshot restore clean` |
-| 5 | Recréer la VM | `vagrant destroy -f && vagrant up` (⚠️ perte des données de la VM) |
-| 6 | Réinstaller la box | `vagrant box remove rocky9-devops` puis `vagrant box add …` |
+| 5 | Recréer la VM (**et relancer le provisioning**) | `vagrant destroy -f && make up` (⚠️ perte des données de la VM ; ton travail dans `/vagrant` est intact) |
+| 6 | Retélécharger la box | `vagrant box remove rockylinux/9 --force` puis `make up` |
 
-**Prévention** : toujours **`vagrant halt`** (jamais de coupure brutale), garder un snapshot `clean`, ne pas laisser le disque se remplir (`df -h`), mettre à jour VirtualBox **avec** les pilotes, et sauvegarder tes travaux dans `/vagrant/mes-travaux/`.
+**Prévention** : toujours **`vagrant halt`** (jamais de coupure brutale), garder un snapshot `clean`, ne pas laisser le disque se remplir (`df -h`), mettre à jour VirtualBox **avec** les pilotes, et sauvegarder tes travaux dans `/vagrant/mes-travaux/` (côté hôte, donc toujours préservé).
 
 ---
 
@@ -139,44 +143,31 @@ tail -n 40 debug.log
 
 **Symptôme** : tu vas lancer un atelier dangereux (LVM, pare-feu, modification de `sshd_config`, `chmod -R`) ou une expérience personnelle, et tu as peur de perdre ton travail.
 
-**Diagnostic** : que veux-tu protéger ?
+**Diagnostic** : où vit ton travail ?
 
-| À protéger | Outil | Rapidité |
-|---|---|---|
-| **L'état du système** (configuration, paquets) | Snapshot Vagrant | 10 s |
-| **Tes fichiers** (ateliers, notes) | Archive dans `/vagrant/mes-travaux/` ou Git | 10 s |
-| **Tout, de façon durable** (changement de machine) | Archive hors de l'ordinateur + `vagrant package` | quelques minutes |
+| Ton travail est dans… | Protégé ? |
+|---|---|
+| **`/vagrant/…`** (par exemple `/vagrant/mes-travaux/`) | ✅ **Oui, automatiquement** : `/vagrant` est le dossier du dépôt **sur ton ordinateur**, synchronisé en direct. Un `snapshot restore` ou un `destroy` n'y touche pas. |
+| `~/ateliers`, `~/notes` (disque de la VM) | ❌ Non : perdus si tu restaures un snapshot antérieur ou détruis la VM |
 
-**Solution — procédure « filet double »**
-
-*Dans la VM : sauvegarde des fichiers*
+**Solution** — le plus simple : **travaille directement dans `/vagrant/mes-travaux/`** (sauf pour les ateliers sur les permissions, SELinux ou ACL, qui exigent le disque de la VM : voir le [guide, § 5.1](../GUIDE-ENVIRONNEMENT.md#51-méthode-1--le-dossier-synchronisé-vagrant)). Sinon, copie tes fichiers avant le test :
 
 ```bash
+# Dans la VM
 mkdir -p /vagrant/mes-travaux
-tar czf /vagrant/mes-travaux/backup-$(date +%F-%H%M).tar.gz -C ~ ateliers notes
-ls -lh /vagrant/mes-travaux/backup-*.tar.gz
-tar tzf /vagrant/mes-travaux/backup-*.tar.gz | head -n 5     # vérifier le contenu
-exit
+cp -r ~/ateliers ~/notes /vagrant/mes-travaux/
 ```
 
-*Sur l'hôte : snapshot de l'état du système*
+Puis prends un snapshot (sur l'hôte) :
 
 ```bash
 vagrant snapshot save avant-test-risque
-vagrant snapshot list
 vagrant ssh                                  # tu peux tester !
 ```
 
-*Si ça tourne mal :*
+*Si ça tourne mal :* `vagrant snapshot restore avant-test-risque` ; tes fichiers de `/vagrant/mes-travaux/` sont intacts. *Si tout s'est bien passé :* `vagrant snapshot delete avant-test-risque`.
 
-```bash
-vagrant snapshot restore avant-test-risque
-vagrant ssh -c 'tar xzf /vagrant/mes-travaux/backup-*.tar.gz -C ~'     # remettre les fichiers récents
-```
-
-*Si tout s'est bien passé :* garde le snapshot jusqu'à la fin de l'atelier, puis supprime-le : `vagrant snapshot delete avant-test-risque`.
-
-**Prévention** : fais de l'archive + snapshot un **réflexe** avant chaque atelier marqué « risqué » (LVM, durcissement, SELinux, pare-feu). Pense à `git push` pour tes scripts versionnés.
+**Prévention** : prends l'habitude de **travailler dans `/vagrant/mes-travaux/`** et d'un snapshot avant chaque atelier marqué « risqué ». Pense à `git push` pour tes scripts versionnés.
 
 ---
 
@@ -225,7 +216,7 @@ chmod +x ~/ateliers/script.sh
 
 ## Scénario 6 — Je suis sur Mac ARM et je n'ai pas VirtualBox
 
-**Symptôme** : ton Mac a une puce Apple Silicon (M1/M2/M3/M4) ; VirtualBox ne fonctionne pas, ou la box `rocky9-devops` ne démarre pas (architecture x86_64).
+**Symptôme** : ton Mac a une puce Apple Silicon (M1/M2/M3/M4) ; VirtualBox ne fonctionne pas, ou la box `rockylinux/9` ne démarre pas (architecture x86_64).
 
 **Diagnostic**
 
@@ -251,7 +242,7 @@ cat /etc/rocky-release && hostname          # contrôle
    - Prends un snapshot dans UTM (*Clone* ou *Save State*) comme référence.
    - Pas de `/vagrant` : utilise `scp` (`scp fichier vagrant@<IP-de-la-VM>:`), Git, ou le partage d'UTM.
 
-2. **VMware Fusion + Vagrant `vmware_desktop`** (si ton formateur fournit une box ARM64 VMware).
+2. **VMware Fusion + Vagrant `vmware_desktop`** (avec une box ARM64 compatible VMware : à vérifier).
 3. **Killercoda uniquement** : tout dans le navigateur ([`KILLERCODA.md`](../KILLERCODA.md)) ; pas de persistance, mais aucune installation.
 
 **Limites** : certaines images Docker n'existent qu'en `amd64` (`exec format error`) ; préfère des images multi-architecture ou `--platform linux/amd64` (émulation lente).
@@ -264,46 +255,30 @@ cat /etc/rocky-release && hostname          # contrôle
 
 **Symptôme** : nouvel ordinateur (ou réinstallation de Windows) ; tu dois retrouver ton environnement **et** ton travail.
 
-**Diagnostic** : que dois-tu emporter ? **Seulement tes fichiers** (ateliers, notes, clés personnelles) : le système se recrée à partir de la box.
+**Diagnostic** : il n'y a **rien à exporter** : la VM se **reconstruit** avec `make up` à partir de la box publique et des scripts du dépôt. Il ne faut sauvegarder que **ton travail** (le dépôt, `mes-travaux/`, ton journal de bord).
 
-**Solution — migration complète**
+**Solution**
 
 *Sur l'ANCIENNE machine :*
 
 ```bash
-vagrant up && vagrant ssh
-# Dans la VM
+# Dans la VM : mettre à l'abri ce qui n'est pas dans /vagrant
 mkdir -p /vagrant/mes-travaux
-tar czf /vagrant/mes-travaux/backup-travail-$(date +%F).tar.gz -C ~ ateliers notes
-tar tzf /vagrant/mes-travaux/backup-travail-*.tar.gz | head       # vérification
+cp -r ~/ateliers ~/notes /vagrant/mes-travaux/
 exit
 ```
 
-Copie `backup-travail-….tar.gz` **hors de la machine** (clé USB, disque externe, cloud). Note ta **version de box** (`vagrant box list`) et tes réglages du `Vagrantfile` (RAM, CPU). Pousse tes dépôts Git (`git status` propre, `git push`).
+Puis, sur l'hôte, **pousse ton travail avec Git** (ton fork) : `git add environnement/journaux/<pseudo>.md mes-travaux/ && git commit && git push`. À défaut, copie le dossier du dépôt sur une clé USB ou dans le cloud.
 
 *Sur la NOUVELLE machine :*
 
 1. Active la **virtualisation** dans le BIOS, installe **VirtualBox 7.x** et **Vagrant 2.4+** ([guide, chapitre 2](../GUIDE-ENVIRONNEMENT.md#2-installation-de-lenvironnement)).
-2. `git clone https://github.com/Ghislano26/devops-Worketyamo.git`
-3. Télécharge la box sur [GitHub Releases](https://github.com/Ghislano26/devops-Worketyamo/releases), puis :
+2. `git clone` ton fork (ou le dépôt du cours, puis récupère `mes-travaux/` et ton journal).
+3. Reconstruis la VM : `cd devops-Worketyamo/environnement && make up` (5 à 15 minutes).
+4. `make ssh`, valide les 9 outils, puis `vagrant snapshot save clean`.
+5. Tes fichiers sont déjà là : `ls /vagrant/mes-travaux/`. Pour les remettre dans ton home : `cp -r /vagrant/mes-travaux/ateliers ~/`.
 
-```bash
-vagrant box add rocky9-devops rocky9-devops-1.0.0.box
-cd devops-Worketyamo/environnement/vagrant
-vagrant up
-vagrant snapshot save clean
-```
-
-4. Restaure ton travail : place l'archive dans `mes-travaux/` puis, dans la VM :
-
-```bash
-tar xzf /vagrant/mes-travaux/backup-travail-2025-12-01.tar.gz -C ~
-ls ~/ateliers ~/notes
-```
-
-**Variante lourde** : `vagrant package --output ma-vm.box` sur l'ancienne machine, puis `vagrant box add ma-vm ma-vm.box` (≈ 1,5 à 3 Go).
-
-**Prévention** : sauvegarde **régulièrement** (Git ou archive) et pas seulement au moment de changer de machine. Conserve le fichier `.box` d'origine sur un disque externe.
+**Prévention** : travaille dans `/vagrant/mes-travaux/`, versionne avec Git, et tiens ton **journal de bord** à jour : sur la nouvelle machine, tu y retrouves les problèmes déjà résolus.
 
 ---
 
@@ -331,7 +306,7 @@ vagrant ssh -c 'mkdir -p /vagrant/mes-travaux && tar czf /vagrant/mes-travaux/av
 
 # 2. Destruction et recréation (⚠️ irréversible pour le contenu de la VM)
 vagrant destroy -f
-vagrant up
+make up                      # (ou : cd vagrant && vagrant up) : reconstruit ET reprovisionne
 
 # 3. Nouvelle référence
 vagrant ssh -c 'hostname && cat /etc/rocky-release'
@@ -341,12 +316,59 @@ vagrant snapshot save clean
 vagrant ssh -c 'tar xzf /vagrant/mes-travaux/avant-reset-*.tar.gz -C ~ && ls ~/ateliers'
 ```
 
-Si `vagrant up` échoue encore après la recréation : réinstalle la box.
+Si `make up` échoue encore après la recréation : retélécharge la box (et vois le [scénario 9](#scénario-9--le-provisioning-échoue-au-milieu-du-make-up)).
 
 ```bash
-vagrant box remove rocky9-devops
-vagrant box add rocky9-devops rocky9-devops-1.0.0.box
-vagrant up
+vagrant box remove rockylinux/9 --force
+make up
 ```
 
 **Prévention** : un snapshot `clean` pris juste après l'installation évite la plupart des remises à zéro (`vagrant snapshot restore clean` : 30 secondes). Sauvegarde ton travail dans `/vagrant/mes-travaux/` **avant** toute opération risquée.
+
+---
+
+## Scénario 9 — Le provisioning échoue au milieu du `make up`
+
+**Symptôme** : le `make up` s'arrête avec une erreur après le démarrage de la VM, par exemple :
+
+```text
+==> default: ==> [02-devops-tools] Installation de helm v3.16.1
+==> default: curl: (6) Could not resolve host: get.helm.sh
+The SSH command responded with a non-zero exit status.
+```
+
+ou : `ERREUR : kubectl non installé` (échec de la **vérification finale**).
+
+**Diagnostic** — la VM existe et tourne ; **un script de provisioning** a échoué. Trois questions :
+
+1. **Quel script ?** Le préfixe du dernier message : `[01-base]`, `[02-devops-tools]`, `[03-hardening]`, ou la vérification finale.
+2. **Quelle cause ?** Lis les 10 dernières lignes avant l'erreur. Les causes les plus fréquentes :
+
+| Message | Cause probable | Solution |
+|---|---|---|
+| `Could not resolve host`, `Connection timed out` | Réseau coupé, VPN, proxy | Rétablir la connexion, puis `vagrant provision` |
+| `Cannot download`, `Failed to download metadata`, `mirror` | Miroir Rocky/EPEL momentanément indisponible | Réessayer plus tard |
+| `No match for argument: …` (paquet EPEL) | `epel-release` absent ou dépôt EPEL injoignable | `rpm -q epel-release` ; § 10.9 du guide |
+| `empreinte SHA-256 invalide` | Téléchargement corrompu | Relancer ; si persistant, signaler au formateur |
+| `No space left on device` | Disque de la VM plein | `df -h`, libérer de la place |
+
+3. **Les journaux détaillés** : relance en mode verbeux et garde la trace pour ton **journal de bord** :
+
+```bash
+cd environnement/vagrant
+vagrant provision 2>&1 | tee provision.log
+```
+
+**Solution** — du plus rapide au plus radical :
+
+```bash
+vagrant provision                                       # relance les 3 scripts + la vérification (idempotents)
+vagrant provision --provision-with 02-devops-tools      # relance UN seul script
+                                                        # (noms : 01-base, 02-devops-tools, 03-hardening, verification)
+vagrant ssh -c 'sudo dnf repolist'                      # inspecter la VM telle qu'elle est, sans tout refaire
+vagrant destroy -f && make up                           # dernier recours : tout reconstruire
+```
+
+> 💡 Les scripts sont **idempotents** : un outil déjà installé à la bonne version est ignoré, les paquets déjà présents ne sont pas retéléchargés. Relancer est sans danger.
+
+**Prévention** : lance `make up` sur une **connexion stable**, sans VPN d'entreprise, et sans mise en veille. **Documente l'incident** dans ton journal de bord (symptôme, script concerné, solution) : c'est précisément son rôle. Une fois la VM saine et validée, prends le snapshot `clean`.

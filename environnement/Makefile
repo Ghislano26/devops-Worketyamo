@@ -1,31 +1,39 @@
-# Makefile — réservé au FORMATEUR (construction et publication de la box).
-# Prérequis : Packer >= 1.9 et VirtualBox 7.x. Sous Windows : lancer « make » depuis Git Bash ou WSL ;
-# à défaut, exécuter à la main les commandes indiquées dans chaque cible.
+# Makefile — raccourcis pour ÉTUDIANTS : construire et piloter sa VM Rocky Linux 9.
+# Prérequis : VirtualBox 7.x et Vagrant 2.4+ (voir ../GUIDE-ENVIRONNEMENT.md).
+# Sous Windows : « make » n'est pas installé par défaut. Utilisez Git Bash ou WSL, ou lancez directement
+# les commandes indiquées dans chaque cible (par exemple : cd vagrant ; vagrant up).
 
-BOX_VERSION ?= 1.0.0
-BOX_FILE    := packer/rocky9-devops-$(BOX_VERSION).box
-
-.PHONY: build-box clean release help
+.PHONY: up ssh halt destroy status help
 
 help:
-	@echo "Cibles : build-box (construit la box), clean (nettoie), release (instructions de publication)"
+	@echo "Cibles : up (construit/démarre la VM), ssh (s'y connecte), halt (l'éteint), destroy (la supprime), status"
 
-build-box:
-	@if grep -q 'REMPLACER_PAR_CHECKSUM_OFFICIEL' packer/rocky9-devops.pkr.hcl; then \
-	  echo "ERREUR : renseignez la variable iso_checksum dans packer/rocky9-devops.pkr.hcl (empreinte officielle de l'ISO)."; \
-	  exit 1; \
-	fi
-	cd packer && packer init . && packer build .
+up:
+	cd vagrant && vagrant up
 
-clean:
-	rm -rf packer/output-* packer/packer_cache
+ssh:
+	cd vagrant && vagrant ssh
 
-release:
-	@echo "Publication de la box $(BOX_VERSION) sur GitHub Releases :"
-	@echo "  1. Vérifier que le fichier existe : $(BOX_FILE)"
-	@echo "  2. Calculer l'empreinte :  sha256sum $(BOX_FILE)   (Windows : Get-FileHash -Algorithm SHA256)"
-	@echo "  3. Créer la release :  https://github.com/Ghislano26/devops-Worketyamo/releases/new"
-	@echo "       - tag : v$(BOX_VERSION)   - titre : « Box rocky9-devops $(BOX_VERSION) »"
-	@echo "       - joindre $(BOX_FILE) ; coller le SHA-256 et le changelog dans la description"
-	@echo "  4. Ou avec gh :  gh release create v$(BOX_VERSION) $(BOX_FILE) --title \"Box rocky9-devops $(BOX_VERSION)\" --notes-file notes.md"
-	@echo "  5. Mettre à jour l'annexe F de GUIDE-ENVIRONNEMENT.md (date du build) et communiquer l'URL à la promotion."
+halt:
+	cd vagrant && vagrant halt
+
+destroy:
+	cd vagrant && vagrant destroy -f
+
+status:
+	cd vagrant && vagrant status
+
+# ---------------------------------------------------------------------------------------------
+# Cibles ci-dessous : RÉSERVÉES AU MODE AVANCÉ (construction d'une box custom avec Packer,
+# voir packer-avance/README.md). Elles ne font PAS partie du chemin principal du cours.
+# ---------------------------------------------------------------------------------------------
+# build-box:
+# 	@if grep -q 'REMPLACER_PAR_CHECKSUM_OFFICIEL' packer-avance/rocky9-devops.pkr.hcl; then \
+# 	  echo "ERREUR : renseignez iso_checksum dans packer-avance/rocky9-devops.pkr.hcl"; exit 1; fi
+# 	cd packer-avance && packer init . && packer build .
+#
+# clean:
+# 	rm -rf packer-avance/output-* packer-avance/packer_cache
+#
+# release:
+# 	@echo "Mode avancé : voir packer-avance/README.md pour utiliser ou partager la box produite."

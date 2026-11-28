@@ -36,12 +36,12 @@
 
 Imagine une classe de 30 étudiants : certains sous Windows 11, d'autres sous macOS ou Ubuntu, avec des versions d'outils différentes. Une commande qui « marche chez moi » échoue chez le voisin, et le formateur passe sa séance à dépanner les machines au lieu d'enseigner.
 
-La solution : **tout le monde travaille dans la même machine virtuelle (VM)**, construite à partir de la même image (*box*). Les bénéfices :
+La solution : **tout le monde travaille dans une machine virtuelle (VM) construite de la même façon** : chaque étudiant exécute `vagrant up` et obtient **sa propre VM Rocky Linux 9**, bâtie sur la **box publique officielle `rockylinux/9`** puis **provisionnée automatiquement** par les mêmes scripts. Personne ne te distribue de machine toute faite. On parle de **divergence contrôlée** : mêmes ingrédients, mêmes outils en versions épinglées, mais des paquets système à jour du jour de la construction. Les bénéfices :
 
 | Bénéfice | Ce que ça change pour toi |
 |---|---|
-| **Zéro divergence** | Mêmes versions, mêmes outils, mêmes chemins : les cours et les corrigés s'appliquent tels quels |
-| **Reproductibilité** | Une VM cassée se **recrée en quelques minutes** à l'identique |
+| **Divergence contrôlée** | Mêmes outils DevOps en versions épinglées, mêmes chemins, même procédure : les cours et les corrigés s'appliquent tels quels (les paquets système peuvent différer légèrement selon la date de construction) |
+| **Reproductibilité** | Une VM cassée se **recrée seule** (`make up`) en 5 à 15 minutes, par les mêmes scripts |
 | **Sécurité** | Tes expériences (permissions, pare-feu, LVM…) ne peuvent **pas abîmer** ton ordinateur |
 | **Réalisme** | Tu pratiques sur un vrai serveur Linux **Rocky Linux 9** (famille Red Hat), comme en entreprise |
 | **Réversibilité** | Les **snapshots** te permettent de revenir en arrière après une erreur |
@@ -76,7 +76,7 @@ La solution : **tout le monde travaille dans la même machine virtuelle (VM)**, 
 | **Mémoire (RAM)** de l'ordinateur | 8 Go (VM réduite à 2 Go : voir chapitre 12) | 16 Go |
 | **Disque libre** | 30 Go | 60 Go (SSD) |
 | **Système hôte** | Windows 10/11, macOS (Intel), Linux | Windows 11, Ubuntu, macOS Intel |
-| **Connexion Internet** | Pour l'installation (box ≈ 1,5 Go) | Ensuite facultative |
+| **Connexion Internet** | Pour la construction (box ≈ 800 Mo + outils) | Ensuite facultative, sauf `dnf` et téléchargements |
 | **Droits** | Administrateur pour installer les logiciels | — |
 
 > ⚠️ **Attention** : les **Mac à puce Apple Silicon (M1/M2/M3/M4)** ne peuvent pas faire tourner VirtualBox correctement. Lis le [chapitre 12](#12-cas-particuliers) **avant** d'installer quoi que ce soit.
@@ -85,9 +85,9 @@ La solution : **tout le monde travaille dans la même machine virtuelle (VM)**, 
 
 | Phase | Durée |
 |---|---|
-| **Installation initiale** (téléchargements compris) | **≈ 30 minutes** (selon ta connexion) |
+| **Installation initiale** (VirtualBox, Vagrant, puis `make up` : box + provisioning) | **15 à 30 minutes** (selon ta connexion) |
 | Démarrage de la VM les jours suivants | 1 à 2 minutes |
-| **Configuration au quotidien** | **0 minute** : tout est déjà prêt dans la box |
+| **Configuration au quotidien** | **0 minute** : tout est déjà installé par le provisioning |
 
 L'effort est concentré au début : ensuite, tu ouvres un terminal, tu tapes deux commandes et tu travailles.
 
@@ -99,7 +99,9 @@ L'effort est concentré au début : ensuite, tu ouvres un terminal, tu tapes deu
 | **Invité** (*guest*) ou **VM** | L'ordinateur virtuel qui tourne dans l'hôte (Rocky Linux 9) |
 | **Hyperviseur** | Le logiciel qui fait tourner des VM (ici **VirtualBox**) |
 | **Vagrant** | L'outil en ligne de commande qui crée et pilote la VM de façon reproductible |
-| **Box** | L'image de VM prête à l'emploi (`rocky9-devops`) |
+| **Box** | L'image de VM de départ : ici la box **publique** officielle `rockylinux/9` (Rocky Linux 9 nu, sans nos outils) |
+| **Provisioning** | Les scripts qui s'exécutent après la création de la VM pour installer les outils (`environnement/scripts/`) |
+| **Journal de bord** | Le document où tu notes ton installation et tes problèmes (`environnement/journaux/`) |
 | **Vagrantfile** | Le fichier texte qui décrit la VM (box, RAM, CPU, réseau, dossiers partagés) |
 
 Le glossaire complet est en [annexe D](#d-glossaire).
@@ -108,10 +110,11 @@ Le glossaire complet est en [annexe D](#d-glossaire).
 
 ## 2. Installation de l'environnement
 
-> ⏱️ **Durée : ≈ 30 minutes.** Coche chaque case au fur et à mesure : `- [x]`.
+> ⏱️ **Durée : 15 à 30 minutes.** Coche chaque case au fur et à mesure : `- [x]`.
 > Les commandes `PowerShell` s'exécutent sur **Windows** (clic droit → *Exécuter en tant qu'administrateur* si indiqué), les commandes `bash` sur **macOS/Linux**.
+> 🧱 **Tu construis TA VM** : personne ne te donne de fichier de VM à télécharger. Tu installes VirtualBox et Vagrant, tu récupères le dépôt, puis **une seule commande** (`make up`) crée et provisionne la VM.
 
-### Étape 0 — Vérifier la virtualisation matérielle
+### Étape 1 — Vérifier la virtualisation matérielle
 
 La VM a besoin que ton processeur expose sa **virtualisation** (Intel **VT-x** / AMD **AMD-V**), souvent désactivée par défaut dans le BIOS/UEFI.
 
@@ -137,7 +140,7 @@ lscpu | grep -i virtualization
 
 > ⚠️ **Windows : Hyper-V, WSL2 et « Isolation du noyau »** peuvent monopoliser la virtualisation. VirtualBox 7.x sait cohabiter avec Hyper-V (en mode plus lent). En cas de message « VT-x is not available » alors que le BIOS est correct, voir le [dépannage](#10-dépannage).
 
-### Étape 1 — Installer VirtualBox 7.x
+### Étape 2 — Installer VirtualBox 7.x
 
 Télécharge VirtualBox sur <https://www.virtualbox.org/wiki/Downloads> (version **7.x**) :
 
@@ -161,7 +164,7 @@ VBoxManage --version        # doit afficher 7.x.y
 
 - [ ] VirtualBox 7.x est installé et `VBoxManage --version` répond.
 
-### Étape 2 — Installer Vagrant 2.4+
+### Étape 3 — Installer Vagrant 2.4+
 
 Télécharge Vagrant sur <https://developer.hashicorp.com/vagrant/downloads> (version **2.4 ou plus**).
 
@@ -177,74 +180,64 @@ vagrant --version           # Vagrant 2.4.x ou supérieur
 
 - [ ] `vagrant --version` affiche 2.4 ou plus.
 
-### Étape 3 — Récupérer le dépôt et télécharger la box
-
-1. **Clone le dépôt du cours** (ou télécharge-le en ZIP sur GitHub) :
+### Étape 4 — Cloner le dépôt et se placer dans `environnement/`
 
 ```bash
 git clone https://github.com/Ghislano26/devops-Worketyamo.git
-cd devops-Worketyamo
+cd devops-Worketyamo/environnement
+ls                       # Makefile  README.md  vagrant/  scripts/  journaux/  packer-avance/ …
 ```
 
-2. **Télécharge la box** (≈ 1,5 Go) depuis la page des *Releases* (la box est **publiée par le formateur** ; le **lien exact du fichier sera communiqué à la promotion**) : <https://github.com/Ghislano26/devops-Worketyamo/releases>. Choisis la **dernière version** et télécharge le fichier **`rocky9-devops-1.0.0.box`** (le numéro de version peut être plus récent). Place-le **dans un dossier simple**, sans espaces ni accents, par exemple `C:\formation\` ou `~/formation/`.
+> 🪟 **Windows** : `make` n'est pas installé par défaut. Deux solutions : ouvrir **Git Bash** (fourni avec *Git for Windows*) ou **WSL**, où `make` s'installe facilement ; **ou** utiliser directement les commandes Vagrant équivalentes, sans `make`, dans PowerShell :
+>
+> | Avec `make` | Sans `make` (PowerShell, depuis `environnement/`) |
+> |---|---|
+> | `make up` | `cd vagrant ; vagrant up` |
+> | `make ssh` | `cd vagrant ; vagrant ssh` |
+> | `make halt` | `cd vagrant ; vagrant halt` |
+> | `make destroy` | `cd vagrant ; vagrant destroy -f` |
+> | `make status` | `cd vagrant ; vagrant status` |
 
-3. **Vérifie l'intégrité** du téléchargement si la page de la release publie une empreinte (SHA-256) :
+- [ ] Le dépôt est cloné et tu es dans `environnement/`.
 
-```powershell
-Get-FileHash .\rocky9-devops-1.0.0.box -Algorithm SHA256
-```
+### Étape 5 — `make up` : la VM se construit toute seule
 
 ```bash
-sha256sum rocky9-devops-1.0.0.box     # (macOS : shasum -a 256 …)
+make up                  # équivalent : cd vagrant && vagrant up
 ```
 
-- [ ] Le dépôt est cloné.
-- [ ] Le fichier `.box` est téléchargé (≈ 1,5 Go) et son empreinte correspond.
+**Ce qui se passe** (5 à 15 minutes la première fois, davantage si ta connexion est lente) :
 
-### Étape 4 — Ajouter la box à Vagrant
-
-Depuis le dossier qui contient le fichier `.box` :
-
-```bash
-vagrant box add rocky9-devops rocky9-devops-1.0.0.box
-vagrant box list
-```
-
-La seconde commande doit afficher `rocky9-devops (virtualbox, 1.0.0)`. L'ajout **copie** la box dans le dossier interne de Vagrant (`~/.vagrant.d/boxes`) : tu peux ensuite **garder ou supprimer** le fichier `.box` d'origine (garde-le si ta connexion est lente : il resservira pour une recréation).
-
-- [ ] `vagrant box list` affiche `rocky9-devops`.
-
-### Étape 5 — Démarrer la VM (`vagrant up`)
-
-Place-toi dans le dossier qui contient le `Vagrantfile` de l'environnement :
-
-```bash
-cd environnement/vagrant        # depuis la racine du dépôt cloné
-vagrant up
-```
-
-Au premier démarrage, Vagrant crée la VM dans VirtualBox, configure le réseau (NAT + réseau privé `192.168.56.10`), monte le dossier partagé et lance un *provisioning* qui **vérifie la présence des outils DevOps**. **2 à 5 minutes.** Tu dois voir à la fin :
+1. **Téléchargement de la box publique `rockylinux/9`** (≈ 800 Mo). Elle est mise en cache : les fois suivantes, cette étape est instantanée. Vagrant choisit la dernière version `~> 9.4` (au moins 9.4, jamais 10).
+2. **Création de la VM** dans VirtualBox : 4 Go de RAM, 2 vCPU, réseau NAT + réseau privé `192.168.56.10`, dossier partagé `/vagrant` (la racine du dépôt), nom d'hôte `devops-lab`.
+3. **Exécution automatique des 3 scripts de provisioning**, dans l'ordre (leur sortie s'affiche en direct, préfixée par `==> [01-base]`, etc.) :
+   - `01-base.sh` : dépôt **EPEL**, paquets de base (`vim`, `git`, `tmux`, `podman`, `man-db`, `bind-utils`, `sysstat`, `htop`…), prompt, configuration de `git` ;
+   - `02-devops-tools.sh` : `kubectl`, `helm`, `trivy`, `syft`, `act`, `shellcheck`, `yq` en **versions épinglées** (empreintes SHA-256 vérifiées quand elles sont publiées) ;
+   - `03-hardening.sh` : `firewalld` (SSH seul), SSH par clé uniquement, SELinux en mode **permissif** (choix pédagogique).
+4. **Vérification finale** : Vagrant contrôle la présence des **9 outils** puis affiche :
 
 ```text
-==> default: Machine booted and ready!
+Environnement prêt. Utilisez 'vagrant ssh' pour vous connecter.
 ```
 
-> 💡 Si tu **n'as pas d'interface graphique** qui s'ouvre : c'est normal, la VM démarre en mode **headless** (sans fenêtre). On s'y connecte en SSH (étape suivante).
+> ⚠️ **Ne ferme pas le terminal et ne mets pas l'ordinateur en veille** pendant `make up`. Si une étape échoue (réseau coupé, paquet indisponible), lis le message, puis consulte le [§ 10.9](#109-problèmes-liés-à-la-box-et-au-provisioning) : on peut généralement relancer sans tout recommencer (`vagrant provision`).
 
-- [ ] `vagrant up` s'est terminé sans erreur.
-- [ ] `vagrant status` affiche `default  running (virtualbox)`.
+> 💡 **Note ton heure de début et la durée dans ton journal de bord** (étape 9) : c'est une information précieuse si un camarade a un problème.
 
-### Étape 6 — Se connecter (`vagrant ssh`)
+- [ ] `make up` s'est terminé sans erreur, avec le message `Environnement prêt.`
+- [ ] `make status` (ou `vagrant status`) affiche `default  running (virtualbox)`.
+
+### Étape 6 — Se connecter (`make ssh`)
 
 ```bash
-vagrant ssh
+make ssh                 # équivalent : cd vagrant && vagrant ssh
 ```
 
 Ton invite devient `[vagrant@devops-lab ~]$` : **tu es dans la VM**. Pour en sortir : `exit` (ou `Ctrl + D`).
 
-> ⚠️ **Windows** : utilise **PowerShell** ou **Windows Terminal** (inclus avec Windows 11). `vagrant ssh` utilise le client `ssh.exe` intégré à Windows 10/11 ; si la commande échoue, installe « Client OpenSSH » (*Paramètres → Applications → Fonctionnalités facultatives*) ou *Git for Windows* (qui fournit `ssh`).
+> ⚠️ **Windows** : utilise **PowerShell**, **Windows Terminal** ou **Git Bash**. `vagrant ssh` utilise le client `ssh.exe` intégré à Windows 10/11 ; si la commande échoue, installe « Client OpenSSH » (*Paramètres → Applications → Fonctionnalités facultatives*) ou *Git for Windows* (qui fournit `ssh`).
 
-- [ ] `vagrant ssh` ouvre un shell `[vagrant@devops-lab ~]$`.
+- [ ] `make ssh` ouvre un shell `[vagrant@devops-lab ~]$`.
 
 ### Étape 7 — Valider l'environnement
 
@@ -279,7 +272,7 @@ Vérifie aussi les ressources et le réseau :
 ```bash
 free -h | head -n 2     # RAM disponible (≈ 4 Go)
 nproc                   # nombre de vCPU (2 par défaut)
-df -h /                 # espace disque (≈ 40 Go)
+df -h /                 # espace disque (taille de la box ; au moins ≈ 20 Go)
 ping -c 2 rockylinux.org   # accès Internet depuis la VM
 ls /vagrant                # la racine du dépôt est visible (dossiers 01-…, 02-…, GUIDE-ENVIRONNEMENT.md)
 ```
@@ -303,19 +296,38 @@ vagrant snapshot list
 
 🎉 **Installation terminée.** Tu sais maintenant démarrer (`vagrant up`), te connecter (`vagrant ssh`) et revenir à un état sain (`vagrant snapshot restore clean`).
 
+### Étape 9 — Remplir le journal de bord
+
+Chaque étudiant **documente la construction de sa propre VM** : c'est un **livrable du cours**.
+
+```bash
+cd environnement/journaux
+cp TEMPLATE.md <ton-pseudo>.md        # par exemple : cp TEMPLATE.md awa.md
+```
+
+Remplis ton fichier : informations sur ton ordinateur (système, RAM, versions de VirtualBox et de Vagrant), le tableau des étapes (date, statut, durée de `make up`), et surtout **chaque problème rencontré avec son diagnostic et sa solution**. Détails et bonnes pratiques : [`environnement/journaux/README.md`](environnement/journaux/README.md) ; modèle : [`environnement/journaux/TEMPLATE.md`](environnement/journaux/TEMPLATE.md).
+
+> 💡 Remplis-le **au fur et à mesure**, pas de mémoire à la fin. Ne mets jamais de mot de passe ni de clé privée dans ton journal.
+
+- [ ] J'ai créé `environnement/journaux/<pseudo>.md` et rempli mes informations système et les 6 étapes.
+
+🎉 **Installation terminée.** Tu sais maintenant construire ta VM (`make up`), t'y connecter (`make ssh`) et revenir à un état sain (`vagrant snapshot restore clean`).
+
 ### Récapitulatif de l'installation
 
 | # | Étape | Commande de contrôle |
 |---|---|---|
-| 0 | Virtualisation activée | Gestionnaire des tâches → Virtualisation : **Activé** |
-| 1 | VirtualBox 7.x | `VBoxManage --version` |
-| 2 | Vagrant 2.4+ | `vagrant --version` |
-| 3 | Box téléchargée | fichier `.box` ≈ 1,5 Go |
-| 4 | Box ajoutée | `vagrant box list` |
-| 5 | VM démarrée | `vagrant status` → `running` |
-| 6 | Connexion | `vagrant ssh` |
+| 1 | Virtualisation activée | Gestionnaire des tâches → Virtualisation : **Activé** |
+| 2 | VirtualBox 7.x | `VBoxManage --version` |
+| 3 | Vagrant 2.4+ | `vagrant --version` |
+| 4 | Dépôt cloné | `ls environnement/` |
+| 5 | VM construite | `make status` → `running` |
+| 6 | Connexion | `make ssh` |
 | 7 | Validation | boucle des 9 outils DevOps ✅ |
 | 8 | Snapshot | `vagrant snapshot list` → `clean` |
+| 9 | Journal de bord | `environnement/journaux/<pseudo>.md` |
+
+> 🧩 **Pas de Packer** : tu n'as besoin d'aucun outil supplémentaire. Packer (construire une box custom) est une option avancée : voir le [§ 12.5](#125-pas-de-packer).
 
 ---
 
@@ -330,7 +342,7 @@ vagrant snapshot list
  │     │ lit le Vagrantfile (box, RAM, CPU, réseau, dossiers)    │
  │     ▼                                                        │
  │  VirtualBox (hyperviseur)                                     │
- │     │ crée la VM à partir de la box « rocky9-devops »        │
+ │     │ crée la VM à partir de la box « rockylinux/9 »         │
  │     ▼                                                        │
  │  ┌────────────────────────────────────────────────────┐      │
  │  │ VM « devops-lab » — Rocky Linux 9 (invité)          │      │
@@ -347,6 +359,7 @@ vagrant snapshot list
 3. Il configure le **réseau NAT** (accès Internet), un **réseau privé** (`192.168.56.10`, accessible depuis l'hôte) et la **redirection de port SSH** (`2222` sur l'hôte → `22` dans la VM).
 4. Il **monte le dossier partagé** (`/vagrant`).
 5. Il attend que SSH réponde, puis annonce `Machine booted and ready!`.
+6. Il exécute les **scripts de provisioning** (`01-base.sh`, `02-devops-tools.sh`, `03-hardening.sh`) puis la **vérification finale** des 9 outils.
 
 ### 3.2 Anatomie de l'environnement
 
@@ -649,9 +662,11 @@ VBoxManage snapshot "<nom-vm>" restore "avant-test"
 
 ### 6.3 Quand faire un snapshot ?
 
+> ❓ **À quel moment faire son premier snapshot ?** **Après la fin du `make up` ET la validation des 9 outils** (étape 7 du chapitre 2). C'est ton état **« clean »** de référence : une VM entièrement provisionnée, saine, avant que tu y fasses quoi que ce soit. Un snapshot pris **pendant** le provisioning, ou avant la validation, figerait une VM incomplète.
+
 | Moment | Pourquoi | Nom suggéré |
 |---|---|---|
-| **Juste après l'installation** (étape 8) | État de référence : on y revient toujours | `clean` |
+| **Juste après `make up` et la validation des outils** (étape 8) | État de référence : on y revient toujours | `clean` |
 | **Avant un atelier risqué** : LVM, partitions, pare-feu, durcissement, SELinux, permissions avancées | Une erreur peut rendre la VM inutilisable | `avant-lvm`, `avant-durcissement` |
 | **Après un atelier réussi et important** | Tu fixes une base solide | `apres-m02` |
 | **Avant `dnf update`/`dnf remove`** ou `systemctl disable` d'un service critique | Mise à jour ou suppression qui peut casser | `avant-dnf` |
@@ -705,8 +720,8 @@ Les ressources de la VM (RAM, CPU, disque) sont définies dans le **`Vagrantfile
 ```ruby
 # Extrait du Vagrantfile (environnement/vagrant/Vagrantfile)
 Vagrant.configure("2") do |config|
-  config.vm.box = "rocky9-devops"
-  config.vm.box_version = "1.0.0"
+  config.vm.box = "rockylinux/9"
+  config.vm.box_version = "~> 9.4"
   config.vm.hostname = "devops-lab"
   config.vm.network "private_network", ip: "192.168.56.10"
   config.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
@@ -716,6 +731,9 @@ Vagrant.configure("2") do |config|
     vb.cpus   = 2           # nombre de vCPU
     vb.name   = "devops-lab"
   end
+
+  config.vm.provision "shell", name: "01-base", path: "../scripts/01-base.sh"
+  # … (02-devops-tools, 03-hardening, puis la vérification finale)
 end
 ```
 
@@ -745,9 +763,9 @@ vb.cpus = 4
 
 Ne dépasse pas **la moitié de tes cœurs physiques** (4 cœurs → 2 vCPU ; 8 cœurs → 4 vCPU). Plus de vCPU ne rend pas toujours plus rapide, et peut même ralentir l'hôte.
 
-### 7.3 Disque (par défaut 40 Go)
+### 7.3 Disque (celui de la box)
 
-Le disque de la VM est **dynamique** : il grossit avec l'usage, jusqu'à 40 Go. L'agrandir demande :
+Le disque de la VM est **dynamique** : il grossit avec l'usage, jusqu'à la taille définie par la box `rockylinux/9` (vérifie avec `df -h /` et `lsblk` ; comptes environ 20 Go ou plus). L'agrandir demande :
 
 **Option A — plugin `vagrant-disksize`** (si le provisionnement le supporte) :
 
@@ -778,7 +796,7 @@ du -sh ~/* | sort -h | tail   # les plus gros dossiers de ton home
 | Cause probable | Vérification | Solution |
 |---|---|---|
 | **Pas assez de RAM** (swap actif) | `free -h` : `Swap` utilisé élevé | Augmenter `vb.memory`, fermer des applications sur l'hôte |
-| **Virtualisation non activée** | VirtualBox indique « mode logiciel » / très lent | Activer VT-x/AMD-V dans le BIOS ([étape 0](#étape-0--vérifier-la-virtualisation-matérielle)) |
+| **Virtualisation non activée** | VirtualBox indique « mode logiciel » / très lent | Activer VT-x/AMD-V dans le BIOS ([étape 1](#étape-1--vérifier-la-virtualisation-matérielle)) |
 | **Hyper-V actif** (Windows) | `systeminfo` : « hyperviseur détecté » | Désactiver ou accepter la lenteur ([dépannage](#10-dépannage)) |
 | **Trop de snapshots** | `vagrant snapshot list` | Supprimer les anciens |
 | **Disque presque plein** | `df -h` | Libérer de l'espace, `sudo dnf clean all` |
@@ -814,44 +832,32 @@ sudo dnf upgrade --security -y # seulement les mises à jour de sécurité
 
 ### 8.2 Mettre à jour la box elle-même
 
-Le formateur publie une **nouvelle version de la box** (par exemple `1.1.0`) quand l'environnement évolue : [GitHub Releases](https://github.com/Ghislano26/devops-Worketyamo/releases).
-
-1. **Lis le changelog** (annexe F et la page de la release) pour savoir ce qui change.
-2. **Sauvegarde ton travail** : copie `~/ateliers` vers `/vagrant/mes-travaux/` ([chapitre 11, option A](#11-migration-vers-une-autre-machine)).
-3. **Télécharge** `rocky9-devops-1.1.0.box` et ajoute-la :
+La box publique `rockylinux/9` est mise à jour par le projet Rocky Linux. Ton `Vagrantfile` utilise `box_version = "~> 9.4"` (toute version **au moins 9.4 et jamais 10**) et `box_check_update = false` : Vagrant **ne vérifie pas** les nouveautés tout seul. Tu mets à jour **uniquement si une consigne l'indique ou si tu recrées ta VM** :
 
 ```bash
-vagrant box add rocky9-devops rocky9-devops-1.1.0.box
-vagrant box list            # rocky9-devops (virtualbox, 1.0.0) et (virtualbox, 1.1.0)
+cd environnement/vagrant
+vagrant box list                       # version(s) installée(s)
+vagrant box outdated                   # une version plus récente est-elle disponible ?
+vagrant box update                     # la télécharge (n'affecte PAS la VM existante)
 ```
 
-4. **Modifie le `Vagrantfile`** pour fixer la version :
+Une box mise à jour ne s'applique qu'à une **nouvelle** VM :
 
-```ruby
-config.vm.box = "rocky9-devops"
-config.vm.box_version = "1.1.0"
-```
+1. **Sauvegarde ton travail** : copie `~/ateliers` vers `/vagrant/mes-travaux/` ([chapitre 11](#11-migration-vers-une-autre-machine)).
+2. **Recrée la VM** : `make destroy` puis `make up`.
+3. `vagrant snapshot save clean`, puis restaure ton travail depuis `/vagrant/mes-travaux/`.
 
-5. **Recrée la VM** (une box mise à jour s'applique à une *nouvelle* VM, pas à l'existante) :
-
-```bash
-vagrant destroy -f && vagrant up
-vagrant snapshot save clean
-```
-
-6. **Restaure ton travail** depuis `/vagrant/mes-travaux/` vers `~/ateliers`.
-
-> 📌 `vagrant box update` ne sert que pour les box publiées sur un catalogue (Vagrant Cloud) avec un champ de version : avec un fichier `.box` distribué manuellement, on **ajoute** la nouvelle version comme ci-dessus.
+> 📌 **Note la version de ta box** (`vagrant box list`) dans ton journal de bord : c'est une des « divergences » entre étudiants.
 
 ### 8.3 Nettoyer les anciennes box
 
 ```bash
 vagrant box list                       # versions installées
 vagrant box prune                      # supprime les versions obsolètes non utilisées
-vagrant box remove rocky9-devops --box-version 1.0.0     # supprimer une version précise
+vagrant box remove rockylinux/9 --box-version <version>     # supprimer une version précise
 ```
 
-Chaque box fait environ 1,5 Go : nettoie après une migration réussie.
+Chaque box fait environ 800 Mo : nettoie après une mise à jour réussie.
 
 ### 8.4 Vérifier la santé de la VM
 
@@ -931,9 +937,9 @@ Voir le [chapitre 11 — Migration](#11-migration-vers-une-autre-machine).
 
 | # | Symptôme | Cause probable | Solution rapide |
 |---|---|---|---|
-| 1 | `vagrant up` → « VT-x is not available » / « VERR_VMX_NO_VMX » | Virtualisation désactivée dans le BIOS/UEFI | Activer VT-x/AMD-V ([étape 0](#étape-0--vérifier-la-virtualisation-matérielle)) |
+| 1 | `vagrant up` → « VT-x is not available » / « VERR_VMX_NO_VMX » | Virtualisation désactivée dans le BIOS/UEFI | Activer VT-x/AMD-V ([étape 1](#étape-1--vérifier-la-virtualisation-matérielle)) |
 | 2 | `vagrant up` → « Hyper-V must be disabled » / VM très lente sous Windows | Hyper-V ou la plateforme d'hyperviseur Windows est active | Voir § 10.2 |
-| 3 | `vagrant up` → « The box 'rocky9-devops' could not be found » | Box non ajoutée | `vagrant box add rocky9-devops rocky9-devops-1.0.0.box` |
+| 3 | `vagrant up` → « Box 'rockylinux/9' could not be found » / « could not find a version matching ~> 9.4 for provider virtualbox » | Pas d'accès Internet au catalogue, ou version/provider indisponible | Vérifier la connexion, `vagrant box list`, puis `vagrant box add rockylinux/9 --provider virtualbox` (§ 10.9) |
 | 4 | `vagrant ssh` → « Permission denied (publickey) » | Clés SSH de Vagrant désynchronisées | `vagrant reload` puis, sinon, recréer (§ 10.3) |
 | 5 | VM très lente | RAM insuffisante, virtualisation absente | Augmenter `vb.memory`, [§ 7.5](#75-la-vm-est-lente--que-faire-) |
 | 6 | Pas de connexion Internet dans la VM | NAT ou DNS cassé | `vagrant reload` ; `cat /etc/resolv.conf` ; § 10.4 |
@@ -953,6 +959,11 @@ Voir le [chapitre 11 — Migration](#11-migration-vers-une-autre-machine).
 | 20 | Heure de la VM décalée après une veille | Horloge non resynchronisée | `sudo chronyc makestep` ; `timedatectl` |
 | 21 | « Warning: Remote connection disconnect. Retrying… » en boucle | SSH ne répond pas dans la VM | Attendre ; `vb.gui = true` ; `vagrant reload` |
 | 22 | Fichier `.sh` : `bad interpreter: /bin/bash^M` | Fins de ligne Windows (CRLF) | `sed -i 's/\r$//' script.sh` |
+| 23 | Téléchargement de la box très lent ou interrompu | Box ≈ 800 Mo, connexion faible, VPN, proxy | Prévoir une bonne connexion ; relancer `make up` (le téléchargement reprend) ; § 10.9 |
+| 24 | `make up` s'arrête avec « ERREUR : <outil> non installé » ou une erreur dans `==> [0X-…]` | Échec d'un script de provisioning (réseau, miroir, paquet) | Relancer : `vagrant provision` ; si besoin `make destroy && make up` (§ 10.9) |
+| 25 | `dnf` : « No match for argument : htop / fail2ban / lynis… » | `epel-release` non installé ou dépôt EPEL indisponible | `rpm -q epel-release`, `sudo dnf install -y epel-release`, `sudo dnf makecache` (§ 10.9) |
+| 26 | `/vagrant` vide ou « vboxsf not available » dès le `vagrant up` | Guest Additions absentes de la box | `vagrant plugin install vagrant-vbguest` puis `vagrant reload --provision` (§ 10.9) |
+| 27 | « `make` n'est pas reconnu » (Windows) | `make` non installé | Git Bash / WSL, ou commandes `vagrant` directes ([étape 4](#étape-4--cloner-le-dépôt-et-se-placer-dans-environnement)) |
 
 ### 10.2 Détail — Hyper-V, WSL2 et Windows
 
@@ -1049,86 +1060,103 @@ getenforce                                # SELinux
 sudo dmesg --level=err | tail             # erreurs du noyau
 ```
 
+### 10.9 Problèmes liés à la box et au provisioning
+
+**Box introuvable ou téléchargement impossible**
+
+```bash
+cd environnement/vagrant
+vagrant box list                              # la box rockylinux/9 est-elle déjà dans le cache ?
+vagrant box add rockylinux/9 --provider virtualbox     # (re)télécharge explicitement
+vagrant box remove rockylinux/9 --force       # si le cache est corrompu, puis box add
+```
+
+Le catalogue est <https://app.vagrantup.com/rockylinux/boxes/9> : vérifie qu'une version **9.x ≥ 9.4** existe pour le provider `virtualbox`. Un pare-feu d'entreprise ou un VPN peut bloquer `app.vagrantup.com` : change de réseau (partage de connexion du téléphone) le temps du téléchargement.
+
+**Téléchargement très lent**
+
+La box fait environ 800 Mo. Lance `make up` avec une bonne connexion, sans autre téléchargement lourd en parallèle. Si le téléchargement est interrompu, **relance simplement** `make up` : Vagrant reprend (`--continue` automatique). Garde le terminal ouvert.
+
+**Erreur de provisioning**
+
+Les scripts affichent leur étape (`==> [01-base]`, `[02-devops-tools]`, `[03-hardening]`). Lis les **dernières lignes** avant l'erreur : cause fréquente = réseau coupé ou miroir indisponible. Deux niveaux de reprise :
+
+```bash
+vagrant provision                                     # relance les 3 scripts + la vérification, sans détruire la VM
+vagrant provision --provision-with 02-devops-tools    # relance un seul script (noms : 01-base, 02-devops-tools, 03-hardening, verification)
+make destroy && make up                               # repartir de zéro (la VM est supprimée, pas tes fichiers dans /vagrant)
+```
+
+Les scripts sont **idempotents** : les relancer ne casse rien (un outil déjà installé à la bonne version est ignoré).
+
+**Paquet EPEL indisponible**
+
+```bash
+rpm -q epel-release || sudo dnf install -y epel-release
+sudo dnf makecache
+dnf repolist | grep -i epel
+sudo dnf install -y htop stress-ng fail2ban lynis ncdu
+```
+
+Si le dépôt EPEL est temporairement injoignable, `01-base.sh` **continue** (les paquets EPEL sont facultatifs et signalés par `! <paquet> indisponible`) ; relance `vagrant provision --provision-with 01-base` plus tard.
+
+**Dossier `/vagrant` vide / erreur `vboxsf`**
+
+Certaines box n'embarquent pas les Guest Additions de VirtualBox. Installe le plugin qui les ajoute automatiquement, puis recharge :
+
+```bash
+vagrant plugin install vagrant-vbguest
+vagrant reload --provision
+```
+
 > 📌 **Avant de demander de l'aide**, note : ton **système hôte** (Windows 11 23H2, macOS 14 Intel…), les **versions** (`vagrant --version`, `VBoxManage --version`), le **message d'erreur complet** et **ce que tu as déjà essayé**.
 
 ---
 
 ## 11. Migration vers une autre machine
 
-Tu changes d'ordinateur (ou tu réinstalles Windows). Il faut **retrouver ton environnement et ton travail**. Trois options, de la plus recommandée à la plus lourde.
+Tu changes d'ordinateur (ou tu réinstalles Windows). **Il n'y a aucune box à exporter** : ta VM se **reconstruit** sur la nouvelle machine avec `make up`. Il suffit de **sauvegarder ton travail**.
 
-| Option | Principe | Taille à transférer | Quand ? |
-|---|---|---|---|
-| **A** | Sauvegarder **seulement tes fichiers** | quelques Mo | **Toujours** (en plus de C) |
-| **B** | **Exporter la VM** complète en `.box` | 1,5 à 3 Go | Tu as personnalisé la VM en profondeur |
-| **C** | **Repartir de zéro** sur la nouvelle machine | rien (re-téléchargement de la box) | **Recommandé** |
+### 11.1 Ce qu'il faut sauvegarder (et ce qui l'est déjà)
 
-### 11.1 Option A — sauvegarder ses fichiers de travail
-
-**À sauvegarder** : `~/ateliers/`, `~/notes/`, scripts, fichiers de configuration que *tu* as écrits. **À ne pas sauvegarder** : fichiers système, paquets installés, configuration générale : **Vagrant et la box les recréent**.
-
-```bash
-# Dans la VM
-tar czf ~/backup-travail-$(date +%F).tar.gz -C ~ ateliers notes
-ls -lh ~/backup-travail-*.tar.gz
-cp ~/backup-travail-*.tar.gz /vagrant/mes-travaux/       # visible côté hôte
-```
-
-Ou, depuis l'hôte, sans copier dans `/vagrant` :
+| Élément | Où il vit | Sauvegarde |
+|---|---|---|
+| **Le dépôt** et tout ce qui est dans `/vagrant` (donc `/vagrant/mes-travaux/`) | **Sur ton hôte** (dossier du dépôt) | ✅ **Déjà préservé** : `/vagrant` est synchronisé avec l'hôte |
+| `~/ateliers`, `~/notes` **à l'intérieur de la VM** | Disque de la VM | ❌ **Perdu si tu détruis la VM** : copie-les dans `/vagrant/mes-travaux/` |
+| Ton **journal de bord** | `environnement/journaux/<pseudo>.md` (hôte) | ✅ dans le dépôt : commite-le dans **ton fork** |
+| Paquets installés, configuration | Disque de la VM | Inutile : **recréés par `make up`** |
 
 ```bash
-vagrant ssh -c 'tar czf - -C ~ ateliers notes' > backup-travail.tar.gz    # bash/zsh
+# Dans la VM : mettre ses fichiers de travail à l'abri, côté hôte
+mkdir -p /vagrant/mes-travaux
+tar czf /vagrant/mes-travaux/backup-travail-$(date +%F).tar.gz -C ~ ateliers notes
+tar tzf /vagrant/mes-travaux/backup-travail-*.tar.gz | head       # vérifier le contenu
 ```
 
-**Copie ensuite `backup-travail-….tar.gz` hors de la machine** : clé USB, disque externe, cloud (Drive, OneDrive), ou Git. **Vérifie l'archive** :
+Puis **copie le dossier du dépôt** (ou au moins `mes-travaux/` et ton journal) hors de l'ordinateur : clé USB, cloud, ou **Git** (`git push` vers ton fork). Pour le versionnement, voir le [§ 5.4](#54-méthode-4--git).
 
-```bash
-tar tzf backup-travail-2025-12-01.tar.gz | head
-```
+### 11.2 Sur la nouvelle machine : refaire `make up`
 
-### 11.2 Option B — export complet de la VM
-
-```bash
-vagrant halt
-vagrant package --output ma-vm.box          # dans le dossier du Vagrantfile
-ls -lh ma-vm.box                            # ≈ 1,5 à 3 Go
-```
-
-Transfère `ma-vm.box` (disque externe, réseau local), puis sur la nouvelle machine :
-
-```bash
-vagrant box add ma-vm ma-vm.box
-# dans le Vagrantfile : config.vm.box = "ma-vm"
-vagrant up
-```
-
-> ⚠️ `vagrant package` **ne conserve pas** les snapshots ni, selon la configuration, les dossiers partagés ; l'export est un **état figé** de ta VM. À réserver aux besoins précis.
-
-### 11.3 Option C — repartir de zéro (recommandée)
-
-1. **Installe** VirtualBox 7.x et Vagrant 2.4+ ([chapitre 2](#2-installation-de-lenvironnement), étapes 0 à 2).
-2. **Clone** le dépôt : `git clone https://github.com/Ghislano26/devops-Worketyamo.git`.
-3. **Télécharge** la box depuis [GitHub Releases](https://github.com/Ghislano26/devops-Worketyamo/releases) et ajoute-la (`vagrant box add …`).
-4. **Démarre** : `vagrant up`, `vagrant snapshot save clean`.
+1. Active la **virtualisation** dans le BIOS, installe **VirtualBox 7.x** et **Vagrant 2.4+** ([chapitre 2](#2-installation-de-lenvironnement), étapes 1 à 3).
+2. **Clone** le dépôt (ou récupère ton fork) : `git clone https://github.com/Ghislano26/devops-Worketyamo.git`.
+3. **Reconstruis** la VM : `cd devops-Worketyamo/environnement && make up` (5 à 15 minutes).
+4. `make ssh`, valide les 9 outils, puis `vagrant snapshot save clean`.
 5. **Restaure** ton travail :
 
 ```bash
-# Copie l'archive dans /vagrant/mes-travaux/ (côté hôte) puis, dans la VM :
+# Place l'archive dans mes-travaux/ (côté hôte), puis dans la VM :
 tar xzf /vagrant/mes-travaux/backup-travail-2025-12-01.tar.gz -C ~
 ls ~/ateliers ~/notes
 ```
 
-ou `git clone` de ton dépôt de travaux ([§ 5.4](#54-méthode-4--git)).
+### 11.3 Checklist « avant de changer de machine »
 
-### 11.4 Checklist « avant de changer de machine »
-
-- [ ] J'ai **copié mes fichiers** de la VM (`~/ateliers`, `~/notes`…) vers l'hôte.
+- [ ] J'ai **copié mes fichiers** de la VM (`~/ateliers`, `~/notes`…) vers `/vagrant/mes-travaux/`.
 - [ ] J'ai créé une **archive** `backup-travail-….tar.gz` et **vérifié** son contenu.
-- [ ] J'ai copié l'archive **hors de l'ordinateur** (clé USB, cloud, Git).
-- [ ] J'ai poussé mes dépôts Git (`git status` propre, `git push`).
-- [ ] J'ai noté la **version de la box** utilisée (`vagrant box list`) et mes **modifications du Vagrantfile** (RAM, CPU).
+- [ ] J'ai poussé mes dépôts Git (`git status` propre, `git push`), **journal de bord compris** (dans mon fork).
+- [ ] J'ai copié le **dossier du dépôt** (ou mon fork) **hors de l'ordinateur** (clé USB, cloud, Git).
+- [ ] J'ai noté dans mon journal la **version de la box** (`vagrant box list`) et mes modifications du Vagrantfile (RAM, CPU).
 - [ ] J'ai sauvegardé mes **clés SSH** personnelles si je les ai générées dans la VM (`~/.ssh/`), dans un endroit **chiffré**.
-- [ ] J'ai le fichier `.box` (ou le lien de téléchargement) pour la nouvelle machine.
 - [ ] Sur la nouvelle machine : virtualisation activée **avant** d'installer VirtualBox.
 
 ---
@@ -1137,7 +1165,7 @@ ou `git clone` de ton dépôt de travaux ([§ 5.4](#54-méthode-4--git)).
 
 ### 12.1 Apple Silicon (Mac M1 / M2 / M3 / M4)
 
-**Le problème** : les Mac à puce Apple Silicon ont une architecture **ARM64** ; la box `rocky9-devops` est conçue pour **x86_64 (amd64)**, et **VirtualBox n'est pas utilisable de façon fiable** sur ces Mac (la version « développeur » ARM ne propose pas de VM Linux x86 courante). Tu as trois solutions.
+**Le problème** : les Mac à puce Apple Silicon ont une architecture **ARM64** ; la box `rockylinux/9` utilisée pour VirtualBox est conçue pour **x86_64 (amd64)**, et **VirtualBox n'est pas utilisable de façon fiable** sur ces Mac (la version « développeur » ARM ne propose pas de VM Linux x86 courante). Tu as trois solutions.
 
 | Solution | Principe | Coût | Remarques |
 |---|---|---|---|
@@ -1199,9 +1227,15 @@ vagrant plugin install vagrant-libvirt
 vagrant up --provider=libvirt
 ```
 
-Il faut alors une **box compatible libvirt** (format `libvirt`, pas `virtualbox`) : demande-la ou convertis la box (`vagrant mutate`). Vérifie aussi que ton utilisateur est dans les groupes `libvirt` et `kvm`.
+La box publique `rockylinux/9` existe aussi au format **libvirt** : adapte alors le bloc `config.vm.provider` du `Vagrantfile` (libvirt au lieu de `virtualbox`) et le type de dossier partagé (`nfs` ou `rsync` au lieu de `virtualbox`). Vérifie aussi que ton utilisateur est dans les groupes `libvirt` et `kvm`.
 
 - **Secure Boot** (Linux) : VirtualBox charge des modules noyau ; avec Secure Boot actif, il faut **signer** les modules ou désactiver Secure Boot, sinon l'erreur `rc=-1908` apparaît.
+
+---
+
+### 12.5 Pas de Packer
+
+> 🧩 Dans ce cours, **tu n'as pas besoin de Packer**. Si tu en entends parler, c'est une **option avancée** pour construire une **box custom** déjà provisionnée (utile à un formateur ou à un étudiant curieux). Le chemin principal utilise la box publique `rockylinux/9` + le provisioning Vagrant. Voir [`environnement/packer-avance/README.md`](environnement/packer-avance/README.md).
 
 ---
 
@@ -1233,12 +1267,12 @@ Recommandé : `vagrant halt` en fin de journée (libère RAM et CPU). `suspend` 
 La VM continue de tourner (elle est gérée par VirtualBox, pas par le terminal). Seul ton shell SSH est coupé : les programmes lancés sans `tmux` s'arrêtent. Rouvre un terminal et fais `vagrant ssh` ; utilise `tmux` pour les tâches longues.
 
 **Comment savoir si ma VM est à jour ?**
-Compare `vagrant box list` avec la dernière version de la [page Releases](https://github.com/Ghislano26/devops-Worketyamo/releases) et le changelog ([annexe F](#f-historique-des-versions-de-la-box)).
+`vagrant box outdated` (dans `environnement/vagrant`) indique si une box plus récente existe ; les outils DevOps sont en versions épinglées dans `environnement/scripts/02-devops-tools.sh`. Ta VM n'est jamais « mise à jour » toute seule : on la **recrée** (`make destroy && make up`). Voir le [§ 8.2](#82-mettre-à-jour-la-box-elle-même) et les versions minimales en [annexe F](#f-versions-minimales-requises).
 
 ### Réseau et connectivité
 
-**Que se passe-t-il si je perds ma connexion Internet pendant `vagrant up` ?**
-Si la box est **déjà ajoutée**, `vagrant up` fonctionne **sans Internet** (hormis un éventuel provisioning). Si une étape de téléchargement échoue, relance `vagrant up --provision`. Pour le **téléchargement de la box**, reprends le fichier (un gestionnaire de téléchargement qui reprend est utile).
+**Que se passe-t-il si je perds ma connexion Internet pendant `make up` ?**
+Pendant le **téléchargement de la box**, Vagrant s'arrête : relance `make up`, il reprend. Pendant le **provisioning**, les scripts échouent (ils téléchargent des paquets et des outils) : rétablis la connexion puis `vagrant provision`. Une fois la VM construite, elle fonctionne sans Internet (sauf `dnf` et les téléchargements). Voir le [§ 10.9](#109-problèmes-liés-à-la-box-et-au-provisioning).
 
 **Puis-je utiliser la VM sans Internet ?**
 Oui pour tout ce qui ne demande pas de téléchargement : commandes, scripts, permissions, processus, LVM… En revanche `dnf install`, `git clone` ou `curl` vers Internet exigent le réseau.
@@ -1252,7 +1286,7 @@ Par défaut la VM n'est joignable que **depuis ton ordinateur** (réseau privé 
 Les cours sont écrits et testés pour **Rocky Linux 9**. Pour une autre distribution, crée une **seconde VM** (autre box, autre dossier) ou utilise Killercoda (`ubuntu`). Attention : `apt` ≠ `dnf`, certains chemins et noms de paquets diffèrent.
 
 **Puis-je utiliser un autre hyperviseur (VMware, Proxmox, Hyper-V, UTM) ?**
-Oui, mais **sans garantie de support** : la box fournie est au format **VirtualBox**. VMware demande une box `vmware_desktop`, Hyper-V une box `hyperv`, libvirt une box `libvirt`. Les performances et le comportement du dossier partagé varient. Pour Apple Silicon : [§ 12.1](#121-apple-silicon-mac-m1--m2--m3--m4).
+Oui, mais **sans garantie de support** : le `Vagrantfile` du cours cible **VirtualBox**. La box publique `rockylinux/9` existe aussi pour d'autres providers (libvirt, VMware), mais il faudra adapter le `Vagrantfile` (provider, dossier partagé). Les performances et le comportement du dossier partagé varient. Pour Apple Silicon : [§ 12.1](#121-apple-silicon-mac-m1--m2--m3--m4).
 
 **Puis-je installer d'autres logiciels dans la VM ?**
 Oui : c'est ta VM (`sudo dnf install …`). **Prends un snapshot avant**, et n'installe pas ce qui change des paquets système critiques (noyau, `systemd`, `glibc`). Si quelque chose casse : `vagrant snapshot restore clean`.
@@ -1263,7 +1297,10 @@ Les disques sont dans le dossier **VirtualBox VMs** (`C:\Users\<toi>\VirtualBox 
 ### Collaboration et support
 
 **Puis-je partager ma VM avec un camarade ?**
-Oui, via `vagrant package` ([§ 11.2](#112-option-b--export-complet-de-la-vm)) : tu donnes le `.box` (≈ 1,5 à 3 Go). Attention : ta VM exportée contient **tes fichiers, tes clés SSH et tes mots de passe** : nettoie-la avant (`~/.ssh`, `~/.bash_history`, `~/notes`). Il est généralement plus simple que chaque étudiant parte de la box officielle.
+Il n'y a rien à partager : **chacun construit la sienne** avec `make up`. Pour échanger du travail, partagez des **fichiers** (Git, archive).
+
+*(Cas avancé)* **Puis-je exporter ma VM en box ?**
+Oui, avec `vagrant package` : tu obtiens un `.box` (≈ 1,5 à 3 Go). Attention : ta VM exportée contient **tes fichiers, tes clés SSH et tes mots de passe** : nettoie-la avant (`~/.ssh`, `~/.bash_history`, `~/notes`). Il est généralement plus simple que chaque étudiant parte de la box officielle.
 
 **Puis-je donner à un camarade l'accès à ma VM ?**
 Déconseillé. Si besoin ponctuel, utilise `tmux` partagé ou, mieux, partagez un dépôt Git.
@@ -1305,7 +1342,10 @@ Ajoute des **exclusions** pour `VirtualBox VMs`, `.vagrant.d` et les exécutable
 | `vagrant upload <local> [<distant>]` | Envoie un fichier dans la VM |
 | `vagrant package --output f.box` | Exporte la VM en box |
 | `vagrant box list` | Liste les box installées |
-| `vagrant box add <nom> <fichier>` | Ajoute une box |
+| `vagrant box add rockylinux/9` | Télécharge/ajoute explicitement la box publique |
+| `vagrant box outdated` / `update` | Une box plus récente existe-t-elle ? / la télécharge |
+| `vagrant provision` | Relance les scripts de provisioning (sans détruire la VM) |
+| `make up` / `ssh` / `halt` / `destroy` / `status` | Raccourcis de `environnement/Makefile` |
 | `vagrant box remove <nom>` | Supprime une box |
 | `vagrant box prune` | Supprime les anciennes versions |
 | `vagrant plugin list` / `install` | Gère les plugins |
@@ -1365,7 +1405,7 @@ VBoxManage list hostonlyifs                       # réseaux « host-only »
 | **Hyperviseur** | Logiciel qui crée et exécute des VM (VirtualBox, VMware, Hyper-V, KVM) |
 | **VirtualBox** | Hyperviseur libre d'Oracle, utilisé dans ce cursus |
 | **Vagrant** | Outil qui décrit, crée et pilote des VM de façon reproductible (outil de HashiCorp) |
-| **Box** | Image de VM empaquetée (fichier `.box`) servant de modèle |
+| **Box** | Image de VM empaquetée servant de modèle ; ici la box publique `rockylinux/9` |
 | **Vagrantfile** | Fichier Ruby qui décrit la VM (box, ressources, réseau, dossiers) |
 | **Provisioning** | Configuration automatique de la VM au démarrage (scripts, installation d'outils) |
 | **Provider** | Technologie de virtualisation utilisée par Vagrant (`virtualbox`, `vmware_desktop`, `libvirt`) |
@@ -1389,7 +1429,8 @@ VBoxManage list hostonlyifs                       # réseaux « host-only »
 
 | Ressource | Lien |
 |---|---|
-| Releases (box de l'environnement) | <https://github.com/Ghislano26/devops-Worketyamo/releases> |
+| Box publique `rockylinux/9` (Vagrant Cloud) | <https://app.vagrantup.com/rockylinux/boxes/9> |
+| Dépôt du cours | <https://github.com/Ghislano26/devops-Worketyamo> |
 | Issues (signaler un bug) | <https://github.com/Ghislano26/devops-Worketyamo/issues> |
 | Documentation Vagrant | <https://developer.hashicorp.com/vagrant/docs> |
 | Téléchargement Vagrant | <https://developer.hashicorp.com/vagrant/downloads> |
@@ -1401,16 +1442,22 @@ VBoxManage list hostonlyifs                       # réseaux « host-only »
 | Killercoda | <https://killercoda.com/> |
 | Cheatsheet à imprimer | [`environnement/CHEATSHEET.md`](environnement/CHEATSHEET.md) |
 | Scénarios concrets | [`environnement/SCENARIOS.md`](environnement/SCENARIOS.md) |
+| Journal de bord (modèle) | [`environnement/journaux/TEMPLATE.md`](environnement/journaux/TEMPLATE.md) |
+| Option avancée : Packer | [`environnement/packer-avance/README.md`](environnement/packer-avance/README.md) |
 | Scénarios Killercoda du cursus | [`KILLERCODA.md`](KILLERCODA.md) |
 
-### F. Historique des versions de la box
+### F. Versions minimales requises
 
-| Version | Date | Contenu |
+| Composant | Version minimale | Remarque |
 |---|---|---|
-| **1.0.0** | *à remplir à la date du premier build réussi* | Version initiale : Rocky Linux 9, utilisateur `vagrant` (sudo NOPASSWD), nom d'hôte `devops-lab`, outils de base (`vim`, `nano`, `git`, `curl`, `wget`, `tmux`, `jq`, `tree`, `podman`, `buildah`, `skopeo`, `make`, `gcc`, `python3`, `rsync`, `unzip`, `tar`), outils DevOps épinglés (`kubectl` v1.30.5, `helm` v3.16.1, `trivy` 0.56.1, `syft` v1.14.0, `act` 0.2.68, `shellcheck` v0.10.0, `yq` v4.44.3), `firewalld` + SSH par clé, SELinux permissif, dossier partagé `/vagrant` = racine du dépôt, 4 Go de RAM, 2 vCPU, 40 Go de disque |
-| *1.1.0* | *à venir* | *Modèle de ligne : ajout de X, correction de Y. Le formateur renseigne ce tableau à chaque publication d'une release.* |
+| **VirtualBox** | 7.0 | 7.x recommandé ; vérifier avec `VBoxManage --version` |
+| **Vagrant** | 2.4 | `vagrant --version` |
+| **Box `rockylinux/9`** | 9.4 (`~> 9.4` : ≥ 9.4 et < 10) | Box publique officielle, provider `virtualbox` ; `vagrant box list` |
+| **Rocky Linux** (dans la VM) | 9.x | `cat /etc/rocky-release` |
+| **Outils DevOps** (provisionnés) | `kubectl` v1.30.5 · `helm` v3.16.1 · `trivy` 0.56.1 · `syft` v1.14.0 · `act` 0.2.68 · `shellcheck` v0.10.0 · `yq` v4.44.3 | Versions épinglées dans `environnement/scripts/02-devops-tools.sh` |
+| **Matériel** | 8 Go de RAM, ≈ 30 Go de disque libre, virtualisation VT-x/AMD-V | Voir le [§ 1.4](#14-prérequis-matériels) |
 
-> 📌 Chaque nouvelle version de la box est annoncée sur la page des [Releases](https://github.com/Ghislano26/devops-Worketyamo/releases) ; **ne mets à jour que si ton formateur l'indique** ([§ 8.2](#82-mettre-à-jour-la-box-elle-même)).
+> 📌 Note les versions réellement utilisées (`VBoxManage --version`, `vagrant --version`, `vagrant box list`) dans ton **journal de bord**.
 
 ---
 

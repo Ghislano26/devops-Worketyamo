@@ -1,24 +1,41 @@
 #!/usr/bin/env bash
 # 01-base.sh — paquets de base, configuration du poste de travail, Guest Additions VirtualBox.
-# Exécuté en root par Packer (voir execute_command dans rocky9-devops.pkr.hcl). Idempotent.
+# Paquets de base et configuration du poste de travail. Exécuté en root par Vagrant (chemin principal)
+# ou par Packer (option avancée, packer-avance/). Idempotent.
 set -euo pipefail
+
+# Il peut être relancé sans danger (« vagrant provision »).
+
+# Paquets OPTIONNELS : on tente le lot complet, puis paquet par paquet. Un paquet absent d'un dépôt
+# est signalé mais ne bloque pas le provisioning.
+installer_optionnels() {
+  dnf install -y "$@" && return 0
+  echo "==> [01-base] Lot incomplet : installation paquet par paquet" >&2
+  local p
+  for p in "$@"; do
+    if dnf install -y "$p" >/dev/null 2>&1; then echo "  + $p"; else echo "  ! $p indisponible (ignoré)" >&2; fi
+  done
+}
 
 echo "==> [01-base] Dépôt EPEL (htop, stress-ng, fail2ban, lynis, ncdu…)"
 # EPEL doit être installé AVANT les paquets qui en dépendent.
 dnf install -y epel-release
 dnf config-manager --set-enabled crb 2>/dev/null || /usr/bin/crb enable 2>/dev/null || true
 
-echo "==> [01-base] Paquets de base"
+echo "==> [01-base] Paquets indispensables (le provisioning échoue s'ils manquent)"
 dnf install -y \
   vim git curl wget tmux jq tree bash-completion \
   podman buildah skopeo \
-  make gcc python3 python3-pip nano rsync unzip tar \
-  man-db man-pages bind-utils nmap-ncat lsof strace tcpdump sysstat traceroute perf net-tools psmisc \
+  make gcc python3 python3-pip nano rsync unzip tar xz
+
+echo "==> [01-base] Paquets utilisés par les cours"
+installer_optionnels \
+  vim-enhanced man-db man-pages bind-utils nmap-ncat lsof strace tcpdump sysstat traceroute perf net-tools psmisc \
   dnf-utils dnf-automatic mlocate policycoreutils-python-utils setools-console audit \
   lvm2 e2fsprogs xfsprogs openssh-clients bc file which less iptables-nft
 
 echo "==> [01-base] Paquets issus d'EPEL"
-dnf install -y htop stress-ng fail2ban lynis ncdu
+installer_optionnels htop stress-ng fail2ban lynis ncdu
 
 # --- Guest Additions VirtualBox (dossier partagé /vagrant) -----------------------------------
 # Packer envoie l'ISO dans /tmp/VBoxGuestAdditions.iso ; on l'installe si elle est présente

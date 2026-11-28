@@ -10,9 +10,11 @@ Bienvenue dans le **cursus DevOps de Worketyamo** : un parcours complet, en fran
 
 👉 **[📘 Guide complet de l'environnement (GUIDE-ENVIRONNEMENT.md)](./GUIDE-ENVIRONNEMENT.md)**
 
+Tu vas **construire ta propre VM Rocky 9** à partir des fichiers fournis dans `environnement/`. Cela prend **15 à 30 minutes la première fois** (téléchargement de la box + provisioning). Toutes les étapes sont détaillées dans GUIDE-ENVIRONNEMENT.md.
+
 Ce guide t'accompagne **de l'installation jusqu'aux cas avancés** :
 
-- 📦 Installation pas-à-pas (VirtualBox + Vagrant + box Rocky 9)
+- 📦 Installation pas-à-pas (VirtualBox + Vagrant, puis `make up` : la VM se construit toute seule)
 - 🎯 Premier contact avec ta VM
 - 🔄 Workflow quotidien (comment travailler efficacement)
 - 💾 Snapshots et sauvegardes (ne jamais perdre son travail)
@@ -22,6 +24,7 @@ Ce guide t'accompagne **de l'installation jusqu'aux cas avancés** :
 
 **Compléments utiles** :
 
+- 📓 **[Journal de bord](./environnement/journaux/README.md)** : tu documentes ton installation (livrable du cours)
 - [📋 Cheatsheet des commandes](./environnement/CHEATSHEET.md) (à imprimer)
 - [🎬 Scénarios concrets](./environnement/SCENARIOS.md) (situations réelles)
 
@@ -106,7 +109,7 @@ Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis p
 
 ### [Module 00 — Installation de Rocky Linux 9 en machine virtuelle](00-installation-ubuntu-vm/README.md)
 
-Le **serveur d'entraînement** de tout le cursus est une VM **Rocky Linux 9** (binaire-compatible RHEL 9), fournie via Vagrant (voir le Guide de l'environnement). Ce module décrit comment la **recréer manuellement** (VMware ou VirtualBox).
+Le **serveur d'entraînement** de tout le cursus est une VM **Rocky Linux 9** (binaire-compatible RHEL 9), construite par chaque étudiant avec Vagrant (voir le Guide de l'environnement). Ce module décrit comment la **recréer manuellement** (VMware ou VirtualBox).
 
 **Prérequis** : Aucun : un ordinateur avec 8 Go de RAM et 60 Go de disque libres.
 
@@ -522,7 +525,7 @@ Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux
 
 > 📘 L'environnement de référence (VM, snapshots, dépannage, migration) est décrit en détail dans le [**Guide de l'environnement**](GUIDE-ENVIRONNEMENT.md), avec sa [cheatsheet](environnement/CHEATSHEET.md) et ses [scénarios](environnement/SCENARIOS.md). Le tableau ci-dessous en rappelle les prérequis matériels.
 
-Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9** (fournie via Vagrant, voir [GUIDE-ENVIRONNEMENT.md](GUIDE-ENVIRONNEMENT.md)). Si vous devez la recréer manuellement, la procédure est au [module 00](00-installation-ubuntu-vm/README.md).
+Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9** (que vous construisez avec Vagrant, voir [GUIDE-ENVIRONNEMENT.md](GUIDE-ENVIRONNEMENT.md)). Si vous devez la recréer manuellement, la procédure est au [module 00](00-installation-ubuntu-vm/README.md).
 
 | Élément | Minimum | Recommandé |
 |---|---|---|
@@ -576,5 +579,5 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
 | Scénarios Killercoda | **25** (17 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 36 800** |
+| Lignes de contenu (approximatif) | **≈ 37 100** |
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 03-hardening.sh — durcissement léger de la box + nettoyage avant empaquetage.
-# Dernier script exécuté par Packer (root). Les réglages SSH s'appliquent au prochain démarrage
-# afin de ne pas couper la session de Packer pendant le build.
+# Dernier script de provisioning (root), exécuté par Vagrant (chemin principal) ou par Packer (option
+# avancée). Sous Packer, les réglages SSH ne sont pas rechargés pour ne pas couper la session du build.
 set -euo pipefail
 
 log() { echo "==> [03-hardening] $*"; }
@@ -16,7 +16,7 @@ firewall-cmd --reload
 # --- SSH : pas de root, pas de mot de passe, clé publique uniquement --------------------------
 # Un fichier de configuration « 00-… » est lu AVANT ceux de la distribution (50-redhat.conf) :
 # avec sshd la première valeur rencontrée l'emporte.
-log "sshd : durcissement (effectif au prochain démarrage)"
+log "sshd : durcissement (pas de root, pas de mot de passe, clé publique seule)"
 cat > /etc/ssh/sshd_config.d/00-worketyamo-hardening.conf <<'EOF'
 PermitRootLogin no
 PasswordAuthentication no
@@ -40,16 +40,23 @@ if systemctl cat postfix.service &>/dev/null; then
   systemctl disable --now postfix || true
 fi
 
-# --- Nettoyage avant empaquetage (box plus petite, pas de traces du build) -----------------------
-log "Nettoyage"
-dnf clean all
-rm -rf /var/cache/dnf /var/tmp/*   # /tmp est laissé : Packer y dépose ses scripts
-: > /etc/machine-id
-rm -f /root/.bash_history /home/vagrant/.bash_history /root/ks-post.log
-journalctl --rotate && journalctl --vacuum-time=1s || true
-# Remplit l'espace libre de zéros puis le libère : le disque se compresse bien mieux.
-dd if=/dev/zero of=/EMPTY bs=1M 2>/dev/null || true
-rm -f /EMPTY
-sync
-
-log "Terminé : la VM va être éteinte par Packer"
+# --- Nettoyage avant empaquetage (UNIQUEMENT lors d'un build Packer) -----------------------------
+# Packer définit PACKER_BUILD_NAME dans l'environnement des scripts. Avec « vagrant up », ces
+# opérations seraient DESTRUCTRICES (machine-id vidé, disque rempli de zéros) : on les ignore.
+if [[ -n "${PACKER_BUILD_NAME:-}" ]]; then
+  log "Build Packer détecté : nettoyage avant empaquetage"
+  dnf clean all
+  rm -rf /var/cache/dnf /var/tmp/*   # /tmp est laissé : Packer y dépose ses scripts
+  : > /etc/machine-id
+  rm -f /root/.bash_history /home/vagrant/.bash_history /root/ks-post.log
+  journalctl --rotate && journalctl --vacuum-time=1s || true
+  # Remplit l'espace libre de zéros puis le libère : le disque se compresse bien mieux.
+  dd if=/dev/zero of=/EMPTY bs=1M 2>/dev/null || true
+  rm -f /EMPTY
+  sync
+  log "Terminé : la VM va être éteinte par Packer"
+else
+  # Provisioning Vagrant : la configuration SSH durcie peut être rechargée sans couper la session.
+  systemctl reload sshd
+  log "Terminé : durcissement appliqué (sshd rechargé)"
+fi

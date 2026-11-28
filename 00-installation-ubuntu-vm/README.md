@@ -1,4 +1,9 @@
-# Module 00 — Installation d'Ubuntu 24.04 LTS en machine virtuelle
+# Module 00 — Installation de Rocky Linux 9 en machine virtuelle
+
+> 📘 **La VM de référence est fournie par le formateur via Vagrant** (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)) : c'est la voie normale, elle ne demande aucune installation de système.
+> **Si tu dois recréer la VM manuellement** (pas de Vagrant possible, VMware imposé, besoin de comprendre l'installation), voici la procédure pour **Rocky Linux 9** : ce module la décrit pas à pas avec VirtualBox et VMware.
+
+> 🐧 *Le nom du dossier (`00-installation-ubuntu-vm`) est conservé pour ne pas casser les liens du dépôt ; son contenu décrit Rocky Linux 9.*
 
 ## Pourquoi une machine virtuelle ?
 
@@ -13,8 +18,8 @@ un *snapshot* (instantané) permet de revenir à un état sain en quelques secon
 │  ┌────────────────────────────────────────┐  │
 │  │ Hyperviseur (VMware / VirtualBox)      │  │
 │  │  ┌──────────────────────────────────┐  │  │
-│  │  │ VM invitée : Ubuntu 24.04 LTS    │  │  │
-│  │  │ 4 vCPU · 4 Go RAM · 40 Go disque │  │  │
+│  │  │ VM invitée : Rocky Linux 9       │  │  │
+│  │  │ 2 vCPU · 4 Go RAM · 40 Go disque │  │  │
 │  │  └──────────────────────────────────┘  │  │
 │  └────────────────────────────────────────┘  │
 └──────────────────────────────────────────────┘
@@ -23,11 +28,14 @@ un *snapshot* (instantané) permet de revenir à un état sain en quelques secon
 > 📌 **À retenir** : l'**hôte** est votre machine physique, l'**invité** (*guest*) est la VM.
 > L'**hyperviseur** est le logiciel qui crée et fait tourner les VM.
 
-## Pourquoi Ubuntu 24.04 LTS ?
+## Pourquoi Rocky Linux 9 ?
 
-- **LTS** (*Long Term Support*) : 5 ans de mises à jour de sécurité (jusqu'en 2029, extensible avec Ubuntu Pro).
-- Très répandue sur les serveurs et dans le cloud : ce que vous apprenez est directement réutilisable.
-- Documentation abondante, communauté active.
+- **Binaire-compatible avec RHEL 9** (Red Hat Enterprise Linux) : les commandes, les chemins, les paquets et les outils (`dnf`, `systemd`, `firewalld`, SELinux) sont ceux des serveurs d'entreprise.
+- **Gratuite** et communautaire : successeur de CentOS, sans licence.
+- **Support long** : mises à jour de sécurité jusqu'en **2032**.
+- Très présente en entreprise, dans le cloud et dans les certifications Red Hat (RHCSA, RHCE).
+
+> 🐧 **Et Ubuntu ?** Ubuntu (famille Debian : `apt`, `ufw`, AppArmor) reste très répandue ; les cours indiquent l'équivalent quand la commande diffère. Les ateliers Killercoda tournent sur Ubuntu.
 
 ## Contenu du module
 
@@ -45,32 +53,33 @@ personnel depuis 2024.
 
 | Paramètre | Valeur |
 |---|---|
-| vCPU | 4 |
+| vCPU | 2 (4 si votre machine le permet) |
 | Mémoire | 4 Go (4096 Mo) |
 | Disque | 40 Go (allocation dynamique) |
-| Réseau | NAT |
-| Firmware | UEFI |
-| Image | Ubuntu Server ou Desktop 24.04 LTS (amd64) |
+| Réseau | NAT (+ réseau privé *Host-only* si vous voulez joindre la VM depuis l'hôte) |
+| Firmware | BIOS ou UEFI (la VM Vagrant du cours est en BIOS) |
+| Image | **Rocky Linux 9** (`Rocky-9.x-x86_64-minimal.iso`, 64 bits) : <https://rockylinux.org/download> |
+| Nom d'hôte | `devops-lab` |
+| Utilisateur | `vagrant` (pour reproduire la VM de référence) ou votre identifiant |
 
-> ⚠️ **Attention** : sur Mac à processeur Apple Silicon (M1 à M4), l'architecture est **arm64**.
-> Téléchargez l'ISO « arm64 » et utilisez VMware Fusion ou UTM. VirtualBox ne gère pas bien
-> Ubuntu arm64 sur ces machines. Les commandes du cours sont identiques.
+> ⚠️ **Attention** : sur Mac à processeur Apple Silicon (M1 à M4), l'architecture est **aarch64** (arm64).
+> Téléchargez l'ISO « aarch64 » et utilisez **UTM** (gratuit) ou VMware Fusion. VirtualBox ne
+> convient pas à ces machines. Les commandes du cours sont identiques (voir le chapitre 12 du [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)).
 
-## Quelle variante d'Ubuntu choisir ?
+## Quelle variante de Rocky choisir ?
 
-- **Ubuntu Server** : sans interface graphique, léger, proche d'un vrai serveur. Idéal pour un cursus « console-first ».
-- **Ubuntu Desktop** : avec interface graphique. Plus confortable pour débuter (copier-coller, navigateur). Ouvrez simplement un terminal (`Ctrl+Alt+T`).
+- **Minimal** (ISO `minimal`) : sans interface graphique, léger, très proche d'un vrai serveur. Idéal pour un cursus « console-first » : **recommandé**.
+- **DVD** avec *Server with GUI* : interface graphique. Plus confortable pour débuter (copier-coller, navigateur). Ouvrez simplement un terminal depuis les applications.
 
-Les ateliers fonctionnent sur les deux. Ce cursus recommande **Server** si votre machine le
-permet, sinon **Desktop**.
+Les ateliers fonctionnent sur les deux. Ce cursus recommande **Minimal** (la VM Vagrant du cours est une installation minimale).
 
 ## Checklist de fin de module
 
 - [ ] La VM démarre et vous pouvez vous connecter.
-- [ ] `lsb_release -a` affiche *Ubuntu 24.04*.
-- [ ] La VM accède à Internet (`ping -c 2 ubuntu.com`).
-- [ ] Le système est à jour (`sudo apt update && sudo apt upgrade`).
-- [ ] Un utilisateur non-root avec `sudo` est en place.
+- [ ] `cat /etc/rocky-release` affiche *Rocky Linux release 9*.
+- [ ] La VM accède à Internet (`ping -c 2 rockylinux.org`).
+- [ ] Le système est à jour (`sudo dnf upgrade -y`).
+- [ ] Un utilisateur non-root avec `sudo` (groupe `wheel`) est en place.
 - [ ] Un snapshot nommé **« 00-installation-propre »** existe.
 
 Le détail des commandes se trouve dans la [checklist post-installation](checklist-post-installation.md).

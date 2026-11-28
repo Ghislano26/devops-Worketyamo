@@ -10,7 +10,7 @@
 
 - Modules 00 et 01 terminés ; snapshot de la VM pris.
 - Cours lu : [Processus, signaux et services systemd](../cours/01-processus-services.md).
-- Paquets : `htop` (installé via la checklist), `python3` (présent par défaut).
+- Paquets : `htop` (EPEL, déjà installé dans la VM du cours), `python3` (présent par défaut).
 
 ## 🧪 Scénario
 
@@ -273,4 +273,4 @@ journalctl -u heartbeat --no-pager | grep -iE "restart|signal" | tail -n 3
 
 ---
 
-Atelier suivant : [APT](atelier-02-apt-gestion-paquets.md).
+Atelier suivant : [Gestion des paquets avec DNF](atelier-02-apt-gestion-paquets.md).

@@ -1,5 +1,8 @@
 # Noyau Linux et performance
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Quand une application « rame », la cause se trouve rarement dans l'application seule : saturation CPU,
@@ -56,7 +59,7 @@ vmstat 1 5                     # r = file d'exécution ; us/sy/id/wa = user/syst
 mpstat -P ALL 1 3              # par cœur (paquet sysstat)
 pidstat 1 3                    # par processus
 top -H -p <PID>                # par thread
-perf top                       # profilage (paquet linux-tools-generic)
+perf top                       # profilage (paquet perf)
 ```
 
 Interprétation de `vmstat` :
@@ -141,7 +144,7 @@ Les **hugepages** (2 Mo ou 1 Go) réduisent la pression sur la table des pages (
 
 ```bash
 iostat -xz 1 3                 # (sysstat) latences et utilisation par disque
-iotop -oPa                     # processus qui font des E/S (sudo apt install iotop)
+pidstat -d 1 3                 # E/S par processus (sysstat) ; alternative : iotop (sudo dnf install iotop, si le dépôt le propose)
 sudo blktrace -d /dev/sda      # trace avancée
 cat /sys/block/sda/queue/scheduler    # ordonnanceur d'E/S : [mq-deadline] none
 df -h ; df -i
@@ -227,9 +230,9 @@ Persistance pour un utilisateur : `/etc/security/limits.d/`. Pour un service sys
 cat /proc/pressure/cpu /proc/pressure/memory /proc/pressure/io   # PSI : « pression » ressenti
 sudo perf stat -a sleep 2
 sudo perf record -F 99 -a -g -- sleep 10 && sudo perf report
-sudo apt install -y bpftrace bpfcc-tools
-sudo opensnoop-bpfcc                     # fichiers ouverts, en temps réel
-sudo execsnoop-bpfcc                     # processus lancés
+sudo dnf install -y bpftrace bcc-tools     # outils eBPF (bcc-tools installe /usr/share/bcc/tools/)
+sudo /usr/share/bcc/tools/opensnoop      # fichiers ouverts, en temps réel (Ubuntu : opensnoop-bpfcc)
+sudo /usr/share/bcc/tools/execsnoop      # processus lancés (Ubuntu : execsnoop-bpfcc)
 ```
 
 Les **PSI** (*Pressure Stall Information*) indiquent le temps passé par des tâches à attendre une ressource : métrique très fiable de saturation.
@@ -256,7 +259,8 @@ UEFI → GRUB → noyau + initramfs → systemd
 
 ```bash
 cat /etc/default/grub                 # options du noyau (GRUB_CMDLINE_LINUX)
-sudo update-grub                      # régénère la configuration
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg   # régénère la configuration (Ubuntu : update-grub)
+sudo grubby --info=ALL | head -n 8             # options des noyaux (grubby modifie aussi : --update-kernel=ALL --args=...)
 ls /boot                              # noyaux installés
 systemd-analyze blame | head
 ```

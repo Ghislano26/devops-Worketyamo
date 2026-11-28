@@ -3,11 +3,22 @@
 # Exécuté en root par Packer (voir execute_command dans rocky9-devops.pkr.hcl). Idempotent.
 set -euo pipefail
 
+echo "==> [01-base] Dépôt EPEL (htop, stress-ng, fail2ban, lynis, ncdu…)"
+# EPEL doit être installé AVANT les paquets qui en dépendent.
+dnf install -y epel-release
+dnf config-manager --set-enabled crb 2>/dev/null || /usr/bin/crb enable 2>/dev/null || true
+
 echo "==> [01-base] Paquets de base"
 dnf install -y \
   vim git curl wget tmux jq tree bash-completion \
   podman buildah skopeo \
-  make gcc python3 python3-pip nano rsync unzip tar
+  make gcc python3 python3-pip nano rsync unzip tar \
+  man-db man-pages bind-utils nmap-ncat lsof strace tcpdump sysstat traceroute perf net-tools psmisc \
+  dnf-utils dnf-automatic mlocate policycoreutils-python-utils setools-console audit \
+  lvm2 e2fsprogs xfsprogs openssh-clients bc file which less iptables-nft
+
+echo "==> [01-base] Paquets issus d'EPEL"
+dnf install -y htop stress-ng fail2ban lynis ncdu
 
 # --- Guest Additions VirtualBox (dossier partagé /vagrant) -----------------------------------
 # Packer envoie l'ISO dans /tmp/VBoxGuestAdditions.iso ; on l'installe si elle est présente
@@ -50,9 +61,9 @@ chown vagrant:vagrant /home/vagrant/.vimrc
 # --- Prompt bash : rend l'environnement reconnaissable ----------------------------------------
 echo "==> [01-base] Configuration du prompt bash"
 cat > /etc/profile.d/worketyamo.sh <<'EOF'
-# Prompt : [utilisateur@devops-lab dossier]$  (vert pour l'utilisateur, jaune pour le dossier)
+# Prompt de style Rocky : [utilisateur@devops-lab dossier]$  (vert pour l'utilisateur, jaune pour le dossier)
 if [ -n "${BASH_VERSION:-}" ] && [ "$(id -u)" -ne 0 ]; then
-  PS1='\[\e[1;32m\]\u@\h\[\e[0m\] \[\e[1;33m\]\w\[\e[0m\]\$ '
+  PS1='\[\e[1;32m\][\u@\h\[\e[0m\] \[\e[1;33m\]\W\[\e[0m\]\[\e[1;32m\]]\$\[\e[0m\] '
 fi
 alias ll='ls -lah --color=auto'
 alias ..='cd ..'

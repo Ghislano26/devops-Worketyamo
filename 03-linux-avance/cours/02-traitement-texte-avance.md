@@ -1,5 +1,8 @@
 # Traitement de texte avancé : `grep`, `sed`, `awk` et expressions régulières
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Les journaux, fichiers de configuration, sorties de commandes : sous Linux, tout est du **texte**. Savoir
@@ -158,7 +161,7 @@ xargs                               # transforme l'entrée standard en arguments
 find . -name "*.log" -print0 | xargs -0 grep -l "ERROR"   # chaîne sûre avec espaces
 ```
 
-Pour du JSON, utilisez `jq` (`sudo apt install -y jq`) :
+Pour du JSON, utilisez `jq` (`sudo dnf install -y jq`) :
 
 ```bash
 echo '{"nom":"Awa","age":30}' | jq '.nom'
@@ -185,8 +188,8 @@ awk '{s += $10} END {printf "%.2f Mo\n", s/1024/1024}' access.log
 # Pages en erreur 5xx
 awk '$9 ~ /^5/ {print $7}' access.log | sort | uniq -c | sort -nr
 
-# Échecs SSH par IP
-grep "Failed password" /var/log/auth.log | grep -oE "from [0-9.]+" | sort | uniq -c | sort -nr | head
+# Échecs SSH par IP (Rocky : /var/log/secure ; Ubuntu : /var/log/auth.log)
+sudo grep "Failed password" /var/log/secure | grep -oE "from [0-9.]+" | sort | uniq -c | sort -nr | head
 ```
 
 ## 7. Pipelines : bonnes pratiques

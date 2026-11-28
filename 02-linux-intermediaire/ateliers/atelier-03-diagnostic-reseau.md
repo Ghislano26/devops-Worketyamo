@@ -1,5 +1,7 @@
 # Atelier 03 — Diagnostic réseau
 
+> 🐧 *Version Rocky Linux 9 : `nmcli` (NetworkManager) remplace `netplan`/`resolvectl`, `firewalld` remplace `ufw`.*
+
 ## 🎯 Objectifs
 
 - Lire la configuration réseau d'une machine (IP, route, DNS).
@@ -11,9 +13,10 @@
 
 - Atelier [02](atelier-02-apt-gestion-paquets.md) terminé (nginx n'est pas obligatoire ici, il sera réinstallé si besoin).
 - Cours lu : [Réseau, bases](../cours/03-reseaux-base.md).
-- Paquets : `dnsutils`, `netcat-openbsd`, `traceroute`, `curl` (checklist du module 00).
+- Paquets : `bind-utils` (`dig`), `nmap-ncat` (`nc`), `traceroute`, `curl`, `tcpdump` : déjà installés dans la VM du cours.
+- Un second terminal **sur votre ordinateur hôte** (pour tester le pare-feu depuis l'extérieur de la VM).
 
-> ⚠️ **Attention** : cet atelier modifie temporairement la résolution DNS et le pare-feu. Prenez un **snapshot** et travaillez depuis la console de la VM (pas en SSH) pour ne pas vous enfermer dehors.
+> ⚠️ **Attention** : cet atelier modifie temporairement la résolution DNS et le pare-feu. Prenez un **snapshot** (`vagrant snapshot save avant-reseau`) et gardez la console VirtualBox comme accès de secours. Ne touchez pas à `enp0s3` (NAT, utilisée par `vagrant ssh`) autrement que comme décrit.
 
 ## 🧪 Scénario
 
@@ -28,8 +31,9 @@ télécharger de mises à jour ni à joindre le site ». Vous jouez le technicie
 ```bash
 ip -br a
 ip route
-resolvectl status | grep -E "Current DNS|DNS Servers" | head -3
-cat /etc/resolv.conf | grep -v '^#'
+nmcli device status
+nmcli device show enp0s3 | grep -E 'IP4.DNS|IP4.GATEWAY'
+grep -v '^#' /etc/resolv.conf
 ```
 
 Notez dans un fichier :
@@ -38,7 +42,7 @@ Notez dans un fichier :
 mkdir -p ~/reseau && {
   echo "IP et interfaces :"; ip -br a
   echo; echo "Routes :"; ip route
-  echo; echo "DNS :"; resolvectl dns
+  echo; echo "DNS :"; grep '^nameserver' /etc/resolv.conf
 } > ~/reseau/etat-normal.txt
 ```
 
@@ -50,8 +54,8 @@ mkdir -p ~/reseau && {
 ping -c 2 127.0.0.1                                  # pile réseau locale
 ping -c 2 "$(ip route show default | cut -d' ' -f3)" # passerelle
 ping -c 2 1.1.1.1                                    # Internet sans DNS
-ping -c 2 ubuntu.com                                 # Internet avec DNS
-curl -sI https://ubuntu.com | head -1                # application (HTTP)
+ping -c 2 rockylinux.org                                 # Internet avec DNS
+curl -sI https://rockylinux.org | head -1                # application (HTTP)
 ```
 
 > ❓ **Question 2** : Si seul le dernier `ping` échouait, dans quelle couche chercheriez-vous la panne ?
@@ -78,71 +82,78 @@ Arrêtez le serveur : `kill %1` (ou `pkill -f "http.server 8080"`).
 
 ### Étape 4 — Panne n°1 : le DNS
 
-Cassez le DNS **pour une seule interface** de façon réversible, en pointant vers un serveur inexistant :
+Cassez le DNS **pour une seule interface**, de façon réversible, en pointant vers un serveur inexistant et en ignorant les DNS reçus par DHCP :
 
 ```bash
-sudo resolvectl dns "$(ip route show default | cut -d' ' -f5)" 203.0.113.1
-resolvectl dns
+IF=$(ip route show default | cut -d' ' -f5)
+sudo nmcli device modify "$IF" ipv4.dns 203.0.113.1 ipv4.ignore-auto-dns yes
+grep '^nameserver' /etc/resolv.conf
 ping -c 2 -W 2 1.1.1.1                 # fonctionne
-ping -c 2 -W 2 ubuntu.com              # échoue : « Temporary failure in name resolution »
-dig +time=2 +tries=1 ubuntu.com | tail -5
+ping -c 2 -W 2 rockylinux.org          # échoue : « Temporary failure in name resolution »
+dig +time=2 +tries=1 rockylinux.org | tail -5
 ```
 
 Diagnostic :
 
 ```bash
-dig @1.1.1.1 +short ubuntu.com          # un serveur DNS valide répond-il ?
-getent hosts ubuntu.com || echo "résolution système KO"
+dig @1.1.1.1 +short rockylinux.org      # un serveur DNS valide répond-il ?
+getent hosts rockylinux.org || echo "résolution système KO"
 ```
 
-> ❓ **Question 4** : Pourquoi `ping 1.1.1.1` réussit-il alors que `ping ubuntu.com` échoue ? Que conclut-on ?
+> ❓ **Question 4** : Pourquoi `ping 1.1.1.1` réussit-il alors que `ping rockylinux.org` échoue ? Que conclut-on ?
 
-Réparation :
+Réparation (la modification de `nmcli device modify` n'est pas écrite dans le profil : on réapplique celui-ci) :
 
 ```bash
-sudo resolvectl revert "$(ip route show default | cut -d' ' -f5)"
-resolvectl dns
-ping -c 2 ubuntu.com
+sudo nmcli device reapply "$IF"
+grep '^nameserver' /etc/resolv.conf
+ping -c 2 rockylinux.org
 ```
 
 ### Étape 5 — Panne n°2 : le pare-feu
 
-Installez un serveur web de test et autorisez SSH avant d'activer le pare-feu :
+Installez un serveur web de test et observez le pare-feu **avant** de toucher à quoi que ce soit :
 
 ```bash
-sudo apt install -y nginx
+sudo dnf install -y nginx
+sudo systemctl enable --now nginx
 curl -sI http://localhost | head -1
-sudo ufw allow OpenSSH
-sudo ufw --force enable
-sudo ufw status verbose
+sudo systemctl enable --now firewalld
+sudo firewall-cmd --get-active-zones
+sudo firewall-cmd --list-all
 ```
 
-Bloquez le port 80 et testez **depuis l'extérieur de la machine locale** (via l'IP réelle, pas via `localhost`) :
+La zone `public` n'autorise que `ssh` : le port 80 est donc **déjà filtré** depuis l'extérieur. Vérifiez-le **depuis votre ordinateur hôte** (second terminal, adresse du réseau privé de la VM) :
 
 ```bash
-IP=$(hostname -I | cut -d' ' -f1)
-echo "Mon IP : $IP"
-sudo ufw deny 80/tcp
-curl -sI --max-time 3 http://$IP | head -1 || echo "bloqué par le pare-feu"
-nc -zv -w 2 "$IP" 80
+# Sur l'HÔTE (pas dans la VM) :
+curl -sI --max-time 3 http://192.168.56.10 | head -1 || echo "bloqué par le pare-feu"
 ```
 
-> ❓ **Question 5** : Pourquoi `curl http://localhost` peut-il fonctionner alors que `http://$IP` est bloqué ? *(Indice : interface `lo`, règles `ufw` par défaut.)*
+> ❓ **Question 5** : Pourquoi `curl http://localhost` fonctionne-t-il **dans la VM** alors que la même requête depuis l'hôte est bloquée ? *(Indice : le trafic de l'interface `lo` est toujours accepté ; un test depuis la machine elle-même ne prouve rien sur le pare-feu.)*
 
-Réparation :
+Ouvrez le port (d'abord en temporaire), puis retestez depuis l'hôte :
 
 ```bash
-sudo ufw delete deny 80/tcp
-sudo ufw allow 80/tcp
-curl -sI --max-time 3 http://$IP | head -1
+sudo firewall-cmd --add-service=http --timeout=120      # ouvert 120 s seulement
+# Sur l'HÔTE :  curl -sI --max-time 3 http://192.168.56.10 | head -1     → HTTP/1.1 200 OK
+sudo firewall-cmd --list-services
 ```
 
-> ❓ **Question 6** : Quelle différence observe-t-on entre un port **fermé** (« Connection refused ») et un port **filtré** par un pare-feu (délai d'attente) ? Testez : `nc -zv -w 2 $IP 9999` (fermé) contre un `ufw deny 9999` puis le même test.
+Rendre l'ouverture permanente, puis la défaire :
+
+```bash
+sudo firewall-cmd --permanent --add-service=http && sudo firewall-cmd --reload
+sudo firewall-cmd --list-services
+sudo firewall-cmd --permanent --remove-service=http && sudo firewall-cmd --reload
+```
+
+> ❓ **Question 6** : Quelle différence observe-t-on entre un port **rejeté** (la zone `public` répond tout de suite « No route to host » / `Connection refused`) et un port **abandonné silencieusement** (délai d'attente) ? Testez : depuis l'hôte, `nc -zv -w 3 192.168.56.10 9999` ; puis dans la VM `sudo firewall-cmd --zone=drop --change-interface=enp0s8` et relancez le test (délai) ; enfin `sudo firewall-cmd --zone=public --change-interface=enp0s8` pour revenir.
 
 ### Étape 6 — Observer le trafic
 
 ```bash
-sudo apt install -y tcpdump
+sudo dnf install -y tcpdump
 sudo timeout 15 tcpdump -i any -n port 53 -c 6 &
 sleep 1
 dig +short example.org > /dev/null
@@ -168,7 +179,7 @@ sudo sed -i '/intranet.kamer.local/d' /etc/hosts
 
 ```bash
 traceroute -n 1.1.1.1 | head
-tracepath -n ubuntu.com | head
+tracepath -n rockylinux.org | head
 ```
 
 ### Étape 9 — Rédiger le rapport d'incident
@@ -200,25 +211,27 @@ Remplissez-le à partir de ce que vous avez observé dans les étapes 4 et 5.
 ### Étape 10 — Remise en état
 
 ```bash
-sudo ufw disable
-sudo apt purge -y nginx && sudo apt autoremove -y
+sudo firewall-cmd --get-active-zones      # enp0s8 doit être revenue en zone « public »
+sudo firewall-cmd --list-services       # seulement ssh (et dhcpv6-client)
+sudo systemctl disable --now nginx
+sudo dnf remove -y nginx && sudo dnf autoremove -y
 ```
 
 ## ✅ Validation
 
 - [ ] `~/reseau/etat-normal.txt` contient IP, routes et DNS.
 - [ ] Vous avez reproduit la panne DNS (`ping IP` OK, `ping nom` KO) puis l'avez réparée.
-- [ ] Vous avez reproduit un blocage de pare-feu sur le port 80 puis l'avez levé.
-- [ ] Vous distinguez « port fermé » (refus immédiat) et « port filtré » (silence).
-- [ ] `ufw` est désactivé ou ne bloque rien d'essentiel en fin d'atelier.
+- [ ] Vous avez constaté le filtrage du port 80 par `firewalld` depuis l'hôte, puis l'avez ouvert (temporaire puis permanent) et refermé.
+- [ ] Vous distinguez « port rejeté » (refus immédiat) et « port abandonné » (silence, zone `drop`).
+- [ ] `firewalld` est revenu à sa configuration d'origine (zone `public`, service `ssh` seul).
 - [ ] `~/reseau/rapport.md` est rempli.
 
 ## 💡 Pour aller plus loin
 
-- **Défi 1** : configurez une IP statique avec Netplan (`sudo netplan try`) puis revenez en DHCP.
+- **Défi 1** : configurez une IP statique sur une interface factice avec `nmcli connection add type dummy …` (voir le cours), puis supprimez-la.
 - **Défi 2** : écrivez un script qui teste automatiquement passerelle, IP publique, DNS et HTTP et affiche `OK`/`KO` pour chacun.
 - **Défi 3** : interrogez les enregistrements MX et NS d'un domaine avec `dig`.
-- **Défi 4** : utilisez `mtr -rw -c 10 ubuntu.com` pour repérer un saut avec perte de paquets.
+- **Défi 4** : utilisez `mtr -rw -c 10 rockylinux.org` pour repérer un saut avec perte de paquets.
 
 ---
 
@@ -232,13 +245,13 @@ sudo apt purge -y nginx && sudo apt autoremove -y
 - Lance un petit serveur local : `python3 -m http.server 8088 --bind 127.0.0.1 &`.
 - Ajoute **volontairement** la mauvaise entrée `127.0.0.9 intranet.kamer.test` à `/etc/hosts`.
 - Constate que `curl --max-time 3 http://intranet.kamer.test:8088/` échoue, puis établis le diagnostic : que renvoie `getent hosts intranet.kamer.test` ? Sur quelle adresse le serveur écoute-t-il (`ss`) ? Que donne `curl http://127.0.0.1:8088/` ?
-- Écris dans `~/defi-reseau.txt` : la cause en une phrase, l'IP de ta passerelle par défaut (`ip route`) et le serveur DNS utilisé (`resolvectl`).
+- Écris dans `~/defi-reseau.txt` : la cause en une phrase, l'IP de ta passerelle par défaut (`ip route`) et le serveur DNS utilisé (`/etc/resolv.conf`).
 - Corrige `/etc/hosts` (l'entrée doit pointer vers `127.0.0.1`) et vérifie que `curl` répond `200`.
 
 **Indices** (à consulter seulement si bloqué) :
 - `ss -tlnp | grep 8088` montre l'adresse d'écoute : `127.0.0.1:8088`.
 - `curl: (7) Failed to connect` (« refused ») = personne n'écoute à cette adresse ; ici 127.0.0.9 ≠ 127.0.0.1.
-- `ip route | grep default` donne la passerelle ; `resolvectl status | grep 'Current DNS'` le DNS.
+- `ip route | grep default` donne la passerelle ; `grep -m1 '^nameserver' /etc/resolv.conf` le DNS.
 
 **Critères de réussite** :
 - [ ] `curl -s -o /dev/null -w '%{http_code}' http://intranet.kamer.test:8088/` renvoie `200`.
@@ -264,7 +277,7 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/          # 200 :
 {
   echo "Cause : /etc/hosts envoie intranet.kamer.test vers 127.0.0.9 alors que le service écoute sur 127.0.0.1."
   echo "Passerelle : $(ip route | grep default | cut -d' ' -f3)"
-  echo "DNS : $(resolvectl status | grep -m1 'Current DNS')"
+  echo "DNS : $(grep -m1 '^nameserver' /etc/resolv.conf)"
 } > ~/defi-reseau.txt
 
 sudo sed -i 's/^127.0.0.9 intranet.kamer.test/127.0.0.1 intranet.kamer.test/' /etc/hosts

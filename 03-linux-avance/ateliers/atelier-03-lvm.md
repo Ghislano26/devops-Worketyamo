@@ -27,7 +27,7 @@ chaud avec un second « disque », et vous protéger d'une suppression accidente
 ### Étape 1 — Installer les outils et fabriquer deux « disques »
 
 ```bash
-sudo apt install -y lvm2
+rpm -q lvm2 || sudo dnf install -y lvm2     # déjà installé dans la VM du cours
 sudo mkdir -p /var/lvm-atelier
 sudo truncate -s 300M /var/lvm-atelier/disque1.img
 sudo truncate -s 300M /var/lvm-atelier/disque2.img
@@ -223,7 +223,7 @@ grep documents /etc/fstab || echo "fstab propre"
 <summary>Voir la solution</summary>
 
 ```bash
-sudo apt install -y lvm2
+rpm -q lvm2 || sudo dnf install -y lvm2     # déjà installé dans la VM du cours
 sudo truncate -s 400M /var/defi-lvm.img
 D=$(sudo losetup -f --show /var/defi-lvm.img)
 sudo pvcreate "$D" && sudo vgcreate vg_defi "$D"

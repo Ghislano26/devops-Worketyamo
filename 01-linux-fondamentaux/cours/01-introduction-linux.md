@@ -1,5 +1,8 @@
 # Introduction à Linux et à la console
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Linux fait tourner la grande majorité des serveurs web, des services cloud, des
@@ -37,7 +40,7 @@ ensemble s'appelle une **distribution**.
 | Arch | Arch, Manjaro | `pacman` | Utilisateurs avancés |
 | Alpine | Alpine | `apk` | Conteneurs (très léger) |
 
-> 📌 **À retenir** : Linux = noyau. Ubuntu = distribution (noyau + outils + paquets + politique de mises à jour). Dans ce cours, nous utilisons **Ubuntu 24.04 LTS** (nom de code « Noble Numbat »).
+> 📌 **À retenir** : Linux = noyau. Ubuntu = distribution (noyau + outils + paquets + politique de mises à jour). Dans ce cours, nous utilisons **Rocky Linux 9** (famille Red Hat, binaire-compatible avec RHEL 9, fournie dans la VM du cours). Ubuntu appartient à la famille Debian : mêmes concepts, gestionnaire de paquets différent (`apt` au lieu de `dnf`).
 
 ## 2. Philosophie Unix
 
@@ -56,7 +59,7 @@ Cette dernière idée est fondamentale. Exemple : `/dev/sda` représente un disq
 |---|---|
 | **Terminal** | La fenêtre (ou l'écran) où vous tapez et lisez du texte. |
 | **Console** | À l'origine, le terminal physique relié directement à la machine. Par extension, l'écran texte d'un serveur. |
-| **Shell** | Le programme qui **interprète** vos commandes. Sous Ubuntu, c'est **Bash** (*Bourne Again SHell*). |
+| **Shell** | Le programme qui **interprète** vos commandes. Sous Rocky Linux comme sous Ubuntu, c'est **Bash** (*Bourne Again SHell*). |
 
 ```text
 Vous ──► Terminal ──► Shell (bash) ──► Noyau ──► Matériel
@@ -72,9 +75,9 @@ echo $0            # shell en cours d'exécution
 ## 4. Anatomie du prompt
 
 ```text
-etudiant@ubuntu-devops:~/projets$
-└───┬──┘ └─────┬─────┘ └───┬───┘│
- utilisateur  machine   répertoire  └─ $ = utilisateur normal ; # = root
+[vagrant@devops-lab projets]$
+ └──┬──┘ └───┬────┘ └──┬──┘ │
+ utilisateur  machine     répertoire  └─ $ = utilisateur normal ; # = root
 ```
 
 > ⚠️ **Attention** : un prompt qui se termine par `#` indique une session **root**. Chaque commande
@@ -143,7 +146,7 @@ pwd           # où suis-je ?
 
 ## Résumé
 
-- Linux est un **noyau** ; Ubuntu est une **distribution** qui l'embarque avec des outils et des paquets.
+- Linux est un **noyau** ; Rocky Linux (comme Ubuntu) est une **distribution** qui l'embarque avec des outils et des paquets.
 - Philosophie Unix : petits outils, texte, pipes, « tout est fichier ».
 - Terminal ≠ shell : le **shell** (Bash) interprète vos commandes.
 - Une commande = `commande [options] [arguments]`.
@@ -154,5 +157,5 @@ pwd           # où suis-je ?
 
 - Lire `man bash` (sections *INVOCATION* et *SHELL BUILTIN COMMANDS*).
 - Histoire : Unix (1969), GNU (1983), Linux (1991).
-- Site officiel : <https://ubuntu.com> et <https://www.kernel.org>.
+- Sites officiels : <https://rockylinux.org>, <https://www.kernel.org> (et <https://ubuntu.com> pour comparer avec la famille Debian).
 - Cours suivant : [Le système de fichiers](02-systeme-fichiers.md).

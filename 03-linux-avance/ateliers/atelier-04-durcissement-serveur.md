@@ -1,4 +1,6 @@
-# Atelier 04 — Durcissement d'un serveur Ubuntu
+# Atelier 04 — Durcissement d'un serveur Rocky Linux
+
+> 🐧 *Version Rocky Linux 9 : `dnf-automatic`, `firewalld` et SELinux remplacent `unattended-upgrades`, `ufw` et AppArmor. La box livrée applique déjà un durcissement SSH minimal et active `firewalld` : l'état « avant » n'est donc pas celui d'un serveur vierge.*
 
 ## 🎯 Objectifs
 
@@ -11,14 +13,14 @@
 
 - Ateliers [01](atelier-01-scripts-automatisation.md) à [03](atelier-03-lvm.md) et atelier SSH ([module 02](../../02-linux-intermediaire/ateliers/atelier-04-ssh-securise.md)) terminés.
 - Cours lu : [Sécurité et durcissement](../cours/04-securite-durcissement.md).
-- Snapshot de la VM pris. **Gardez une seconde session ouverte** pendant tout l'atelier.
-- Une clé SSH fonctionnelle pour votre utilisateur (sinon, **ne désactivez pas** l'authentification par mot de passe).
+- Snapshot de la VM pris (`vagrant snapshot save avant-durcissement`). **Gardez une seconde session ouverte** (`vagrant ssh` dans un autre terminal) pendant tout l'atelier.
+- Une clé SSH fonctionnelle pour votre utilisateur : c'est le cas avec `vagrant ssh` (clé gérée par Vagrant). Ne désactivez **jamais** l'authentification par mot de passe sans clé valide.
 
 > ⚠️ **Attention** : ne faites pas cet atelier sur un serveur de production réel sans plan de retour arrière.
 
 ## 🧪 Scénario
 
-*Kamer Logistics* ouvre son serveur `ubuntu-devops` sur Internet dans 48 heures. Un audit interne exige : zéro
+*Kamer Logistics* ouvre son serveur `devops-lab` sur Internet dans 48 heures. Un audit interne exige : zéro
 mot de passe SSH, pare-feu *deny by default*, protection anti-force-brute, noyau durci, et un score d'audit
 mesurable. Vous êtes responsable du durcissement et devez livrer un **avant/après**.
 
@@ -28,13 +30,13 @@ mesurable. Vous êtes responsable du durcissement et devez livrer un **avant/apr
 
 ```bash
 mkdir -p ~/durcissement && cd ~/durcissement
-sudo apt update && sudo apt install -y lynis fail2ban ufw auditd libpam-pwquality
+sudo dnf install -y lynis fail2ban fail2ban-firewalld audit libpwquality     # lynis et fail2ban : dépôt EPEL
 sudo lynis audit system --quiet --no-colors > lynis-avant.txt 2>&1
 grep -E "Hardening index" lynis-avant.txt
 sudo ss -tulpn > ports-avant.txt
 sudo sshd -T | grep -E "^(permitrootlogin|passwordauthentication|maxauthtries|x11forwarding)" > ssh-avant.txt
 cat ssh-avant.txt
-sudo ufw status | head -1
+sudo firewall-cmd --state
 ```
 
 Notez votre **Hardening index** : c'est votre point de départ.
@@ -47,19 +49,22 @@ Notez votre **Hardening index** : c'est votre point de départ.
 awk -F: '$3==0 {print "UID 0 :", $1}' /etc/passwd
 sudo awk -F: '$2=="" {print "SANS MOT DE PASSE :", $1}' /etc/shadow
 grep -vE "nologin|false|sync" /etc/passwd | cut -d: -f1,7
-getent group sudo
+getent group wheel
 ```
 
-> ❓ **Question 2** : Quel est le seul compte censé avoir l'UID 0 ? Que signifierait un second compte avec l'UID 0 ?
+> ❓ **Question 2** : Quel est le seul compte censé avoir l'UID 0 ? Que signifierait un second compte avec l'UID 0 ? Quel groupe donne les droits `sudo` sur Rocky (équivalent du groupe `sudo` d'Ubuntu) ?
 
 ### Étape 3 — Mises à jour de sécurité automatiques
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-cat /etc/apt/apt.conf.d/20auto-upgrades
-sudo systemctl enable --now unattended-upgrades
-systemctl is-active unattended-upgrades
-sudo unattended-upgrade --dry-run --debug 2>&1 | grep -E "Allowed origins|Packages that will be upgraded" 
+sudo dnf upgrade -y
+sudo dnf install -y dnf-automatic
+grep -E '^(upgrade_type|apply_updates)' /etc/dnf/automatic.conf
+sudo sed -i 's/^upgrade_type.*/upgrade_type = security/; s/^apply_updates.*/apply_updates = yes/' /etc/dnf/automatic.conf
+sudo systemctl enable --now dnf-automatic-install.timer
+systemctl is-enabled dnf-automatic-install.timer
+systemctl list-timers 'dnf-automatic*' --no-pager
+sudo dnf upgrade --security --assumeno 2>&1 | tail -n 5
 ```
 
 ### Étape 4 — SSH durci
@@ -81,26 +86,34 @@ sudo sshd -t && echo "syntaxe OK"
 sudo sshd -T | grep -E "^(permitrootlogin|passwordauthentication|maxauthtries|x11forwarding)"
 ```
 
-**Avant** de recharger, ouvrez une **deuxième connexion SSH par clé** pour vous assurer qu'elle fonctionne, puis :
+> 💡 La box contient déjà `/etc/ssh/sshd_config.d/00-worketyamo-hardening.conf` (pas de root, pas de mot de passe). Notre fichier `00-durcissement.conf` complète ce réglage ; avec `sshd`, la **première** valeur lue l'emporte, et les fichiers sont lus dans l'ordre alphabétique.
+
+**Avant** de recharger, ouvrez une **deuxième connexion SSH par clé** (`vagrant ssh` dans un autre terminal) pour vous assurer qu'elle fonctionne, puis :
 
 ```bash
-sudo systemctl reload ssh
+sudo systemctl reload sshd
 ```
 
 > ❓ **Question 3** : Que vérifie-t-on en ouvrant la seconde session *avant* de recharger ?
 
-### Étape 5 — Pare-feu *deny by default*
+### Étape 5 — Pare-feu *deny by default* (`firewalld`)
 
 ```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw limit OpenSSH
-sudo ufw --force enable
-sudo ufw status verbose
-sudo ufw status numbered
+sudo systemctl enable --now firewalld
+sudo firewall-cmd --get-default-zone
+sudo firewall-cmd --list-all
+# Réduire aux services strictement nécessaires (SSH seul)
+sudo firewall-cmd --permanent --remove-service=dhcpv6-client 2>/dev/null
+sudo firewall-cmd --permanent --remove-service=cockpit 2>/dev/null
+sudo firewall-cmd --permanent --add-service=ssh
+# Journaliser les connexions SSH, avec limite de débit des messages
+sudo firewall-cmd --permanent --add-rich-rule='rule service name="ssh" log prefix="SSH-" level="info" limit value="5/m" accept'
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-all
+sudo firewall-cmd --list-rich-rules
 ```
 
-> ❓ **Question 4** : Quelle différence entre `ufw allow OpenSSH` et `ufw limit OpenSSH` ? Pourquoi l'ordre « autoriser SSH puis activer » est-il vital ?
+> ❓ **Question 4** : Quelle différence entre `--add-service=ssh` et la règle riche qui journalise ? Pourquoi faut-il `--permanent` **et** `--reload` ? Pourquoi autoriser SSH **avant** de recharger est-il vital ?
 
 ### Étape 6 — `fail2ban`
 
@@ -110,6 +123,8 @@ sudo tee /etc/fail2ban/jail.local > /dev/null <<'EOF'
 bantime  = 10m
 findtime = 10m
 maxretry = 3
+banaction = firewallcmd-rich-rules
+backend = systemd
 
 [sshd]
 enabled = true
@@ -133,7 +148,7 @@ sudo fail2ban-client status sshd
 
 Pour débannir : `sudo fail2ban-client set sshd unbanip <IP>`.
 
-> ❓ **Question 5** : Comment `fail2ban` agit-il concrètement sur le pare-feu ? Où lit-il les échecs de connexion ?
+> ❓ **Question 5** : Comment `fail2ban` agit-il concrètement sur le pare-feu (indice : `sudo firewall-cmd --list-rich-rules` pendant un bannissement) ? Où lit-il les échecs de connexion (`backend = systemd`) ?
 
 ### Étape 7 — Durcissement du noyau avec `sysctl`
 
@@ -189,7 +204,8 @@ sudo ss -tulpn
 systemctl list-unit-files --state=enabled --type=service | head -30
 find / -xdev -perm -4000 -type f 2>/dev/null | wc -l
 find / -xdev -type f -perm -0002 2>/dev/null | head
-sudo aa-status | head -5
+getenforce                                     # Permissive dans la VM du cours
+sudo ausearch -m avc -ts today 2>/dev/null | tail -n 3     # refus SELinux journalisés
 ```
 
 Pour chaque port à l'écoute : « Est-il nécessaire ? Doit-il écouter sur `127.0.0.1` seulement ? »
@@ -212,17 +228,17 @@ Rédigez ensuite `rapport.md` avec : score avant/après, mesures appliquées, ri
 
 - [ ] `sudo sshd -T` : `passwordauthentication no`, `permitrootlogin no`, `maxauthtries 3`.
 - [ ] Vous vous connectez toujours en SSH **par clé**.
-- [ ] `sudo ufw status verbose` : `Default: deny (incoming), allow (outgoing)`, SSH limité.
+- [ ] `sudo firewall-cmd --list-all` : zone `public`, seul le service `ssh` autorisé.
 - [ ] `sudo fail2ban-client status sshd` montre la jail active.
 - [ ] `sysctl net.ipv4.tcp_syncookies` → `1` ; `sysctl kernel.dmesg_restrict` → `1`.
-- [ ] `unattended-upgrades` est actif.
+- [ ] `dnf-automatic-install.timer` est activé.
 - [ ] Le score Lynis « après » est **supérieur** au score « avant ».
 - [ ] Le rapport `~/durcissement/rapport.md` est rédigé.
 
 ## 💡 Pour aller plus loin
 
 - **Défi 1** : visez un Hardening index ≥ 75 en traitant les suggestions Lynis une à une.
-- **Défi 2** : passez un profil AppArmor en mode *complain* puis *enforce* (`aa-complain`, `aa-enforce`) et lisez le journal.
+- **Défi 2** : mettez le domaine `httpd_t` en mode permissif avec `semanage permissive -a httpd_t`, provoquez un refus SELinux, lisez-le avec `ausearch -m avc | audit2why`, puis revenez en enforcing (`semanage permissive -d httpd_t`). Voir la section SELinux du [cours](../cours/04-securite-durcissement.md).
 - **Défi 3** : écrivez un script qui vérifie automatiquement la checklist de durcissement et renvoie un code d'erreur si un contrôle échoue.
 - **Défi 4** : consultez les recommandations CIS ou ANSSI et choisissez 5 mesures supplémentaires à appliquer.
 
@@ -237,14 +253,14 @@ Rédigez ensuite `rapport.md` avec : score avant/après, mesures appliquées, ri
 **Consignes** :
 - Écris `~/audit.sh` (mode strict **sans** `-e` : une vérification qui échoue ne doit pas arrêter le script).
 - Contrôle 1 : `sshd` refuse la connexion de root (`sudo sshd -T`). Contrôle 2 : l'authentification par mot de passe SSH est désactivée.
-- Contrôle 3 : `ufw` est actif. Contrôle 4 : `unattended-upgrades` est activé (`systemctl is-enabled`).
+- Contrôle 3 : `firewalld` est actif (`systemctl is-active`). Contrôle 4 : les mises à jour automatiques sont activées (`systemctl is-enabled dnf-automatic-install.timer`).
 - Contrôle 5 : un **seul** compte a l'UID 0 (`awk -F: '$3==0' /etc/passwd`).
 - Pour chaque contrôle, affiche `OK  <description>` ou `KO  <description>`. Le code de retour est le **nombre de KO**.
 - Lance-le avant et après avoir appliqué les mesures de l'atelier : le nombre de KO doit diminuer.
 
 **Indices** (à consulter seulement si bloqué) :
 - `sudo sshd -T | grep -qi '^permitrootlogin no'` renvoie 0 si la ligne existe.
-- `sudo ufw status | grep -q 'Status: active'`.
+- `systemctl is-active --quiet firewalld` renvoie 0 si le service est actif.
 - Une petite fonction `controle "description" commande…` évite de répéter le code : elle exécute la commande et affiche OK/KO.
 
 **Critères de réussite** :
@@ -270,13 +286,13 @@ controle() {                    # controle "description" commande...
 }
 ssh_sans_root()    { sudo sshd -T | grep -qi '^permitrootlogin no'; }
 ssh_sans_mdp()     { sudo sshd -T | grep -qi '^passwordauthentication no'; }
-ufw_actif()        { sudo ufw status | grep -q 'Status: active'; }
-maj_auto()         { systemctl is-enabled --quiet unattended-upgrades; }
+firewalld_actif()  { systemctl is-active --quiet firewalld; }
+maj_auto()         { systemctl is-enabled --quiet dnf-automatic-install.timer; }
 un_seul_root()     { [[ "$(awk -F: '$3==0' /etc/passwd | wc -l)" -eq 1 ]]; }
 
 controle "SSH : connexion root refusée"          ssh_sans_root
 controle "SSH : mot de passe désactivé"          ssh_sans_mdp
-controle "Pare-feu ufw actif"                    ufw_actif
+controle "Pare-feu firewalld actif"               firewalld_actif
 controle "Mises à jour automatiques activées"    maj_auto
 controle "Un seul compte UID 0"                  un_seul_root
 exit "$ko"
@@ -286,7 +302,7 @@ shellcheck ~/audit.sh
 ~/audit.sh ; echo "KO = $?"
 ```
 
-Pourquoi pas `set -e` ? Un contrôle négatif ne doit pas interrompre l'audit : on veut **tous** les résultats. Le script réutilise les commandes de l'atelier (`sshd -T`, `ufw status`, `awk` sur `/etc/passwd`).
+Pourquoi pas `set -e` ? Un contrôle négatif ne doit pas interrompre l'audit : on veut **tous** les résultats. Le script réutilise les commandes de l'atelier (`sshd -T`, `systemctl`, `awk` sur `/etc/passwd`).
 
 </details>
 

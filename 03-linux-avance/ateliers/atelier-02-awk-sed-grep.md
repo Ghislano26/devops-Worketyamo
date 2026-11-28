@@ -46,7 +46,7 @@ Nov 23 21:00:14 srv sshd[1205]: Failed password for invalid user admin from 203.
 Nov 23 21:00:20 srv sshd[1207]: Failed password for invalid user test from 198.51.100.4 port 40110 ssh2
 Nov 23 21:00:40 srv sshd[1210]: Accepted publickey for etudiant from 192.168.1.10 port 52000 ssh2
 Nov 23 21:01:02 srv sshd[1212]: Failed password for root from 203.0.113.7 port 51030 ssh2
-Nov 23 21:01:20 srv sshd[1215]: Failed password for ubuntu from 203.0.113.7 port 51034 ssh2
+Nov 23 21:01:20 srv sshd[1215]: Failed password for admin from 203.0.113.7 port 51034 ssh2
 Nov 23 21:02:00 srv sudo: etudiant : TTY=pts/0 ; PWD=/home/etudiant ; USER=root ; COMMAND=/usr/bin/apt update
 EOF
 
@@ -169,7 +169,7 @@ column -t -s, ventes.csv
 - **Défi 1** : produisez un classement des pages les plus demandées avec leur taille totale servie.
 - **Défi 2** : écrivez un script `detecte-brute-force.sh` qui lit `auth.log` et affiche les IP avec plus de 3 échecs.
 - **Défi 3** : avec `sed`, anonymisez les IP des journaux (`s/[0-9]\+\.[0-9]\+$/X.X/`) avant de les partager.
-- **Défi 4** : travaillez sur le vrai `/var/log/auth.log` de la VM : `sudo grep -c "session opened" /var/log/auth.log`.
+- **Défi 4** : travaillez sur le vrai journal d'authentification de la VM (`/var/log/secure` sous Rocky) : `sudo grep -c "session opened" /var/log/secure`.
 
 ---
 

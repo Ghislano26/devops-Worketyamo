@@ -1,5 +1,8 @@
 # SSH et authentification par clés
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 **SSH** (*Secure Shell*) est la porte d'entrée de pratiquement tous les serveurs Linux. Il remplace
@@ -127,7 +130,7 @@ chmod 600 ~/.ssh/config
 
 ```bash
 scp fichier.txt web01:/tmp/                 # copie vers le serveur
-scp web01:/var/log/syslog ./                # copie depuis le serveur
+scp web01:/var/log/messages ./                # copie depuis le serveur
 scp -r dossier/ web01:~/                    # récursif
 rsync -avz --progress dossier/ web01:~/dossier/   # synchronisation incrémentale (recommandé)
 sftp web01                                  # session interactive
@@ -164,7 +167,7 @@ PubkeyAuthentication yes
 KbdInteractiveAuthentication no
 MaxAuthTries 3
 LoginGraceTime 30
-AllowUsers etudiant
+AllowUsers vagrant
 ClientAliveInterval 300
 ClientAliveCountMax 2
 X11Forwarding no
@@ -182,18 +185,18 @@ X11Forwarding no
 
 ```bash
 sudo sshd -t                       # test de syntaxe (aucune sortie = OK)
-sudo systemctl reload ssh          # applique sans couper les sessions existantes
+sudo systemctl reload sshd          # applique sans couper les sessions existantes
 ```
 
 > ⚠️ **Attention** : désactivez `PasswordAuthentication` **seulement après** avoir confirmé que la connexion par clé fonctionne depuis une autre fenêtre. Sinon, vous vous enfermez dehors.
 
-> 💡 **Conseil** : sous Ubuntu 24.04, `ssh` est géré par `ssh.service` et peut démarrer par socket (`ssh.socket`). Si vous changez de port, vérifiez la configuration du socket (`systemctl cat ssh.socket`).
+> 💡 **Ubuntu vs Rocky** : le service s'appelle **`sshd`** sous Rocky/RHEL (`ssh` sous Ubuntu, où il peut en plus démarrer par socket, `ssh.socket`). Sur Rocky, les fichiers de `/etc/ssh/sshd_config.d/` sont lus **avant** le reste de `sshd_config` (la première valeur rencontrée l'emporte) ; la box en contient déjà un (`00-worketyamo-hardening.conf`). **SELinux** : changer de port SSH exige aussi `sudo semanage port -a -t ssh_port_t -p tcp <port>`, et `firewalld` : `--add-port=<port>/tcp`.
 
 ## 10. Surveiller
 
 ```bash
-sudo journalctl -u ssh --since today | grep -E "Failed|Accepted"
-sudo grep "Failed password" /var/log/auth.log | tail
+sudo journalctl -u sshd --since today | grep -E "Failed|Accepted"
+sudo grep "Failed password" /var/log/secure | tail
 last -a | head
 sudo lastb | head           # tentatives échouées
 ```

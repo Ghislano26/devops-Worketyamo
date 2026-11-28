@@ -11,7 +11,7 @@
 
 - Atelier [01 — Tuning du noyau](atelier-01-tuning-noyau.md) terminé.
 - Cours lu : [Conteneurs : namespaces et cgroups](../cours/02-conteneurs-namespaces.md).
-- Paquets : `sudo apt install -y stress-ng debootstrap iproute2 util-linux`.
+- Paquets : `stress-ng` (EPEL), `iproute`, `util-linux`, `iptables-nft` : déjà installés dans la VM du cours ; sinon `sudo dnf install -y epel-release stress-ng iproute util-linux iptables-nft`.
 - Snapshot de la VM pris. Droits `sudo`.
 
 ## 🧪 Scénario
@@ -129,7 +129,7 @@ sudo ip netns exec prison ping -c 2 1.1.1.1
 
 > ❓ **Question 7** : À quoi sert `MASQUERADE` ? Que ferait la VM si `ip_forward` valait 0 ?
 
-> 💡 **Conseil** : si `ufw` est actif, il bloque probablement le transfert : `sudo ufw disable` le temps de l'atelier.
+> 💡 **Conseil** : `firewalld` (actif sur Rocky) bloque probablement le transfert entre interfaces : `sudo systemctl stop firewalld` le temps de l'atelier, puis `sudo systemctl start firewalld` à la fin. Les commandes `iptables` viennent ici du paquet `iptables-nft` (traduction vers nftables).
 
 ### Partie F — cgroups v2 : poser des limites
 
@@ -184,8 +184,9 @@ sudo pkill sleep
 Créez un système de fichiers racine minimal (quelques minutes, ~250 Mo) :
 
 ```bash
-sudo debootstrap --variant=minbase noble /srv/rootfs-prison http://archive.ubuntu.com/ubuntu
+sudo dnf install --installroot=/srv/rootfs-prison --releasever=9 --setopt=install_weak_deps=False -y bash coreutils procps-ng iproute iputils
 ls /srv/rootfs-prison
+# (Sous Ubuntu, on utiliserait debootstrap ; sous Rocky, dnf --installroot construit la racine.)
 ```
 
 Lancez le « conteneur » avec ses namespaces, dans le namespace réseau `prison` et le cgroup limité :
@@ -201,7 +202,7 @@ exec ip netns exec prison unshare --pid --fork --mount --uts --ipc \
 À l'intérieur du conteneur :
 
 ```bash
-cat /etc/os-release | head -2       # Ubuntu 24.04 (fichiers du chroot)
+cat /etc/os-release | head -2       # Rocky Linux 9 (fichiers du chroot)
 hostname
 ps aux
 ip a
@@ -212,16 +213,16 @@ exit
 
 > ❓ **Question 10** : Listez, pour ce conteneur, **quel mécanisme** assure : (a) la racine différente, (b) l'isolation des PID, (c) l'isolation réseau, (d) la limite mémoire.
 
-### Partie H — Comparer avec un vrai conteneur (facultatif, après le module 05)
+### Partie H — Comparer avec un vrai conteneur (facultatif)
 
-Si Docker est installé :
+Avec **Podman** (installé dans la VM ; la syntaxe est identique à celle de Docker) :
 
 ```bash
-docker run -d --name cmp --memory 100m --cpus 0.2 ubuntu:24.04 sleep 600
-PID=$(docker inspect -f '{{.State.Pid}}' cmp)
+sudo podman run -d --name cmp --memory 100m --cpus 0.2 docker.io/library/rockylinux:9 sleep 600
+PID=$(sudo podman inspect -f '{{.State.Pid}}' cmp)
 sudo ls -l /proc/$PID/ns
 cat /proc/$PID/cgroup
-docker rm -f cmp
+sudo podman rm -f cmp
 ```
 
 ### Nettoyage

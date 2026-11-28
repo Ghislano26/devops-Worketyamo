@@ -1,4 +1,8 @@
-# Guide d'installation d'Ubuntu 24.04 LTS avec VMware
+# Guide d'installation de Rocky Linux 9 avec VMware
+
+> 📘 **Rappel** : la VM de référence est fournie par le formateur via Vagrant (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)). Ce guide sert si vous devez **recréer la VM manuellement** (par exemple avec VMware).
+
+> 🐧 **Ubuntu ?** La création de la VM est identique pour Ubuntu (système invité *Ubuntu 64-bit*) ; seuls l'installeur et les commandes (`apt`…) diffèrent. Le cursus suppose **Rocky Linux 9**.
 
 Ce guide s'applique à **VMware Workstation Pro/Player** (Windows, Linux) et **VMware Fusion**
 (macOS). Les libellés exacts peuvent varier légèrement d'une version à l'autre.
@@ -15,19 +19,19 @@ Ce guide s'applique à **VMware Workstation Pro/Player** (Windows, Linux) et **V
 
 ## 2. Télécharger l'ISO
 
-1. Rendez-vous sur <https://ubuntu.com/download>.
-2. Choisissez **Ubuntu Server 24.04 LTS** (ou Desktop), architecture **amd64** (ou **arm64** sur Mac Apple Silicon).
-3. Téléchargez le fichier `.iso` (environ 2 à 6 Go).
-4. **Vérifiez l'intégrité** (bonne pratique de sécurité). Récupérez le fichier `SHA256SUMS` sur la même page, puis :
+1. Rendez-vous sur <https://rockylinux.org/download>.
+2. Choisissez **Rocky Linux 9**, architecture **x86_64** (ou **aarch64** sur Mac Apple Silicon avec VMware Fusion), image **Minimal** (≈ 1,7 Go) ou **DVD** (≈ 10 Go).
+3. Téléchargez le fichier `.iso`.
+4. **Vérifiez l'intégrité** (bonne pratique de sécurité). Récupérez le fichier `CHECKSUM` publié à côté de l'ISO, puis :
 
 ```bash
 # Linux / macOS
-sha256sum ubuntu-24.04*-live-server-amd64.iso     # macOS : shasum -a 256 <fichier>
+sha256sum Rocky-9*-x86_64-minimal.iso     # macOS : shasum -a 256 <fichier>
 ```
 
 ```powershell
 # Windows PowerShell
-Get-FileHash .\ubuntu-24.04-live-server-amd64.iso -Algorithm SHA256
+Get-FileHash .\Rocky-9.x-x86_64-minimal.iso -Algorithm SHA256
 ```
 
 Comparez l'empreinte obtenue avec celle publiée. Si elles diffèrent, retéléchargez.
@@ -42,15 +46,15 @@ Comparez l'empreinte obtenue avec celle publiée. Si elles diffèrent, retéléc
 4. **Installer disc image file (iso)** : sélectionnez l'ISO téléchargée.
    > ⚠️ Évitez l'« Easy Install » de VMware : il crée un utilisateur à votre place et masque des étapes pédagogiques.
    Choisissez plutôt **« I will install the operating system later »**, puis attachez l'ISO à l'étape 6.
-5. Système invité : **Linux**, version **Ubuntu 64-bit** (ou *Ubuntu 64-bit Arm* sur Apple Silicon).
-6. Nom : `ubuntu-2404-devops`. Emplacement : un disque avec assez de place.
-7. Firmware : **UEFI**. Désactivez *Secure Boot* si l'installation échoue au démarrage.
+5. Système invité : **Linux**, version **Red Hat Enterprise Linux 9 64-bit** (ou *Rocky Linux 64-bit* si proposé ; *… 64-bit Arm* sur Apple Silicon).
+6. Nom : `rocky9-devops`. Emplacement : un disque avec assez de place.
+7. Firmware : **BIOS** (comme la VM de référence) ou **UEFI**. Avec UEFI, désactivez *Secure Boot* si l'installation échoue au démarrage.
 
 ## 4. Paramètres recommandés
 
 | Paramètre | Valeur | Justification |
 |---|---|---|
-| Processeurs | **4 vCPU** (1 socket × 4 cœurs) | Compiler, lancer des conteneurs sans lenteur |
+| Processeurs | **2 vCPU** (4 si possible) | Compiler, lancer des conteneurs sans lenteur |
 | Mémoire | **4096 Mo** | Confortable pour le serveur et Docker |
 | Disque | **40 Go**, *Store as a single file*, **pas** de pré-allocation | Le disque grossit à mesure de l'usage |
 | Réseau | **NAT** | La VM accède à Internet via l'hôte, sans être exposée sur votre réseau local |
@@ -68,52 +72,47 @@ mais n'est pas joignable depuis l'extérieur. C'est sûr et sans configuration. 
 
 Pour vérifier ou modifier : **VM → Settings → Network Adapter → NAT**.
 
-## 5. Installation d'Ubuntu
+## 5. Installation de Rocky Linux
 
-Démarrez la VM (**Power on**). L'installeur démarre sur l'ISO. Version **Server** :
+Démarrez la VM (**Power on**). Le menu de démarrage propose **Install Rocky Linux 9** (validez avec `Entrée`). L'assistant graphique **Anaconda** s'affiche ; son **résumé de l'installation** liste les sections à compléter (celles avec un triangle jaune sont obligatoires) :
 
 1. **Langue** : *English* ou *Français*. Pour un serveur, l'anglais facilite la recherche d'erreurs sur Internet.
-2. **Disposition du clavier** : *French* (ou celle de votre clavier). Testez avec la zone de test.
-3. **Type d'installation** : *Ubuntu Server*. Ne cochez pas « minimized » pour ce cours.
-4. **Réseau** : laissez le DHCP. Une adresse du type `192.168.xx.xx` doit apparaître.
-5. **Proxy** : vide.
-6. **Miroir d'archive** : laissez par défaut.
-7. **Stockage** : *Use an entire disk*. Décochez **« Set up this disk as an LVM group »** pour l'instant (nous étudierons LVM au module 03).
-8. **Profil** : nom, nom du serveur (`ubuntu-devops`), identifiant (ex. `etudiant`), mot de passe robuste.
-9. **Ubuntu Pro** : *Skip for now*.
-10. **SSH** : cochez **Install OpenSSH server**. Pas d'import de clés pour le moment.
-11. **Snaps** : n'en sélectionnez aucun.
-12. Attendez la fin, puis **Reboot Now**. Si le message demande de retirer le support, appuyez sur `Entrée` (VMware éjecte l'ISO automatiquement).
+2. **Clavier** : *French* (ou celui de votre clavier). Testez avec la zone de test.
+3. **Heure et date** : choisissez votre fuseau horaire (ex. Africa/Douala).
+4. **Sélection de logiciels** : **Minimal Install** (recommandé pour ce cours) ou *Server with GUI*.
+5. **Destination d'installation** : sélectionnez le disque de 40 Go, partitionnement **Automatique** (LVM + XFS par défaut ; nous étudierons LVM au module 03).
+6. **Réseau et nom d'hôte** : activez l'interface (**ON**, DHCP : une adresse du type `192.168.xx.xx` doit apparaître) et saisissez le nom d'hôte **`devops-lab`**.
+7. **Mot de passe root** : *Disable root account* (recommandé), ou un mot de passe robuste.
+8. **Création d'utilisateur** : identifiant (`vagrant` pour reproduire la VM de référence, ou le vôtre), mot de passe robuste, cochez **Make this user administrator** (groupe `wheel` : droits `sudo`).
+9. **Begin Installation**, attendez la fin, puis **Reboot System**. VMware éjecte l'ISO automatiquement ; sinon, déconnectez le lecteur CD/DVD dans *VM → Settings*.
 
-> 💡 **Conseil** : version **Desktop** — l'assistant graphique est similaire : choisissez « Installer Ubuntu »,
-> « Installation interactive », « Installation par défaut », « Effacer le disque et installer Ubuntu » (cela n'efface
-> que le disque virtuel).
+> 💡 **Conseil** : avec *Server with GUI*, un assistant de premier démarrage (*Initial Setup*) peut demander d'accepter la licence : acceptez et terminez.
 
 ## 6. Premier démarrage
 
 Connectez-vous avec l'utilisateur créé. Vérifiez :
 
 ```bash
-lsb_release -a        # doit afficher Ubuntu 24.04.x LTS
+cat /etc/rocky-release  # doit afficher Rocky Linux release 9.x
 ip -br a              # adresses IP des interfaces
-ping -c 2 ubuntu.com  # test d'accès à Internet
+ping -c 2 rockylinux.org  # test d'accès à Internet
 ```
 
 ## 7. VMware Tools (open-vm-tools)
 
-Sous Ubuntu, le paquet libre `open-vm-tools` est généralement préinstallé. Il permet le
+Sous Rocky, le paquet libre `open-vm-tools` est généralement préinstallé sur une machine reconnue comme VMware. Il permet le
 copier-coller, la résolution dynamique et un arrêt propre depuis VMware.
 
 ```bash
-sudo apt update
-sudo apt install -y open-vm-tools          # Server
-sudo apt install -y open-vm-tools-desktop  # Desktop uniquement
+rpm -q open-vm-tools || sudo dnf install -y open-vm-tools   # Server
+sudo dnf install -y open-vm-tools-desktop                   # avec interface graphique uniquement
+sudo systemctl enable --now vmtoolsd
 ```
 
 ## 8. Prendre le snapshot
 
 1. VM → **Snapshot** → **Take Snapshot…**
-2. Nom : `00-installation-propre`. Description : « Ubuntu 24.04 fraîchement installé et mis à jour ».
+2. Nom : `00-installation-propre`. Description : « Rocky Linux 9 fraîchement installé et mis à jour ».
 3. Pour restaurer : VM → Snapshot → **Snapshot Manager** → sélectionner → **Go To**.
 
 > ⚠️ **Attention** : un snapshot n'est **pas** une sauvegarde. Il dépend du disque d'origine. Ne gardez pas
@@ -126,7 +125,7 @@ sudo apt install -y open-vm-tools-desktop  # Desktop uniquement
 | « VT-x is disabled » | Virtualisation désactivée | L'activer dans le BIOS/UEFI |
 | L'écran reste noir au démarrage | Secure Boot / UEFI | Désactiver Secure Boot (VM → Settings → Options → Advanced) |
 | Pas d'Internet dans la VM | Adaptateur non connecté | Vérifier *Network Adapter = NAT* et *Connected* |
-| Clavier mal configuré | Mauvaise disposition | `sudo dpkg-reconfigure keyboard-configuration` |
+| Clavier mal configuré | Mauvaise disposition | `sudo localectl set-keymap fr` (ou votre disposition) |
 | VM très lente | RAM hôte insuffisante | Réduire à 2 vCPU / 3 Go, fermer les applications lourdes |
 
 ## Étape suivante

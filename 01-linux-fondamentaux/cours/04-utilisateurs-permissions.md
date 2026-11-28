@@ -1,5 +1,8 @@
 # Utilisateurs, groupes et permissions
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Linux est un système **multi-utilisateur** : chaque fichier et chaque processus appartient à
@@ -15,7 +18,7 @@ des nombres : les noms sont une commodité.
 | Plage d'UID | Type |
 |---|---|
 | 0 | `root`, le super-utilisateur |
-| 1–999 | Comptes **système** (services : `www-data`, `syslog`…) |
+| 1–999 | Comptes **système** (services : `apache`, `sshd`, `chrony`…) |
 | 1000+ | Comptes **humains** |
 
 ```bash
@@ -51,10 +54,11 @@ etudiant:x:1000:1000:Etudiant:/home/etudiant:/bin/bash
 ## 2. Gérer les utilisateurs et les groupes
 
 ```bash
-sudo adduser alice                    # interactif : crée compte, home, mot de passe
-sudo useradd -m -s /bin/bash bob      # bas niveau : -m crée le home, -s le shell
-sudo passwd bob                       # définit le mot de passe
-sudo usermod -aG sudo,developpeurs bob   # ajoute aux groupes (-a ! sinon écrase)
+sudo useradd -m -s /bin/bash alice    # crée le compte et son home (-m), avec le shell (-s)
+sudo passwd alice                     # définit le mot de passe (étape distincte de la création)
+sudo useradd -m -s /bin/bash bob
+sudo passwd bob
+sudo usermod -aG wheel,developpeurs bob  # ajoute aux groupes (-a ! sinon écrase) ; « wheel » = droits sudo
 sudo groupadd developpeurs
 sudo usermod -L bob                   # verrouille le compte
 sudo usermod -U bob                   # déverrouille
@@ -62,7 +66,7 @@ sudo userdel -r bob                   # supprime le compte et son home
 sudo chage -l alice                   # politique d'expiration du mot de passe
 ```
 
-> 💡 **Conseil** : sous Debian/Ubuntu, préférez `adduser` / `deluser` (plus conviviaux) à `useradd` / `userdel` pour un usage interactif ; gardez `useradd` pour les scripts.
+> 💡 **Ubuntu vs Rocky** : Debian/Ubuntu proposent `adduser` / `deluser` (interactifs, plus conviviaux). Sous Rocky/RHEL, **`useradd` / `userdel` / `passwd`** sont la méthode normale : `useradd` crée le compte mais **pas le mot de passe** (compte verrouillé tant que `passwd` n'a pas été exécuté). Le groupe qui donne les droits `sudo` s'appelle **`wheel`** (et non `sudo`) : la ligne `%wheel ALL=(ALL) ALL` de `/etc/sudoers` l'autorise. Dans la VM du cours, `vagrant` est dans `wheel` et dispose en plus d'un `sudo` **sans mot de passe** (`/etc/sudoers.d/vagrant`).
 
 Les modifications de groupes ne s'appliquent qu'à une **nouvelle session** : déconnectez-vous et reconnectez-vous, ou utilisez `newgrp`.
 
@@ -124,7 +128,7 @@ chmod -R u=rwX,g=rX,o= projet/   # récursif ; X = x seulement sur dossiers/ fic
 ```bash
 sudo chown alice fichier           # change le propriétaire
 sudo chown alice:developpeurs fichier   # propriétaire et groupe
-sudo chown -R www-data: /var/www   # récursif ; « : » seul = groupe de connexion
+sudo chown -R apache: /var/www     # récursif ; « : » seul = groupe de connexion (utilisateur du serveur web : apache)
 sudo chgrp developpeurs projet/
 ```
 
@@ -133,7 +137,7 @@ sudo chgrp developpeurs projet/
 Le `umask` définit les droits **retirés** à la création d'un fichier. Les valeurs de base sont 666 pour les fichiers et 777 pour les dossiers.
 
 ```bash
-umask          # 0002 pour un utilisateur ordinaire sous Ubuntu (groupe privé), 0022 pour root
+umask          # 0002 pour un utilisateur ordinaire (groupe privé, comme sous Ubuntu), 0022 pour root
 ```
 
 Avec `umask 022` : fichier = 666 − 022 = **644** ; dossier = 777 − 022 = **755**.
@@ -158,10 +162,10 @@ chmod +t /srv/partage      # sticky
 
 ## 8. `sudo` : élévation contrôlée
 
-`sudo` exécute **une commande** avec les droits d'un autre utilisateur (root par défaut), après authentification **de l'utilisateur appelant**, et journalise l'action dans `/var/log/auth.log`.
+`sudo` exécute **une commande** avec les droits d'un autre utilisateur (root par défaut), après authentification **de l'utilisateur appelant**, et journalise l'action dans `/var/log/secure` (Ubuntu : `/var/log/auth.log`) et dans le journal systemd (`journalctl _COMM=sudo`).
 
 ```bash
-sudo apt update          # une commande en root
+sudo dnf check-update    # une commande en root
 sudo -i                  # shell root interactif (à éviter)
 sudo -u alice ls /home/alice   # exécuter en tant qu'un autre utilisateur
 sudo -l                  # que m'est-il autorisé de faire ?
@@ -205,7 +209,7 @@ cat /etc/pam.d/sudo
 Pour donner des droits à un utilisateur précis sans changer le propriétaire ou le groupe :
 
 ```bash
-sudo apt install -y acl
+rpm -q acl                           # installé par défaut sur Rocky (sinon : sudo dnf install -y acl)
 setfacl -m u:alice:rw fichier.txt    # donne rw à alice
 getfacl fichier.txt                  # affiche les ACL
 setfacl -x u:alice fichier.txt       # retire l'ACL
@@ -226,5 +230,5 @@ Un `+` à la fin des droits (`-rw-rw-r--+`) signale la présence d'ACL.
 
 - `man 5 sudoers`, `man pam.conf`, `man 7 credentials`, `man acl`.
 - Capabilities Linux (`man 7 capabilities`) : découper les pouvoirs de root.
-- AppArmor (module de sécurité par défaut d'Ubuntu).
+- **SELinux** (module de sécurité par défaut de Rocky/RHEL) : voir le [cours de durcissement](../../03-linux-avance/cours/04-securite-durcissement.md#8-selinux--contrôle-daccès-obligatoire) ; sous Ubuntu, c'est AppArmor.
 - Ateliers : [Permissions](../ateliers/atelier-03-permissions.md). Module suivant : [Processus et services](../../02-linux-intermediaire/cours/01-processus-services.md).

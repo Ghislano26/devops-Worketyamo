@@ -1,11 +1,14 @@
 # Processus, signaux et services systemd
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Un serveur sert à **faire tourner des services** (web, base de données, SSH). Quand un service
 ne répond plus, un administrateur doit savoir : quels processus tournent ? lequel consomme la
 mémoire ? comment l'arrêter proprement ? pourquoi n'a-t-il pas redémarré ? Ce cours vous donne
-le modèle mental des processus et la maîtrise de **systemd**, le gestionnaire de services d'Ubuntu.
+le modèle mental des processus et la maîtrise de **systemd**, le gestionnaire de services de Rocky Linux (comme d'Ubuntu et de la plupart des distributions modernes).
 
 ## 1. Qu'est-ce qu'un processus ?
 
@@ -49,7 +52,7 @@ ps aux --sort=-%mem | head   # les plus gourmands en mémoire
 ps -o pid,user,%cpu,%mem,cmd -u etudiant   # colonnes choisies
 pgrep -a ssh                 # recherche par nom
 top                          # moniteur interactif (q pour quitter)
-htop                         # version améliorée (F9 pour tuer, F6 pour trier)
+htop                         # version améliorée (paquet EPEL, déjà installé dans la VM du cours) (F9 pour tuer, F6 pour trier)
 ```
 
 Lecture de `top` : la ligne `load average` donne la charge moyenne sur 1, 5 et 15 minutes. Une charge supérieure au nombre de vCPU (`nproc`) indique une saturation.
@@ -125,7 +128,7 @@ Il manipule des **unités** (*units*), décrites par des fichiers :
 
 | Type d'unité | Extension | Rôle |
 |---|---|---|
-| Service | `.service` | Un démon ou un programme (`ssh.service`) |
+| Service | `.service` | Un démon ou un programme (`sshd.service`) |
 | Socket | `.socket` | Activation à la demande par une connexion |
 | Timer | `.timer` | Planification (remplace avantageusement `cron`) |
 | Mount | `.mount` | Point de montage |
@@ -134,7 +137,7 @@ Il manipule des **unités** (*units*), décrites par des fichiers :
 ### Commandes essentielles : `systemctl`
 
 ```bash
-systemctl status ssh                  # état, PID, derniers logs
+systemctl status sshd                  # état, PID, derniers logs
 sudo systemctl start nginx            # démarrer maintenant
 sudo systemctl stop nginx             # arrêter maintenant
 sudo systemctl restart nginx          # arrêt + démarrage
@@ -142,8 +145,8 @@ sudo systemctl reload nginx           # recharger la config sans coupure (si sup
 sudo systemctl enable nginx           # démarrer au boot
 sudo systemctl disable nginx
 sudo systemctl enable --now nginx     # enable + start
-systemctl is-active ssh               # active / inactive
-systemctl is-enabled ssh
+systemctl is-active sshd               # active / inactive
+systemctl is-enabled sshd
 systemctl list-units --type=service --state=running
 systemctl list-unit-files --state=enabled
 systemctl --failed                    # unités en échec
@@ -156,7 +159,7 @@ systemctl --failed                    # unités en échec
 Les unités fournies par les paquets sont dans `/usr/lib/systemd/system/`. Vos unités et surcharges vont dans `/etc/systemd/system/` (prioritaire).
 
 ```bash
-systemctl cat ssh        # affiche le fichier d'unité effectif
+systemctl cat sshd        # affiche le fichier d'unité effectif
 ```
 
 Exemple d'unité personnalisée `/etc/systemd/system/monapp.service` :
@@ -193,7 +196,7 @@ sudo systemctl enable --now monapp
 systemctl status monapp
 ```
 
-Pour modifier une unité du système sans toucher au fichier d'origine : `sudo systemctl edit ssh` (crée un *drop-in* dans `/etc/systemd/system/ssh.service.d/override.conf`).
+Pour modifier une unité du système sans toucher au fichier d'origine : `sudo systemctl edit sshd` (crée un *drop-in* dans `/etc/systemd/system/ssh.service.d/override.conf`).
 
 ### Durcir un service
 
@@ -214,16 +217,16 @@ PrivateTmp=true
 systemctl list-timers --all
 ```
 
-Un `.timer` déclenche un `.service` homonyme (ex. `apt-daily.timer` → `apt-daily.service`). Alternative classique : `crontab -e` avec la syntaxe `min heure jour mois jour_semaine commande`.
+Un `.timer` déclenche un `.service` homonyme (ex. `dnf-makecache.timer` → `dnf-makecache.service` sous Rocky ; `apt-daily.timer` sous Ubuntu). Alternative classique : `crontab -e` avec la syntaxe `min heure jour mois jour_semaine commande`.
 
 ## 8. Journaux : `journalctl`
 
 Les services écrivent dans le **journal** de systemd, binaire et indexé.
 
 ```bash
-journalctl -u ssh                     # journaux d'une unité
-journalctl -u ssh -f                  # suivi en direct
-journalctl -u ssh --since "1 hour ago"
+journalctl -u sshd                     # journaux d'une unité
+journalctl -u sshd -f                  # suivi en direct
+journalctl -u sshd --since "1 hour ago"
 journalctl -p err -b                  # erreurs depuis le dernier boot
 journalctl -b -1                      # boot précédent
 journalctl --disk-usage

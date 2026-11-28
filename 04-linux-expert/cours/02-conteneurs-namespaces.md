@@ -1,5 +1,8 @@
 # Conteneurs : namespaces et cgroups
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Docker, Podman, Kubernetes : tous reposent sur **deux fonctions du noyau Linux**, bien plus anciennes que
@@ -118,7 +121,7 @@ Docker fait exactement la même chose : un pont `docker0` et une paire `veth` pa
 
 Les **control groups** organisent les processus en hiérarchie et leur appliquent des **limites**, une **comptabilité** et des **priorités**.
 
-Ubuntu 24.04 utilise **cgroup v2** (hiérarchie unifiée) montée dans `/sys/fs/cgroup` :
+Rocky Linux 9 (comme Ubuntu 24.04) utilise **cgroup v2** (hiérarchie unifiée) montée dans `/sys/fs/cgroup` :
 
 ```bash
 mount | grep cgroup2
@@ -180,7 +183,7 @@ Un conteneur voit une racine différente, construite à partir d'une **image**. 
  ┌────┴──────────────┐  ← couche écriture (upperdir) : propre au conteneur
  │ couche 3 : app    │  ┐
  │ couche 2 : libs   │  ├─ lowerdir : images en lecture seule, partagées
- │ couche 1 : ubuntu │  ┘
+ │ couche 1 : rocky  │  ┘
  └───────────────────┘
 ```
 
@@ -196,10 +199,10 @@ sudo umount /tmp/ov/merged
 ### Créer un mini-conteneur « à la main »
 
 ```bash
-sudo apt install -y debootstrap
-sudo debootstrap --variant=minbase noble /srv/rootfs-noble http://archive.ubuntu.com/ubuntu
+# Racine minimale construite avec dnf (sous Ubuntu : debootstrap)
+sudo dnf install --installroot=/srv/rootfs-rocky --releasever=9 --setopt=install_weak_deps=False -y bash coreutils procps-ng
 sudo unshare --pid --fork --mount --uts --ipc --net \
-     chroot /srv/rootfs-noble /bin/bash -c 'mount -t proc proc /proc && exec /bin/bash'
+     chroot /srv/rootfs-rocky /bin/bash -c 'mount -t proc proc /proc && exec /bin/bash'
 ```
 
 (Inutile de le refaire à chaque fois : c'est ce que construit, de façon industrialisée, `runc`.)
@@ -212,7 +215,7 @@ Un processus conteneurisé est restreint par plusieurs couches :
 |---|---|
 | **Capabilities** | Découpe les pouvoirs de root en ~40 droits (`CAP_NET_ADMIN`, `CAP_SYS_ADMIN`…). Docker en retire la plupart. |
 | **seccomp** | Filtre les appels système autorisés (liste blanche/noire) |
-| **AppArmor / SELinux** | Contrôle d'accès obligatoire (fichiers, réseau) |
+| **SELinux** (Rocky/RHEL) / AppArmor (Ubuntu) | Contrôle d'accès obligatoire (fichiers, réseau) — voir la [section SELinux du cours de durcissement](../../03-linux-avance/cours/04-securite-durcissement.md#8-selinux--contrôle-daccès-obligatoire) |
 | **User namespace** | root conteneur ≠ root hôte (mode *rootless*) |
 | **Lecture seule** | `--read-only` pour la racine du conteneur |
 
@@ -255,7 +258,7 @@ sudo nsenter -t "$PID" -n ip a             # sa vue réseau
 - **Namespaces** (PID, NET, MNT, UTS, IPC, USER, CGROUP, TIME) : limitent ce que le processus **voit**.
 - **cgroups v2** : limitent ce qu'il **consomme** (`cpu.max`, `memory.max`, `pids.max`).
 - **OverlayFS** : système de fichiers en couches, avec copy-on-write.
-- Sécurité : capabilities, seccomp, AppArmor, user namespaces.
+- Sécurité : capabilities, seccomp, SELinux (AppArmor sous Ubuntu), user namespaces.
 - Outils : `lsns`, `unshare`, `nsenter`, `ip netns`, `systemd-run`, `systemd-cgls`.
 
 ## Pour aller plus loin

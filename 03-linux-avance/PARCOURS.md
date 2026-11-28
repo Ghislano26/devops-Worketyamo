@@ -1,6 +1,6 @@
 # Parcours Linux — Module 03 : Avancé
 
-Ce module suit la philosophie du **Linux Upskill Challenge** (LUC) : chaque cours est immédiatement suivi d'une **mise en pratique sur TON serveur Ubuntu**. Tu n'apprends pas pour la théorie, tu apprends pour **administrer un vrai serveur**.
+Ce module suit la philosophie du **Linux Upskill Challenge** (LUC) : chaque cours est immédiatement suivi d'une **mise en pratique sur TON serveur Rocky Linux**. Tu n'apprends pas pour la théorie, tu apprends pour **administrer un vrai serveur**.
 
 Au programme : le scripting Bash, le traitement de texte (`grep`, `sed`, `awk`), le stockage LVM et le durcissement.
 
@@ -27,8 +27,8 @@ Au programme : le scripting Bash, le traitement de texte (`grep`, `sed`, `awk`),
 
 ## Environnement de travail
 
-- **Ton serveur d'entraînement** : la VM **Ubuntu 24.04 LTS** installée au [module 00](../00-installation-ubuntu-vm/README.md) (4 vCPU, 4 Go de RAM, 40 Go de disque, réseau NAT) et préparée avec la [checklist post-installation](../00-installation-ubuntu-vm/checklist-post-installation.md).
-- **Accès** : en **SSH** depuis ta machine hôte (`ssh utilisateur@adresse`), pas depuis la console de l'hyperviseur. Procédure complète dans [SERVEUR.md](SERVEUR.md).
+- **Ton serveur d'entraînement** : la VM **Rocky Linux 9** (`devops-lab`) fournie par Vagrant — voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) (2 vCPU, 4 Go de RAM, 40 Go de disque, réseau NAT + privé) ; la recréation manuelle est décrite au [module 00](../00-installation-ubuntu-vm/README.md) et préparée avec la [checklist post-installation](../00-installation-ubuntu-vm/checklist-post-installation.md).
+- **Accès** : en **SSH** depuis ta machine hôte (`vagrant ssh`, ou `ssh` avec les paramètres de `vagrant ssh-config`), pas depuis la console de l'hyperviseur. Procédure complète dans [SERVEUR.md](SERVEUR.md).
 - **Filet de sécurité** : un **snapshot** `00-installation-propre`, puis un snapshot avant chaque jour. Pour repartir de zéro, tu restaures.
 - **Sans VM sous la main ?** Les ateliers [Killercoda](ateliers-killercoda/README.md) s'exécutent dans ton navigateur.
 - **Particularités de ce module** : Le jour 3 (LVM) utilise des périphériques *loop* (aucun risque pour votre vrai disque) ; le jour 4 modifie SSH, le pare-feu et le noyau : **snapshot obligatoire** et seconde session ouverte. Ces deux jours ne sont pas proposés sur Killercoda (périphériques et pare-feu : à pratiquer sur **votre** serveur).

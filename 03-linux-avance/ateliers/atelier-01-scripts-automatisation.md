@@ -11,7 +11,7 @@
 
 - Modules 01 et 02 terminés.
 - Cours lu : [Scripting Bash](../cours/01-scripting-bash.md).
-- Paquets : `shellcheck` (`sudo apt install -y shellcheck`).
+- Paquets : `shellcheck` (installé dans la VM du cours ; sinon `sudo dnf install -y epel-release ShellCheck`).
 
 ## 🧪 Scénario
 

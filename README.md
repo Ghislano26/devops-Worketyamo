@@ -30,7 +30,7 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 ## 🧠 Philosophie pédagogique
 
 - **Théorie avant pratique** : chaque atelier est précédé d'un cours qui explique le *pourquoi*, y compris le fonctionnement interne (inodes, namespaces, netfilter, TSDB…).
-- **Pratique immédiate** : ateliers guidés sur *votre* serveur Ubuntu et ateliers **[Killercoda](KILLERCODA.md)** interactifs avec vérification automatique, sans rien installer.
+- **Pratique immédiate** : ateliers guidés sur *votre* serveur Rocky Linux 9 et ateliers **[Killercoda](KILLERCODA.md)** interactifs avec vérification automatique, sans rien installer.
 - **Progression du débutant à l'expert** : chaque module s'appuie sur les précédents et ne répète pas les bases.
 - **Console-first** : l'interface graphique est un confort, la console est le métier.
 - **Scénarios réalistes** : on joue l'administrateur ou le SRE face à de vraies situations (panne, incident, migration, audit).
@@ -40,7 +40,7 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 
 | Module | Thème | Niveau | Nb cours | Nb ateliers | Killercoda |
 |---|---|---|---|---|---|
-| [00 — Installation d'Ubuntu 24.04 LTS en machine virtuelle](00-installation-ubuntu-vm/README.md) | Installer son serveur d'entraînement | Débutant | — (3 guides) | 0 | — |
+| [00 — Installation de Rocky Linux 9 en machine virtuelle](00-installation-ubuntu-vm/README.md) | Installer son serveur d'entraînement | Débutant | — (3 guides) | 0 | — |
 | [01 — Linux fondamentaux](01-linux-fondamentaux/README.md) | La console, les fichiers, les permissions | Débutant | 4 | 3 | 3 scénario(s) ⚠️ non déclarés |
 | [02 — Linux intermédiaire](02-linux-intermediaire/README.md) | Processus, paquets, réseau de base, SSH | Intermédiaire | 4 | 4 | 2 scénario(s) ⚠️ non déclarés |
 | [03 — Linux avancé](03-linux-avance/README.md) | Scripting, traitement de texte, LVM, durcissement | Avancé | 4 | 4 | 2 scénario(s) ⚠️ non déclarés |
@@ -56,6 +56,8 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 
 > ℹ️ **Le tableau suit la numérotation des dossiers**, pas l'ordre pédagogique : le module **12 (CI/CD)** se lit après Kubernetes (09) et avant Monitoring (10) et SRE (11) — voir le [parcours recommandé](#parcours-recommande).
 
+> 🐧 **Où s'exécute chaque module ?** Les modules 01 à 04 s'exécutent sur la **VM Rocky 9** (`dnf`, `firewalld`, SELinux). Les modules 08 à 12 s'exécutent sur **Killercoda** (Ubuntu, outils conteneurisés).
+
 *« Nb ateliers » compte les ateliers guidés (dossier `ateliers/`) ; les modules 08 à 12 proposent leurs ateliers **uniquement sur Killercoda**. « ⚠️ non déclarés » : voir la section [Ateliers Killercoda](#-ateliers-killercoda).*
 
 <a id="parcours-recommande"></a>
@@ -64,7 +66,7 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 
 L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de dossiers ne suivent pas strictement cet ordre (voir la note ci-dessous).
 
-1. **Fondations** — Modules 00 à 04 : installation Ubuntu, Linux du débutant à l'expert.
+1. **Fondations** — Modules 00 à 04 : VM Rocky Linux 9 (Vagrant), Linux du débutant à l'expert.
 2. **Réseaux** — Module 06 : DNS, ports, routage, TLS, diagnostic.
 3. **Git et outils** — Module 05 (introduction à Git, Docker, CI/CD) puis module 07 : branching interactif.
 4. **Conteneurs** — Module 08 : Docker approfondi.
@@ -85,7 +87,7 @@ L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de
 
 | Étape | Pourquoi à cet endroit ? | Prérequis | À la fin, vous saurez |
 |---|---|---|---|
-| **Fondations** (00 → 04) | Conteneurs, Kubernetes et observabilité reposent sur les processus, fichiers, permissions, réseau et cgroups du noyau | Aucun | Administrer un serveur Ubuntu en SSH, scripter, durcir, diagnostiquer la performance, expliquer un conteneur au niveau du noyau |
+| **Fondations** (00 → 04) | Conteneurs, Kubernetes et observabilité reposent sur les processus, fichiers, permissions, réseau et cgroups du noyau | Aucun | Administrer un serveur Rocky Linux en SSH, scripter, durcir, diagnostiquer la performance, expliquer un conteneur au niveau du noyau |
 | **Réseaux** (06) | La plupart des pannes ont une composante réseau ; Docker et Kubernetes en dépendent | Modules 01 à 03 | Diagnostiquer une panne DNS/TCP/TLS avec méthode |
 | **Git et outils** (05, 07) | Tout ce qui suit est stocké, construit et déclenché depuis Git | Modules 00 à 02 | Travailler en équipe sans peur de l'historique |
 | **Conteneurs** (08) | L'image est l'artefact de toute la chaîne de livraison | Modules 04, 06 | Construire, orchestrer et durcir des conteneurs |
@@ -102,32 +104,32 @@ Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis p
 
 *Les modules sont présentés dans l'**ordre pédagogique** : le module 12 (CI/CD) figure donc entre Kubernetes (09) et Monitoring (10).*
 
-### [Module 00 — Installation d'Ubuntu 24.04 LTS en machine virtuelle](00-installation-ubuntu-vm/README.md)
+### [Module 00 — Installation de Rocky Linux 9 en machine virtuelle](00-installation-ubuntu-vm/README.md)
 
-Installez Ubuntu 24.04 LTS dans une machine virtuelle (VMware ou VirtualBox) : c'est le **serveur d'entraînement** de tout le cursus.
+Le **serveur d'entraînement** de tout le cursus est une VM **Rocky Linux 9** (binaire-compatible RHEL 9), fournie via Vagrant (voir le Guide de l'environnement). Ce module décrit comment la **recréer manuellement** (VMware ou VirtualBox).
 
 **Prérequis** : Aucun : un ordinateur avec 8 Go de RAM et 60 Go de disque libres.
 
 **Guides** :
 
-- [Guide d'installation d'Ubuntu 24.04 LTS avec VMware](00-installation-ubuntu-vm/guide-installation-vmware.md)
-- [Guide d'installation d'Ubuntu 24.04 LTS avec VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md)
-- [Checklist post-installation d'Ubuntu 24.04 LTS](00-installation-ubuntu-vm/checklist-post-installation.md)
+- [Guide d'installation de Rocky Linux 9 avec VMware](00-installation-ubuntu-vm/guide-installation-vmware.md)
+- [Guide d'installation de Rocky Linux 9 avec VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md)
+- [Checklist post-installation de Rocky Linux 9](00-installation-ubuntu-vm/checklist-post-installation.md)
 
 **Ateliers Killercoda** : aucun (la pratique se fait sur votre VM).
 
 **Compétences acquises** :
 
-- Créer et configurer une VM Ubuntu (4 vCPU, 4 Go, 40 Go, réseau NAT)
-- Vérifier l'ISO, installer le système et OpenSSH
-- Appliquer la checklist post-installation (mises à jour, outils, utilisateur sudo)
+- Créer et configurer une VM Rocky Linux 9 (2 vCPU, 4 Go, 40 Go, réseau NAT)
+- Vérifier l'ISO, installer le système avec Anaconda et activer SSH (`sshd`)
+- Appliquer la checklist post-installation (`dnf`, outils, utilisateur du groupe `wheel`, `firewalld`)
 - Prendre et restaurer un snapshot
 
 ### [Module 01 — Linux fondamentaux](01-linux-fondamentaux/README.md)
 
 Premiers pas sur un serveur Linux : se repérer, manipuler les fichiers, comprendre utilisateurs et permissions. Orienté **défi quotidien** (parcours en 3 jours).
 
-**Prérequis** : Module 00 (VM Ubuntu prête).
+**Prérequis** : Module 00 ou [Guide de l'environnement](GUIDE-ENVIRONNEMENT.md) (VM Rocky Linux 9 prête).
 
 **Cours** :
 
@@ -167,14 +169,14 @@ Exploiter un serveur : surveiller les processus, piloter les services avec syste
 **Cours** :
 
 1. [Processus, signaux et services systemd](02-linux-intermediaire/cours/01-processus-services.md)
-2. [Gestion des paquets avec APT](02-linux-intermediaire/cours/02-gestion-paquets.md)
+2. [Gestion des paquets avec DNF](02-linux-intermediaire/cours/02-gestion-paquets.md)
 3. [Réseau : les bases sous Linux](02-linux-intermediaire/cours/03-reseaux-base.md)
 4. [SSH et authentification par clés](02-linux-intermediaire/cours/04-ssh-cles.md)
 
 **Ateliers guidés** :
 
 - [Atelier 01 — Processus et services systemd](02-linux-intermediaire/ateliers/atelier-01-processus-systemd.md)
-- [Atelier 02 — APT et gestion des paquets](02-linux-intermediaire/ateliers/atelier-02-apt-gestion-paquets.md)
+- [Atelier 02 — Gestion des paquets avec DNF](02-linux-intermediaire/ateliers/atelier-02-apt-gestion-paquets.md)
 - [Atelier 03 — Diagnostic réseau](02-linux-intermediaire/ateliers/atelier-03-diagnostic-reseau.md)
 - [Atelier 04 — SSH sécurisé](02-linux-intermediaire/ateliers/atelier-04-ssh-securise.md)
 
@@ -188,7 +190,7 @@ Exploiter un serveur : surveiller les processus, piloter les services avec syste
 **Compétences acquises** :
 
 - Lister, prioriser et arrêter des processus ; écrire une unité systemd
-- Installer, mettre à jour et auditer des paquets avec APT
+- Installer, mettre à jour et auditer des paquets avec DNF et RPM
 - Diagnostiquer une panne réseau couche par couche
 - Se connecter par clés SSH et durcir `sshd`
 
@@ -210,7 +212,7 @@ Automatiser et sécuriser : scripts Bash robustes, analyse de journaux avec `gre
 - [Atelier 01 — Scripts d'automatisation Bash](03-linux-avance/ateliers/atelier-01-scripts-automatisation.md)
 - [Atelier 02 — `awk`, `sed` et `grep` : enquête sur des journaux](03-linux-avance/ateliers/atelier-02-awk-sed-grep.md)
 - [Atelier 03 — LVM : volumes logiques, extension à chaud et snapshots](03-linux-avance/ateliers/atelier-03-lvm.md)
-- [Atelier 04 — Durcissement d'un serveur Ubuntu](03-linux-avance/ateliers/atelier-04-durcissement-serveur.md)
+- [Atelier 04 — Durcissement d'un serveur Rocky Linux](03-linux-avance/ateliers/atelier-04-durcissement-serveur.md)
 
 **Ateliers Killercoda** (**non déclarés dans `structure.json`** (voir la section Killercoda)) :
 
@@ -520,7 +522,7 @@ Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux
 
 > 📘 L'environnement de référence (VM, snapshots, dépannage, migration) est décrit en détail dans le [**Guide de l'environnement**](GUIDE-ENVIRONNEMENT.md), avec sa [cheatsheet](environnement/CHEATSHEET.md) et ses [scénarios](environnement/SCENARIOS.md). Le tableau ci-dessous en rappelle les prérequis matériels.
 
-Tout le cursus Linux se pratique sur une **VM Ubuntu 24.04 LTS** que vous installez au [module 00](00-installation-ubuntu-vm/README.md).
+Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9** (fournie via Vagrant, voir [GUIDE-ENVIRONNEMENT.md](GUIDE-ENVIRONNEMENT.md)). Si vous devez la recréer manuellement, la procédure est au [module 00](00-installation-ubuntu-vm/README.md).
 
 | Élément | Minimum | Recommandé |
 |---|---|---|
@@ -530,10 +532,10 @@ Tout le cursus Linux se pratique sur une **VM Ubuntu 24.04 LTS** que vous instal
 | Virtualisation | VirtualBox 7.x **ou** VMware Workstation/Fusion | — |
 | Connexion Internet | Oui | — |
 
-- **Installer** : guides [VMware](00-installation-ubuntu-vm/guide-installation-vmware.md) ou [VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md), puis la [checklist post-installation](00-installation-ubuntu-vm/checklist-post-installation.md).
-- **Se connecter** : en **SSH** depuis votre machine hôte (`ssh utilisateur@adresse`, ou `ssh -p 2222 utilisateur@127.0.0.1` avec la redirection de port VirtualBox) plutôt que depuis la fenêtre de la VM. Procédure détaillée dans [`SERVEUR.md`](01-linux-fondamentaux/SERVEUR.md).
+- **Installer** : le plus simple est Vagrant (voir le [Guide de l'environnement](GUIDE-ENVIRONNEMENT.md)) ; pour une installation manuelle, guides [VMware](00-installation-ubuntu-vm/guide-installation-vmware.md) ou [VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md), puis la [checklist post-installation](00-installation-ubuntu-vm/checklist-post-installation.md).
+- **Se connecter** : en **SSH** depuis votre machine hôte (`vagrant ssh` dans `environnement/vagrant`, ou `ssh` avec les paramètres de `vagrant ssh-config`) plutôt que depuis la fenêtre de la VM. Procédure détaillée dans [`SERVEUR.md`](01-linux-fondamentaux/SERVEUR.md).
 - **Snapshots** : un snapshot `00-installation-propre`, puis un snapshot avant chaque jour ou atelier (`jour-XX-avant`). Pour revenir en arrière, restaurez-le.
-- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 12 s'appuient sur Killercoda ; sur votre VM, les mêmes commandes fonctionnent (Docker installé : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
+- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 12 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
 - **Ressources matérielles** : la pile de monitoring (module 10) et Kubernetes demandent plus de mémoire : arrêtez les conteneurs d'un atelier avant de lancer le suivant.
 
 ## 📚 Ressources transverses
@@ -558,7 +560,7 @@ Les contributions (corrections, clarifications, nouveaux exercices) sont les bie
 1. Ouvrez une *issue* pour décrire le problème ou la proposition.
 2. Créez une branche : `git switch -c correction/mon-sujet`.
 3. Respectez le style : français, ton pédagogique, blocs de code avec langage, encadrés `💡 / ⚠️ / 📌`, titres de cours et d'ateliers cohérents avec le catalogue.
-4. Testez les commandes sur **Ubuntu 24.04 LTS** (et sur Killercoda pour les scénarios : `python3 scripts/check-killercoda.py` avant de pousser).
+4. Testez les commandes sur **Rocky Linux 9** pour les modules 01 à 04 (et sur Killercoda pour les scénarios : `python3 scripts/check-killercoda.py` avant de pousser).
 5. Ouvrez une *pull request* avec une description claire (Conventional Commits recommandés : `feat:`, `fix:`, `docs:`).
 
 ## 📜 Licence
@@ -574,5 +576,5 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
 | Scénarios Killercoda | **25** (17 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 35 900** |
+| Lignes de contenu (approximatif) | **≈ 36 800** |
 

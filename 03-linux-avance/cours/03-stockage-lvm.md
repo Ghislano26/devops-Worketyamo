@@ -1,5 +1,8 @@
 # Stockage Linux et LVM
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 « Le disque est plein ! » est l'un des incidents les plus fréquents. Sans LVM, agrandir une partition
@@ -76,7 +79,9 @@ sudo umount /mnt/donnees
 |---|---|---|
 | Agrandir à chaud | ✅ | ✅ |
 | Réduire | ✅ (démonté) | ❌ |
-| Usage | Général (défaut Ubuntu) | Gros fichiers, serveurs |
+| Usage | Général (**défaut Ubuntu**) | Gros fichiers, serveurs (**défaut Rocky / RHEL**) |
+
+> 🐧 **ext4 ou XFS sous Rocky ?** Une installation Rocky/RHEL « classique » formate `/` en **XFS** ; la VM du cours (installée par kickstart) utilise **ext4** pour `/`. Les exemples utilisent donc **ext4** (`mkfs.ext4`, `resize2fs`). Avec XFS, les commandes changent : `mkfs.xfs`, **`xfs_growfs <point de montage>`** pour agrandir (à chaud, sur le point de montage et non sur le périphérique), `xfs_repair` à la place de `fsck`, et **un XFS ne se réduit jamais** (il faut sauvegarder, recréer, restaurer). `lvextend -r` choisit automatiquement le bon outil.
 
 ### Montage permanent avec `/etc/fstab`
 
@@ -98,7 +103,7 @@ Les six colonnes : *source*, *point de montage*, *type*, *options*, *dump* (0), 
 ### Création de A à Z
 
 ```bash
-sudo apt install -y lvm2
+rpm -q lvm2 || sudo dnf install -y lvm2     # déjà installé dans la VM du cours
 sudo pvcreate /dev/sdb /dev/sdc            # initialise deux disques en PV
 sudo vgcreate vg_data /dev/sdb /dev/sdc    # crée le groupe de volumes
 sudo lvcreate -n lv_web  -L 5G  vg_data    # volume de 5 Go

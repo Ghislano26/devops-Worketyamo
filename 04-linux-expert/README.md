@@ -9,7 +9,7 @@ Ce module couvre la performance du noyau, les namespaces et cgroups (ce qu'est u
 
 Ce module suit la philosophie du **[Linux Upskill Challenge](https://linuxupskillchallenge.org/)** (LUC) : **on n'apprend pas Linux pour la théorie, on l'apprend pour administrer un vrai serveur**.
 
-- **Un jour = un cours + un atelier + un défi.** La théorie ([cours](cours/)) est immédiatement mise en pratique sur **ton** serveur Ubuntu ([ateliers](ateliers/)).
+- **Un jour = un cours + un atelier + un défi.** La théorie ([cours](cours/)) est immédiatement mise en pratique sur **ton** serveur Rocky Linux ([ateliers](ateliers/)).
 - **Le défi du jour** (en fin d'atelier) valide la compétence : on ne passe au jour suivant qu'une fois **tous les critères cochés**.
 - **Pratique quotidienne et tâches concrètes** : scénarios réalistes d'administrateur (collègue qui supprime un fichier, serveur qui rame, service qui plante).
 - **Accès SSH dès le premier jour** : on travaille comme sur un serveur distant ([SERVEUR.md](SERVEUR.md)).

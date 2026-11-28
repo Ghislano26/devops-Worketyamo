@@ -1,5 +1,8 @@
 # Observabilité et journalisation
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 En production, vous ne pouvez pas vous connecter sur chaque machine pour lire des fichiers de log. Quand un
@@ -21,9 +24,9 @@ Les trois piliers de l'observabilité
 | Système | Format | Consultation | Emplacement |
 |---|---|---|---|
 | **systemd-journald** | Binaire indexé | `journalctl` | `/var/log/journal/` (persistant) ou `/run/log/journal/` (volatil) |
-| **rsyslog** | Texte | `less`, `grep`, `tail` | `/var/log/syslog`, `/var/log/auth.log`… |
+| **rsyslog** | Texte | `less`, `grep`, `tail` | `/var/log/messages`, `/var/log/secure`… (Ubuntu : `syslog`, `auth.log`) |
 
-Sur Ubuntu, `journald` collecte tout (noyau, services, stdout des unités) et **transmet** à `rsyslog`, qui écrit les fichiers texte classiques et peut les expédier vers un serveur distant.
+Sur Rocky (comme sur Ubuntu), `journald` collecte tout (noyau, services, stdout des unités) et **transmet** à `rsyslog`, qui écrit les fichiers texte classiques et peut les expédier vers un serveur distant.
 
 ```text
  Applications ─┬─ syslog() ──────┐
@@ -36,10 +39,12 @@ Sur Ubuntu, `journald` collecte tout (noyau, services, stdout des unités) et **
 
 | Fichier | Contenu |
 |---|---|
-| `/var/log/syslog` | Messages généraux |
-| `/var/log/auth.log` | Authentifications, `sudo`, SSH |
-| `/var/log/kern.log` | Messages du noyau |
-| `/var/log/dpkg.log`, `/var/log/apt/` | Installations |
+| `/var/log/messages` | Messages généraux (équivalent de `/var/log/syslog` d'Ubuntu) |
+| `/var/log/secure` | Authentifications, `sudo`, SSH (équivalent de `auth.log`) |
+| `/var/log/cron`, `/var/log/maillog` | Tâches planifiées, courrier |
+| `/var/log/audit/audit.log` | Journal d'audit et refus SELinux (`auditd`) |
+| `/var/log/dnf.log`, `/var/log/dnf.rpm.log` | Installations (équivalent de `dpkg.log` / `apt/`) |
+| `journalctl -k` | Messages du noyau (pas de `kern.log` séparé) |
 | `/var/log/nginx/` | Journaux des applications |
 
 ## 2. `journalctl` en profondeur
@@ -48,8 +53,8 @@ Sur Ubuntu, `journald` collecte tout (noyau, services, stdout des unités) et **
 journalctl                                 # tout
 journalctl -n 50                           # 50 dernières lignes
 journalctl -f                              # suivi en direct
-journalctl -u ssh                          # une unité
-journalctl -u ssh -u nginx                 # plusieurs unités
+journalctl -u sshd                         # une unité (sshd sous Rocky, ssh sous Ubuntu)
+journalctl -u sshd -u nginx                # plusieurs unités
 journalctl -p err                          # priorité erreur et plus grave
 journalctl -p warning..err                 # intervalle de priorités
 journalctl --since "2025-11-24 08:00" --until "2025-11-24 09:00"
@@ -80,7 +85,7 @@ Niveaux de **priorité** (syslog) :
 
 ### Rendre le journal persistant
 
-Par défaut sur certaines installations, le journal est volatil (perdu au redémarrage). Pour le conserver :
+Par défaut, le journal est volatil (perdu au redémarrage) : sous Rocky/RHEL, `journald` est réglé sur `Storage=auto`, qui n'est persistant **que si le dossier `/var/log/journal` existe** — or il n'existe pas à l'installation. (Ubuntu le crée, d'où la différence.) Pour conserver le journal :
 
 ```bash
 sudo mkdir -p /var/log/journal
@@ -106,10 +111,10 @@ La configuration est dans `/etc/rsyslog.conf` et `/etc/rsyslog.d/*.conf`.
 Chaque règle suit le schéma `facilité.priorité   destination` :
 
 ```text
-auth,authpriv.*      /var/log/auth.log
-*.*;auth,authpriv.none  -/var/log/syslog
-kern.*               -/var/log/kern.log
-local0.*             /var/log/monapp.log
+authpriv.*                              /var/log/secure
+*.info;mail.none;authpriv.none;cron.none /var/log/messages
+cron.*                                  /var/log/cron
+local0.*                                /var/log/monapp.log
 ```
 
 **Facilités** : `auth`, `authpriv`, `cron`, `daemon`, `kern`, `mail`, `syslog`, `user`, `local0`…`local7`.
@@ -148,6 +153,7 @@ Les paramètres `queue.*` créent une **file d'attente sur disque** : si le serv
 ```bash
 sudo rsyslogd -N1                    # valide la configuration
 sudo systemctl restart rsyslog
+sudo firewall-cmd --permanent --add-port=514/tcp && sudo firewall-cmd --reload   # serveur : ouvrir le port (firewalld)
 ss -tlnp | grep :514
 logger -p user.notice "test depuis $(hostname)"
 ```
@@ -175,7 +181,7 @@ Exemple `/etc/logrotate.d/monapp` :
     delaycompress
     missingok
     notifempty
-    create 0640 syslog adm
+    create 0640 root root
     postrotate
         systemctl kill -s HUP rsyslog.service
     endscript
@@ -235,12 +241,13 @@ journalctl -u api -o cat | jq 'select(.level=="error")'
 
 ## 8. Temps et synchronisation
 
-Corréler des journaux de plusieurs machines exige des **horloges synchronisées**.
+Corréler des journaux de plusieurs machines exige des **horloges synchronisées**. Sous Rocky/RHEL, c'est **`chronyd`** (paquet `chrony`) qui synchronise l'heure ; Ubuntu utilise par défaut `systemd-timesyncd`.
 
 ```bash
-timedatectl                               # synchronisation NTP : « System clock synchronized: yes »
-timedatectl timesync-status               # serveur NTP, décalage
-chronyc tracking 2>/dev/null              # si chrony est utilisé
+timedatectl                               # « System clock synchronized: yes », fuseau horaire
+systemctl is-active chronyd
+chronyc tracking                          # décalage actuel, serveur de référence
+chronyc sources -v                        # serveurs NTP utilisés
 ```
 
 ## 9. Audit et sécurité des journaux

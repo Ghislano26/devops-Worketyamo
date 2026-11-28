@@ -79,7 +79,7 @@ Observez le **groupe** des fichiers créés : `developpeurs`, hérité grâce au
 ### Étape 5 — Donner la lecture seule à la stagiaire avec une ACL
 
 ```bash
-sudo apt install -y acl
+rpm -q acl || sudo dnf install -y acl          # installé par défaut sur Rocky
 sudo setfacl -m g:stagiaires:rx /srv/projet
 sudo setfacl -d -m g:stagiaires:rx /srv/projet      # ACL par défaut pour les futurs fichiers
 getfacl /srv/projet
@@ -131,15 +131,15 @@ sudo visudo -f /etc/sudoers.d/alice-ssh
 Saisissez la ligne suivante, puis enregistrez :
 
 ```text
-alice ALL=(root) /usr/bin/systemctl restart ssh, /usr/bin/systemctl status ssh
+alice ALL=(root) /usr/bin/systemctl restart sshd, /usr/bin/systemctl status sshd
 ```
 
 Testez :
 
 ```bash
 sudo -l -U alice
-sudo -u alice sudo systemctl status ssh --no-pager | head -3     # autorisé (mot de passe d'alice demandé)
-sudo -u alice sudo apt update                                      # refusé
+sudo -u alice sudo systemctl status sshd --no-pager | head -3     # autorisé (mot de passe d'alice demandé)
+sudo -u alice sudo dnf check-update                                 # refusé
 ```
 
 > ❓ **Question 8** : Pourquoi est-il dangereux d'écrire `alice ALL=(ALL) ALL` pour une simple délégation de redémarrage ? Pourquoi `visudo` plutôt que `nano` ?

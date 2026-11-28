@@ -1,5 +1,8 @@
 # Scripting Bash
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Un administrateur qui tape trois fois la même suite de commandes a déjà une raison d'écrire un
@@ -276,7 +279,7 @@ main "$@"
 ## 10. Qualité : `shellcheck`
 
 ```bash
-sudo apt install -y shellcheck
+sudo dnf install -y epel-release ShellCheck      # déjà installé dans la VM du cours
 shellcheck sauvegarde.sh        # détecte erreurs de guillemets, variables non définies...
 bash -n script.sh               # vérifie la syntaxe sans exécuter
 bash -x script.sh               # trace chaque commande (débogage)

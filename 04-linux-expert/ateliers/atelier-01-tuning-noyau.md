@@ -11,7 +11,7 @@
 
 - Modules 01 à 03 terminés.
 - Cours lu : [Noyau Linux et performance](../cours/01-noyau-performance.md).
-- Paquets : `sudo apt install -y sysstat stress-ng iotop`.
+- Paquets : `sysstat`, `stress-ng` (EPEL) : déjà installés dans la VM du cours ; sinon `sudo dnf install -y epel-release sysstat stress-ng`. `iotop` est facultatif (`sudo dnf install iotop` si le dépôt le propose).
 - Snapshot de la VM pris. Terminal **double** (deux fenêtres) recommandé.
 
 > ⚠️ **Attention** : cet atelier sature volontairement la VM. Ne le faites **jamais** sur une machine de production.
@@ -245,7 +245,7 @@ Nettoyage : `sudo rm /etc/sysctl.d/60-perf-atelier.conf && sudo sysctl --system`
 <summary>Voir la solution</summary>
 
 ```bash
-sudo apt install -y stress-ng sysstat
+sudo dnf install -y epel-release sysstat stress-ng
 stress-ng --cpu 2 --timeout 60s &
 sleep 5
 {

@@ -1,15 +1,15 @@
 # Parcours Linux — Module 02 : Intermédiaire
 
-Ce module suit la philosophie du **Linux Upskill Challenge** (LUC) : chaque cours est immédiatement suivi d'une **mise en pratique sur TON serveur Ubuntu**. Tu n'apprends pas pour la théorie, tu apprends pour **administrer un vrai serveur**.
+Ce module suit la philosophie du **Linux Upskill Challenge** (LUC) : chaque cours est immédiatement suivi d'une **mise en pratique sur TON serveur Rocky Linux**. Tu n'apprends pas pour la théorie, tu apprends pour **administrer un vrai serveur**.
 
-Au programme : les processus et systemd, les paquets APT, le réseau de base et SSH.
+Au programme : les processus et systemd, les paquets DNF, le réseau de base et SSH.
 
 ## Parcours en 4 jours
 
 | Jour | Cours (théorie) | Atelier (pratique sur serveur) | Killercoda (pratique rapide) | Défi du jour |
 |---|---|---|---|---|
 | **Jour 1** *(J4 du cursus Linux)* | [01 — Processus et services](cours/01-processus-services.md) | [Atelier 01 — Processus et systemd](ateliers/atelier-01-processus-systemd.md) | [Processus et services systemd](ateliers-killercoda/atelier-01-processus-services-killercoda/) | [Service `heartbeat` résistant : `Restart=always` et *drop-in*](ateliers/atelier-01-processus-systemd.md#-défi-du-jour) |
-| **Jour 2** *(J5 du cursus Linux)* | [02 — Gestion des paquets](cours/02-gestion-paquets.md) | [Atelier 02 — APT](ateliers/atelier-02-apt-gestion-paquets.md) | [Gérer les paquets avec APT](ateliers-killercoda/atelier-02-apt-paquets-killercoda/) | [Origine d'un binaire (`dpkg -S`), `apt-mark hold`, `remove`/`purge`](ateliers/atelier-02-apt-gestion-paquets.md#-défi-du-jour) |
+| **Jour 2** *(J5 du cursus Linux)* | [02 — Gestion des paquets](cours/02-gestion-paquets.md) | [Atelier 02 — Gestion des paquets avec DNF](ateliers/atelier-02-apt-gestion-paquets.md) | [Gérer les paquets avec APT](ateliers-killercoda/atelier-02-apt-paquets-killercoda/) | [Origine d'un binaire (`rpm -qf`), `dnf versionlock`, `remove`](ateliers/atelier-02-apt-gestion-paquets.md#-défi-du-jour) |
 | **Jour 3** *(J6 du cursus Linux)* | [03 — Réseau, bases](cours/03-reseaux-base.md) | [Atelier 03 — Diagnostic réseau](ateliers/atelier-03-diagnostic-reseau.md) | — | [Diagnostic d'une entrée `/etc/hosts` erronée (nom → adresse → port)](ateliers/atelier-03-diagnostic-reseau.md#-défi-du-jour) |
 | **Jour 4** *(J7 du cursus Linux)* | [04 — SSH et clés](cours/04-ssh-cles.md) | [Atelier 04 — SSH sécurisé](ateliers/atelier-04-ssh-securise.md) | — | [Alias SSH, clé dédiée et `rsync` sécurisé](ateliers/atelier-04-ssh-securise.md#-défi-du-jour) |
 
@@ -27,8 +27,8 @@ Au programme : les processus et systemd, les paquets APT, le réseau de base et 
 
 ## Environnement de travail
 
-- **Ton serveur d'entraînement** : la VM **Ubuntu 24.04 LTS** installée au [module 00](../00-installation-ubuntu-vm/README.md) (4 vCPU, 4 Go de RAM, 40 Go de disque, réseau NAT) et préparée avec la [checklist post-installation](../00-installation-ubuntu-vm/checklist-post-installation.md).
-- **Accès** : en **SSH** depuis ta machine hôte (`ssh utilisateur@adresse`), pas depuis la console de l'hyperviseur. Procédure complète dans [SERVEUR.md](SERVEUR.md).
+- **Ton serveur d'entraînement** : la VM **Rocky Linux 9** (`devops-lab`) fournie par Vagrant — voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md) (2 vCPU, 4 Go de RAM, 40 Go de disque, réseau NAT + privé) ; la recréation manuelle est décrite au [module 00](../00-installation-ubuntu-vm/README.md) et préparée avec la [checklist post-installation](../00-installation-ubuntu-vm/checklist-post-installation.md).
+- **Accès** : en **SSH** depuis ta machine hôte (`vagrant ssh`, ou `ssh` avec les paramètres de `vagrant ssh-config`), pas depuis la console de l'hyperviseur. Procédure complète dans [SERVEUR.md](SERVEUR.md).
 - **Filet de sécurité** : un **snapshot** `00-installation-propre`, puis un snapshot avant chaque jour. Pour repartir de zéro, tu restaures.
 - **Sans VM sous la main ?** Les ateliers [Killercoda](ateliers-killercoda/README.md) s'exécutent dans ton navigateur.
 - **Particularités de ce module** : Les jours 3 et 4 modifient le pare-feu et SSH : **gardez une seconde session ouverte** et un snapshot, sinon une erreur peut vous enfermer dehors. Pas de Killercoda pour ces deux jours (réseau et SSH se pratiquent sur **votre** serveur ; le réseau est approfondi au [module 06](../06-reseaux-devops/README.md)).

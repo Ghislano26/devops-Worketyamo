@@ -9,12 +9,12 @@
 
 ## 📋 Prérequis
 
-- VM Ubuntu 24.04 prête ([module 00](../../00-installation-ubuntu-vm/README.md)) et snapshot pris.
+- VM Rocky Linux 9 prête ([Guide de l'environnement](../../GUIDE-ENVIRONNEMENT.md), [module 00](../../00-installation-ubuntu-vm/README.md)) et snapshot pris.
 - Cours lus : [Introduction](../cours/01-introduction-linux.md), [Système de fichiers](../cours/02-systeme-fichiers.md), [Navigation](../cours/03-navigation-commandes-base.md) (sections 1 à 3).
 
 ## 🧪 Scénario
 
-Vous êtes nouvel administrateur chez *Kamer Logistics*. Le serveur `ubuntu-devops` vous est confié, mais
+Vous êtes nouvel administrateur chez *Kamer Logistics*. Le serveur `devops-lab` vous est confié, mais
 personne n'a documenté son contenu. Votre première mission : **cartographier** le serveur et rédiger un
 rapport d'inventaire de quelques lignes.
 
@@ -42,7 +42,7 @@ ls -l
 tree -L 1 /
 ```
 
-Si `tree` est absent : `sudo apt install -y tree`.
+Si `tree` est absent : `sudo dnf install -y tree`.
 
 > ❓ **Question 2** : `/bin` est un lien symbolique. Vers quoi pointe-t-il ? Quelle commande l'a révélé ?
 
@@ -162,13 +162,13 @@ Contrôle automatique :
 
 **Objectif** : Produire en quelques minutes un petit rapport sur le contenu de `/var/log`, uniquement avec `ls`, `find`, `grep` et `wc`.
 
-**Contexte** : Le responsable sécurité doit intervenir sur ton serveur et veut savoir, avant de se connecter, combien de journaux `.log` existent, lequel est le plus gros et où se trouve le journal d'installation des paquets (`dpkg.log`).
+**Contexte** : Le responsable sécurité doit intervenir sur ton serveur et veut savoir, avant de se connecter, combien de journaux `.log` existent, lequel est le plus gros et où se trouve le journal des paquets de DNF (`dnf.log`).
 
 **Consignes** :
 - Crée le fichier `~/defi-j1.txt` **sans l'écrire à la main** : chaque ligne doit être produite par une commande.
 - Ligne 1 : `Nombre de fichiers .log : N` (fichiers ordinaires dont le nom se termine par `.log`, dans `/var/log` et ses sous-dossiers).
 - Ligne 2 : `Plus gros fichier : ` suivi de la ligne `ls -l` du fichier ordinaire le plus volumineux **directement** dans `/var/log`.
-- Ligne 3 : `Chemin de dpkg.log : ` suivi du chemin absolu trouvé avec `find`.
+- Ligne 3 : `Chemin de dnf.log : ` suivi du chemin absolu trouvé avec `find`.
 
 **Indices** (à consulter seulement si bloqué) :
 - `find /var/log -type f -name '*.log' 2>/dev/null | wc -l` compte les fichiers (`2>/dev/null` masque les « Permission denied »).
@@ -178,7 +178,7 @@ Contrôle automatique :
 **Critères de réussite** :
 - [ ] `~/defi-j1.txt` existe et contient exactement 3 lignes.
 - [ ] La ligne 1 contient un nombre supérieur ou égal à 1.
-- [ ] La ligne 3 se termine par `/var/log/dpkg.log`.
+- [ ] La ligne 3 se termine par `/var/log/dnf.log`.
 - [ ] Tu as produit le fichier avec des commandes (pas de nombre écrit à la main).
 
 **Solution** (dans un bloc `<details>`) :
@@ -190,7 +190,7 @@ Contrôle automatique :
 {
   echo "Nombre de fichiers .log : $(find /var/log -type f -name '*.log' 2>/dev/null | wc -l)"
   echo "Plus gros fichier : $(ls -lS /var/log | grep '^-' | head -n 1)"
-  echo "Chemin de dpkg.log : $(find /var/log -name dpkg.log 2>/dev/null)"
+  echo "Chemin de dnf.log : $(find /var/log -name dnf.log 2>/dev/null)"
 } > ~/defi-j1.txt
 cat ~/defi-j1.txt
 wc -l ~/defi-j1.txt        # 3

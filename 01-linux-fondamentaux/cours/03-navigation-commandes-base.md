@@ -1,5 +1,8 @@
 # Navigation et commandes de base
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Se déplacer, créer, copier, déplacer, lire et chercher des fichiers : ces gestes représentent
@@ -64,10 +67,10 @@ rmdir dossier-vide             # supprime un dossier vide uniquement
 ```bash
 cat fichier.txt           # affiche tout
 cat -n fichier.txt        # avec numéros de ligne
-less /var/log/syslog      # lecture paginée (q quitter, / chercher, G fin, g début)
+sudo less /var/log/messages   # lecture paginée (q quitter, / chercher, G fin, g début)
 head -n 5 fichier.txt     # 5 premières lignes
 tail -n 5 fichier.txt     # 5 dernières lignes
-tail -f /var/log/syslog   # suit le fichier en direct (Ctrl+C pour arrêter)
+sudo tail -f /var/log/messages   # suit le fichier en direct (Ctrl+C pour arrêter)
 wc -l fichier.txt         # nombre de lignes (-w mots, -c octets)
 ```
 

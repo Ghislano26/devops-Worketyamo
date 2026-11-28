@@ -16,7 +16,7 @@ Une checklist « admin sys » à cocher au fil du module, comme dans le Linux Up
 - [ ] Je sais décrire les couches du stockage (disque, PV, VG, LV, système de fichiers) — *[Cours 03](cours/03-stockage-lvm.md)*
 - [ ] Je sais créer, agrandir à chaud et réduire un volume logique en respectant l'ordre — *[Cours 03](cours/03-stockage-lvm.md), [Atelier 03](ateliers/atelier-03-lvm.md)*
 - [ ] Je sais monter un volume durablement par UUID et tester `/etc/fstab` avec `mount -a` — *[Cours 03](cours/03-stockage-lvm.md), [Atelier 03](ateliers/atelier-03-lvm.md)*
-- [ ] Je sais configurer un pare-feu `ufw`, `fail2ban` et durcir `sysctl` — *[Cours 04](cours/04-securite-durcissement.md), [Atelier 04](ateliers/atelier-04-durcissement-serveur.md)*
+- [ ] Je sais configurer `firewalld`, `fail2ban`, SELinux et durcir `sysctl` — *[Cours 04](cours/04-securite-durcissement.md), [Atelier 04](ateliers/atelier-04-durcissement-serveur.md)*
 - [ ] Je sais auditer un serveur (`lynis`, comptes, ports, setuid) et mesurer l'avant/après — *[Cours 04](cours/04-securite-durcissement.md), [Atelier 04](ateliers/atelier-04-durcissement-serveur.md)*
 - [ ] J'ai relevé les 4 défis du module sur mon propre serveur — *[Parcours](PARCOURS.md)*
 

@@ -11,14 +11,14 @@
 
 - Ateliers [01](atelier-01-processus-systemd.md) à [03](atelier-03-diagnostic-reseau.md) terminés.
 - Cours lu : [SSH et authentification par clés](../cours/04-ssh-cles.md).
-- Serveur SSH actif : `systemctl is-active ssh`.
+- Serveur SSH actif : `systemctl is-active sshd`.
 
 ## 🧪 Scénario
 
 *Kamer Logistics* a subi des tentatives d'intrusion par force brute. Vous devez interdire les mots de passe
 sur le serveur et imposer l'authentification par clé. Pour pouvoir tout faire **dans une seule VM**, vous
 allez créer un utilisateur `deploy` qui jouera le rôle du « client », et le serveur sera la VM elle-même (`localhost`).
-*(Variante : si vous avez configuré la redirection de port VirtualBox, jouez le client depuis votre hôte avec `ssh -p 2222 …@127.0.0.1`.)*
+*(Variante : jouez le client depuis votre hôte avec `ssh -p 2222 -i <clé de vagrant ssh-config> vagrant@127.0.0.1`.)*
 
 > ⚠️ **Attention** : gardez **une deuxième session ouverte** (un autre terminal) tout au long de l'étape de durcissement. En cas d'erreur de configuration, elle vous permet de revenir en arrière.
 
@@ -27,7 +27,8 @@ allez créer un utilisateur `deploy` qui jouera le rôle du « client », et le 
 ### Étape 1 — Créer l'utilisateur client
 
 ```bash
-sudo adduser --gecos "" deploy        # définissez un mot de passe d'exercice
+sudo useradd -m -s /bin/bash deploy
+sudo passwd deploy                    # définissez un mot de passe d'exercice
 sudo -iu deploy
 whoami
 ```
@@ -36,8 +37,18 @@ Vous êtes maintenant `deploy`. Pour la suite, les commandes « client » sont l
 
 ### Étape 2 — Connexion par mot de passe (état initial)
 
+> 🐧 La box Rocky **refuse déjà** les mots de passe en SSH (durcissement). Pour réaliser cet état initial, on les autorise **temporairement** avec un fichier qui passe **avant** celui de la box (ordre alphabétique : `00-atelier…` < `00-worketyamo…`) :
+>
+> ```bash
+> echo 'PasswordAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/00-atelier-mdp.conf
+> sudo sshd -t && sudo systemctl reload sshd
+> sudo sshd -T | grep passwordauthentication       # yes
+> ```
+>
+> Le mot de passe du compte `vagrant` est `vagrant`. **Ce fichier est supprimé au début de l'étape 8.**
+
 ```bash
-ssh etudiant@localhost            # remplacez « etudiant » par votre identifiant sur la VM
+ssh vagrant@localhost            # remplacez « vagrant » par votre identifiant sur la VM
 # Acceptez l'empreinte d'hôte (yes), saisissez le mot de passe, puis :
 exit
 cat ~/.ssh/known_hosts | cut -c1-60
@@ -60,13 +71,13 @@ ssh-keygen -lf ~/.ssh/id_ed25519.pub      # empreinte de la clé
 ### Étape 4 — Déployer la clé publique
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_ed25519.pub etudiant@localhost
-ssh etudiant@localhost "echo connecté sans mot de passe serveur ; hostname"
+ssh-copy-id -i ~/.ssh/id_ed25519.pub vagrant@localhost
+ssh vagrant@localhost "echo connecté sans mot de passe serveur ; hostname"
 ```
 
 On vous demande la **passphrase de la clé**, et non plus le mot de passe du compte.
 
-Côté serveur, constatez le résultat (exécutez en tant que `etudiant` dans une autre fenêtre) :
+Côté serveur, constatez le résultat (exécutez en tant que `vagrant` dans une autre fenêtre) :
 
 ```bash
 cat ~/.ssh/authorized_keys
@@ -81,7 +92,7 @@ ls -ld ~/.ssh ; ls -l ~/.ssh/authorized_keys
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 ssh-add -l
-ssh etudiant@localhost hostname        # plus de passphrase demandée
+ssh vagrant@localhost hostname        # plus de passphrase demandée
 ```
 
 > ❓ **Question 4** : Où la clé déchiffrée est-elle conservée ? Quel est le compromis sécurité/confort ?
@@ -92,7 +103,7 @@ ssh etudiant@localhost hostname        # plus de passphrase demandée
 cat > ~/.ssh/config <<'EOF'
 Host kamer
     HostName localhost
-    User etudiant
+    User vagrant
     IdentityFile ~/.ssh/id_ed25519
 EOF
 chmod 600 ~/.ssh/config
@@ -121,7 +132,9 @@ kill %1
 
 > ❓ **Question 5** : Que fait `-L 9100:localhost:9000` ? Où `localhost` est-il interprété : côté client ou côté serveur ?
 
-### Étape 8 — Durcir `sshd` (repassez en `etudiant`)
+### Étape 8 — Durcir `sshd` (repassez en `vagrant`)
+
+Commencez par retirer l'autorisation temporaire de l'étape 2 : `sudo rm /etc/ssh/sshd_config.d/00-atelier-mdp.conf`.
 
 Quittez la session `deploy` (`exit`). **Ouvrez un second terminal connecté en SSH et laissez-le ouvert.** Puis :
 
@@ -137,12 +150,12 @@ X11Forwarding no
 EOF
 sudo sshd -t && echo "syntaxe OK"
 sudo sshd -T | grep -Ei "^(permitrootlogin|passwordauthentication|maxauthtries)"
-sudo systemctl reload ssh
+sudo systemctl reload sshd
 ```
 
 > ❓ **Question 6** : Pourquoi `sshd -t` **avant** `reload` ? Pourquoi `reload` plutôt que `restart` ?
 
-> 💡 **Conseil** : sous Ubuntu 24.04, `/etc/ssh/sshd_config.d/*.conf` est lu **avant** les lignes de `sshd_config` et la première valeur rencontrée l'emporte. Un fichier `50-cloud-init.conf` peut déjà fixer `PasswordAuthentication yes` : nommez le vôtre avec un préfixe qui passe **avant** lui (comme ici `00-`) si `sshd -T` ne montre pas la valeur attendue.
+> 💡 **Conseil** : sous Rocky comme sous Ubuntu 24.04, `/etc/ssh/sshd_config.d/*.conf` est lu **avant** les lignes de `sshd_config` et la première valeur rencontrée l'emporte (ordre alphabétique des fichiers). Un autre fichier peut donc imposer une valeur : si `sshd -T` ne montre pas celle attendue, nommez le vôtre avec un préfixe qui passe **avant** (comme ici `00-`), et supprimez `00-atelier-mdp.conf`.
 
 ### Étape 9 — Vérifier le durcissement
 
@@ -162,7 +175,7 @@ exit
 ### Étape 10 — Observer les journaux
 
 ```bash
-sudo journalctl -u ssh --since "10 minutes ago" --no-pager | grep -E "Accepted|Failed|Invalid" | tail
+sudo journalctl -u sshd --since "10 minutes ago" --no-pager | grep -E "Accepted|Failed|Invalid" | tail
 sudo lastb 2>/dev/null | head -5
 ```
 
@@ -170,8 +183,8 @@ sudo lastb 2>/dev/null | head -5
 
 ```bash
 sudo rm /etc/ssh/sshd_config.d/00-durcissement.conf
-sudo sshd -t && sudo systemctl reload ssh
-sudo deluser --remove-home deploy
+sudo sshd -t && sudo systemctl reload sshd
+sudo userdel -r deploy
 sed -i '/deploy@kamer-atelier/d' ~/.ssh/authorized_keys
 ```
 
@@ -188,8 +201,8 @@ sed -i '/deploy@kamer-atelier/d' ~/.ssh/authorized_keys
 
 ## 💡 Pour aller plus loin
 
-- **Défi 1** : changez le port SSH vers 2222 (attention à `ssh.socket` sous Ubuntu 24.04) et adaptez `ufw`.
-- **Défi 2** : installez `fail2ban` et observez le blocage d'une IP après 3 échecs.
+- **Défi 1** : *(sur une VM jetable, avec snapshot ; ne le faites pas sur la VM Vagrant du cours : `vagrant ssh` utilise le port 22 de la VM)* changez le port SSH vers 2222 : `Port 2222` dans `sshd_config`, `sudo semanage port -a -t ssh_port_t -p tcp 2222` (SELinux), `sudo firewall-cmd --permanent --add-port=2222/tcp && sudo firewall-cmd --reload` (firewalld).
+- **Défi 2** : utilisez `fail2ban` (EPEL, déjà installé dans la VM ; voir le [cours de durcissement](../../03-linux-avance/cours/04-securite-durcissement.md)) et observez le blocage d'une IP après 3 échecs.
 - **Défi 3** : limitez la clé de `deploy` à une seule commande avec `command="…"` dans `authorized_keys`.
 - **Défi 4** : utilisez `ProxyJump` pour atteindre une seconde VM via la première.
 

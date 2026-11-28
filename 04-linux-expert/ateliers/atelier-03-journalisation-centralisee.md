@@ -1,5 +1,7 @@
 # Atelier 03 — Journalisation centralisée avec rsyslog
 
+> 🐧 *Version Rocky Linux 9 : journaux dans `/var/log/messages` et `/var/log/secure`, service `sshd`, `chronyd` pour l'heure, `firewalld` pour le pare-feu.*
+
 ## 🎯 Objectifs
 
 - Maîtriser `journalctl` pour filtrer par unité, priorité et période.
@@ -27,7 +29,7 @@ vers un serveur central**. Vous construisez le prototype.
 
 ```bash
 journalctl -n 20 --no-pager
-journalctl -u ssh --since "1 hour ago" --no-pager | tail -5
+journalctl -u sshd --since "1 hour ago" --no-pager | tail -5
 journalctl -p err -b --no-pager | tail -5
 journalctl -k -n 5 --no-pager
 journalctl -o json-pretty -n 1 --no-pager | head -25
@@ -45,12 +47,14 @@ logger -t suivi-colis -p user.err  "Colis KL-1043 introuvable"
 logger -t suivi-colis -p user.warning "Colis KL-1044 en retard"
 journalctl -t suivi-colis --no-pager
 journalctl -t suivi-colis -p err --no-pager
-grep suivi-colis /var/log/syslog | tail -3
+sudo grep suivi-colis /var/log/messages | tail -3
 ```
 
-> ❓ **Question 2** : Pourquoi le même message se trouve-t-il à la fois dans `journalctl` et dans `/var/log/syslog` ?
+> ❓ **Question 2** : Pourquoi le même message se trouve-t-il à la fois dans `journalctl` et dans `/var/log/messages` ?
 
 ### Étape 3 — Rendre le journal persistant
+
+> 🐧 Sous Rocky, `/var/log/journal` n'existe pas par défaut : `Storage=auto` garde alors le journal **en mémoire** (volatil). Ubuntu crée ce dossier à l'installation. Le `ls -ld` ci-dessous le montre.
 
 ```bash
 ls -ld /var/log/journal 2>&1
@@ -78,7 +82,7 @@ sudo systemctl restart systemd-journald
 ### Étape 4 — Construire le serveur de logs
 
 ```bash
-sudo apt install -y rsyslog
+rpm -q rsyslog || sudo dnf install -y rsyslog      # déjà installé et actif sur Rocky
 sudo tee /etc/rsyslog.d/10-serveur.conf > /dev/null <<'EOF'
 module(load="imtcp")
 input(type="imtcp" address="127.0.0.1" port="514")
@@ -144,7 +148,7 @@ sudo cat /var/log/distant/*/suivi-colis.log | grep "panne"
 ```
 
 > ❓ **Question 6** : Les messages émis pendant la panne sont-ils arrivés après le rétablissement ? Quel mécanisme l'explique ? Que se passerait-il avec UDP ?
-> *(Si les messages sont absents, regardez `sudo journalctl -u rsyslog -n 20`, vérifiez la file `/var/spool/rsyslog/`.)*
+> *(Si les messages sont absents, regardez `sudo journalctl -u rsyslog -n 20`, vérifiez la file dans `/var/lib/rsyslog/`.)*
 
 ### Étape 8 — Rotation des journaux distants
 
@@ -157,10 +161,10 @@ sudo tee /etc/logrotate.d/distant > /dev/null <<'EOF'
     delaycompress
     missingok
     notifempty
-    create 0640 syslog adm
+    create 0640 root root
     sharedscripts
     postrotate
-        /usr/lib/rsyslog/rsyslog-rotate
+        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
     endscript
 }
 EOF
@@ -187,7 +191,7 @@ sudo tail -5 "$F"
 
 ```bash
 timedatectl | grep -E "synchronized|NTP|Time zone"
-timedatectl timesync-status 2>/dev/null | head -5
+chronyc tracking | head -5          # synchronisation assurée par chronyd sous Rocky
 ```
 
 > ❓ **Question 8** : Pourquoi des horloges désynchronisées empêchent-elles de reconstituer un incident entre plusieurs serveurs ?
@@ -202,8 +206,8 @@ sudo systemctl restart rsyslog
 
 ## Variante à deux VM (recommandée si possible)
 
-1. Clonez la VM (ou créez-en une seconde) et mettez-les sur un réseau commun (VirtualBox : réseau *Host-only* ; VMware : *Host-only* / *LAN segment*).
-2. **Serveur** : remplacez `address="127.0.0.1"` par `address="0.0.0.0"` et ouvrez `ufw allow from <IP-client> to any port 514 proto tcp`.
+1. Créez une seconde VM : copiez le dossier `environnement/vagrant`, changez `vb.name` et l'adresse du réseau privé (`192.168.56.11`) dans son `Vagrantfile`, puis `vagrant up` : les deux VM partagent le réseau privé `192.168.56.0/24`.
+2. **Serveur** : remplacez `address="127.0.0.1"` par `address="0.0.0.0"` et ouvrez le port pour le client seulement : `sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="<IP-client>" port port="514" protocol="tcp" accept' && sudo firewall-cmd --reload`.
 3. **Client** : mettez `target="<IP-serveur>"` dans `90-client.conf`.
 4. Changez le nom d'hôte du client (`sudo hostnamectl set-hostname web01`) et vérifiez la création de `/var/log/distant/web01/`.
 
@@ -219,7 +223,7 @@ sudo systemctl restart rsyslog
 ## 💡 Pour aller plus loin
 
 - **Défi 1** : passez en **TLS** (`gtls`, port 6514) avec un certificat autosigné.
-- **Défi 2** : exposez les métriques système avec `prometheus-node-exporter` (`curl localhost:9100/metrics`).
+- **Défi 2** : exposez les métriques système avec `node_exporter` (binaire officiel de Prometheus ; `curl localhost:9100/metrics`).
 - **Défi 3** : écrivez un script qui lit les journaux centralisés et affiche les 5 erreurs les plus fréquentes du jour.
 - **Défi 4** : déployez Loki + Grafana avec Docker (après le [module 05](../../05-devops-outils/cours/02-docker-fondamentaux.md)) et envoyez-y vos journaux.
 
@@ -234,14 +238,14 @@ sudo systemctl restart rsyslog
 **Consignes** :
 - Crée `/etc/rsyslog.d/30-defi.conf` avec la règle `local5.*  /var/log/defi.log`, recharge `rsyslog`.
 - Émets trois messages : `logger -t defi-app -p local5.info`, `local5.warning` et `local5.err`, puis retrouve-les dans le fichier **et** avec `journalctl -t defi-app -p warning`.
-- Crée `/etc/logrotate.d/defi` (hebdomadaire, 4 rotations, compressé, `create 0640 syslog adm`, rechargement de rsyslog dans `postrotate`).
+- Crée `/etc/logrotate.d/defi` (hebdomadaire, 4 rotations, compressé, `create 0640 root root`, rechargement de rsyslog dans `postrotate`).
 - Force la rotation avec `sudo logrotate -f /etc/logrotate.d/defi` et prouve qu'un `defi.log.1` existe et que `defi.log` est repartie vide ou presque.
 - Nettoie (règle, configuration logrotate, fichiers).
 
 **Indices** (à consulter seulement si bloqué) :
 - `sudo systemctl restart rsyslog` après la création de la règle ; `sudo rsyslogd -N1` valide la syntaxe.
 - `logger -p local5.warning -t defi-app "message"`.
-- Dans `postrotate` : `/usr/lib/rsyslog/rsyslog-rotate` (fourni par Ubuntu).
+- Dans `postrotate` : `/usr/bin/systemctl kill -s HUP rsyslog.service` (c'est ce que fait la configuration `logrotate` de Rocky pour rsyslog).
 
 **Critères de réussite** :
 - [ ] `grep -c defi-app /var/log/defi.log` affiche au moins `3` avant la rotation.
@@ -273,9 +277,9 @@ sudo tee /etc/logrotate.d/defi > /dev/null <<'EOF'
     delaycompress
     missingok
     notifempty
-    create 0640 syslog adm
+    create 0640 root root
     postrotate
-        /usr/lib/rsyslog/rsyslog-rotate
+        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
     endscript
 }
 EOF

@@ -7,6 +7,8 @@ Des ateliers **courts (5 à 10 minutes)**, focalisés sur **une compétence**, q
 | [`atelier-01-processus-services-killercoda`](atelier-01-processus-services-killercoda/) | Processus et services systemd | [01 — Processus et services](../cours/01-processus-services.md) | [Atelier](../ateliers/atelier-01-processus-systemd.md) |
 | [`atelier-02-apt-paquets-killercoda`](atelier-02-apt-paquets-killercoda/) | Gérer les paquets avec APT | [02 — Gestion des paquets](../cours/02-gestion-paquets.md) | [Atelier](../ateliers/atelier-02-apt-gestion-paquets.md) |
 
+> 🐧 **Version rapide Ubuntu** : les scénarios Killercoda ci-dessus tournent sur un serveur **Ubuntu** (c'est ce que propose la plateforme). Ton serveur d'entraînement, lui, est la VM **Rocky Linux 9** : les ateliers « sur mon serveur » utilisent `dnf`, `firewalld` et SELinux là où Ubuntu utilise `apt`, `ufw` et AppArmor. Les concepts sont identiques ; en cas de différence de commande, **la version Rocky des cours fait foi**.
+
 > 💡 **Conseil** : les ateliers Killercoda sont un **échauffement** ou une **révision**. Le vrai apprentissage a lieu sur **ton** serveur (voir le [parcours](../PARCOURS.md)). Lis d'abord le cours associé : l'atelier vérifie, il n'explique pas.
 
 ## Environnement
@@ -36,7 +38,7 @@ Dans les `text.md`, un bloc ` ```bash … ```{{exec}} ` s'exécute d'un clic. Le
 
 ## Sans Killercoda
 
-Les commandes sont standard : tu peux les suivre sur ta VM Ubuntu (préfixe `sudo` si tu n'es pas root) et lancer les vérifications à la main :
+Les commandes sont standard : tu peux les suivre sur ta VM Rocky Linux 9 (préfixe `sudo` si tu n'es pas root ; remplace `apt` par `dnf`, `ufw` par `firewalld` si besoin) et lancer les vérifications à la main :
 
 ```bash
 sudo bash atelier-01-xxx-killercoda/step1/verify.sh ; echo "code retour = $?"

@@ -1,5 +1,8 @@
 # Le système de fichiers Linux
 
+> 🐧 **Note Red Hat**
+> Ce cours utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
+
 ## Pourquoi ce cours ?
 
 Sous Linux, **tout est fichier** : documents, périphériques, processus, configuration. Comprendre
@@ -38,7 +41,7 @@ Cette organisation suit le standard **FHS** (*Filesystem Hierarchy Standard*).
 | Répertoire | À y chercher |
 |---|---|
 | `/etc` | Fichiers de configuration (`/etc/ssh/sshd_config`, `/etc/hosts`) |
-| `/var/log` | Journaux (`syslog`, `auth.log`) |
+| `/var/log` | Journaux (`messages`, `secure` ; sous Ubuntu : `syslog`, `auth.log`) |
 | `/home/<user>` | Vos documents et vos fichiers de configuration cachés (`.bashrc`) |
 | `/tmp` | Fichiers temporaires, vidés au redémarrage ou périodiquement |
 | `/proc`, `/sys` | Informations du noyau en temps réel (ne sont pas sur disque) |
@@ -133,7 +136,7 @@ Le fichier n'est réellement supprimé que lorsque son **compteur de liens** tom
 
 ## 6. Systèmes de fichiers, partitions et montage
 
-Un disque est découpé en **partitions**. Chacune reçoit un **système de fichiers** (ext4, xfs, btrfs…) qui organise les données. Ubuntu utilise **ext4** par défaut.
+Un disque est découpé en **partitions**. Chacune reçoit un **système de fichiers** (ext4, xfs, btrfs…) qui organise les données. Ubuntu utilise **ext4** par défaut ; **Rocky/RHEL utilisent XFS** par défaut, et la VM du cours est formatée en **ext4** (installation par kickstart).
 
 ```bash
 lsblk                     # disques et partitions sous forme d'arbre
@@ -146,9 +149,9 @@ cat /etc/fstab            # montages permanents au démarrage
 
 ```text
 Disque /dev/sda (40 Go)
-├─ sda1  1 Mo   BIOS/EFI
-├─ sda2  1 Go   /boot
-└─ sda3  39 Go  /       (ext4)
+├─ sda1  1 Go   /boot   (ext4)
+├─ sda2  2 Go   [SWAP]
+└─ sda3  37 Go  /       (ext4)
 ```
 
 ### Pseudo-systèmes de fichiers

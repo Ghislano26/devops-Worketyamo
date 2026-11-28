@@ -1,0 +1,29 @@
+{
+  "title": "AWS : LocalStack, premiers pas avec awscli et S3",
+  "description": "Démarrez LocalStack avec Docker, configurez awscli pour l'utiliser, créez un bucket S3 et déposez un fichier.",
+  "difficulty": "beginner",
+  "time": "20 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Démarrer LocalStack et configurer awscli",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Créer un bucket S3 et un objet",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

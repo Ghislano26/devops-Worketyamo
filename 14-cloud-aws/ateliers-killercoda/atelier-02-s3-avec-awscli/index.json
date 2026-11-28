@@ -1,0 +1,34 @@
+{
+  "title": "AWS : S3 avec awscli, versioning, restauration et cycle de vie",
+  "description": "Envoyez des fichiers dans S3 (LocalStack), activez le versioning, restaurez une version précédente et configurez des règles de cycle de vie.",
+  "difficulty": "intermediate",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Activer le versioning et créer deux versions",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Restaurer une version et récupérer une suppression",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      },
+      {
+        "title": "Configurer une règle de cycle de vie",
+        "text": "step3/text.md",
+        "verify": "step3/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "AWS : utilisateur IAM, policy de moindre privilège et correction",
+  "description": "Créez un utilisateur IAM et une policy JSON en lecture seule sur LocalStack, testez-la avec un évaluateur local, puis corrigez-la par une nouvelle version.",
+  "difficulty": "intermediate",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Créer un utilisateur et une policy en lecture seule",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Tester, puis corriger la policy",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,6 +1,6 @@
 # Publier les scénarios sur Killercoda
 
-Ce document explique **comment faire détecter** par [Killercoda](https://killercoda.com/) les scénarios des modules **08 (Docker)**, **09 (Kubernetes)**, **10 (Monitoring)**, **11 (SRE)**, **12 (CI/CD)** et **13 (IaC)**, avec deux options, puis la procédure d'import, de mise à jour et de test.
+Ce document explique **comment faire détecter** par [Killercoda](https://killercoda.com/) les scénarios des modules **08 (Docker)**, **09 (Kubernetes)**, **10 (Monitoring)**, **11 (SRE)**, **12 (CI/CD)**, **13 (IaC)** et **14 (Cloud AWS)**, avec deux options, puis la procédure d'import, de mise à jour et de test.
 
 > 📌 **Ce qui est vérifié, ce qui ne l'est pas.** Le format de `structure.json` ci-dessous est confirmé par les dépôts d'exemple **officiels** de Killercoda ([`scenario-examples-groups`](https://github.com/killercoda/scenario-examples-groups), [`scenarios-kubernetes`](https://github.com/killercoda/scenarios-kubernetes)). En revanche, le **parcours exact dans l'interface Killercoda** (menus, boutons) n'a pas pu être vérifié depuis cette machine (la documentation est rendue en JavaScript) : suivez la documentation officielle <https://killercoda.com/creators> pour ces écrans. Les points non confirmés sont marqués **⚠️ à confirmer**.
 
@@ -64,7 +64,10 @@ Le fichier [`structure.json`](structure.json) est déjà créé à la racine :
     { "path": "12-cicd/ateliers-killercoda/atelier-04-deploiement-canary-kubernetes" },
     { "path": "13-iac/ateliers-killercoda/atelier-01-premier-projet-terraform" },
     { "path": "13-iac/ateliers-killercoda/atelier-02-ansible-playbook-idempotent" },
-    { "path": "13-iac/ateliers-killercoda/atelier-03-modules-et-roles" }
+    { "path": "13-iac/ateliers-killercoda/atelier-03-modules-et-roles" },
+    { "path": "14-cloud-aws/ateliers-killercoda/atelier-01-localstack-premiers-pas" },
+    { "path": "14-cloud-aws/ateliers-killercoda/atelier-02-s3-avec-awscli" },
+    { "path": "14-cloud-aws/ateliers-killercoda/atelier-03-iam-policies" }
   ]
 }
 ```
@@ -77,6 +80,7 @@ Le fichier [`structure.json`](structure.json) est déjà créé à la racine :
 | 11 — SRE : pratiques | `ubuntu` (1 et 2), `kubernetes-kubeadm-1node` (3) | `atelier-01-definir-slo-et-error-budget`, `atelier-02-postmortem-blameless`, `atelier-03-chaos-engineering-basique` |
 | 12 — CI/CD | `ubuntu` (1 à 3), `kubernetes-kubeadm-1node` (4) | `atelier-01-premier-workflow-actions`, `atelier-02-pipeline-build-test-push`, `atelier-03-securite-sast-sbom`, `atelier-04-deploiement-canary-kubernetes` |
 | 13 — IaC | `ubuntu` (1 à 3) | `atelier-01-premier-projet-terraform`, `atelier-02-ansible-playbook-idempotent`, `atelier-03-modules-et-roles` |
+| 14 — Cloud AWS (LocalStack) | `ubuntu` (1 à 3) | `atelier-01-localstack-premiers-pas`, `atelier-02-s3-avec-awscli`, `atelier-03-iam-policies` |
 
 Les chemins sont **relatifs au fichier** `structure.json` (donc à la racine du dépôt). Les titres viennent des `index.json` : on ne les répète pas ici pour éviter toute divergence.
 
@@ -117,12 +121,12 @@ et, par exemple, `08-docker-approfondi/ateliers-killercoda/structure.json` :
 Le script [`scripts/export-killercoda-repos.sh`](scripts/export-killercoda-repos.sh) copie les scénarios **à la racine** de dépôts dédiés, avec un `structure.json` à plat, un `README.md` et la `LICENSE` :
 
 ```bash
-scripts/export-killercoda-repos.sh                    # modules 08, 09, 10, 11, 12, 13 → ../worketyamo-killercoda-export/
+scripts/export-killercoda-repos.sh                    # modules 08, 09, 10, 11, 12, 13, 14 → ../worketyamo-killercoda-export/
 scripts/export-killercoda-repos.sh --all              # + modules Linux 01 à 04 (dépôt « linux »)
 scripts/export-killercoda-repos.sh /chemin/de/sortie  # dossier de sortie au choix
 ```
 
-Résultat (mode par défaut, 6 dépôts) :
+Résultat (mode par défaut, 7 dépôts) :
 
 ```text
 worketyamo-killercoda-export/
@@ -131,7 +135,8 @@ worketyamo-killercoda-export/
 ├── worketyamo-killercoda-monitoring/    (4 scénarios)
 ├── worketyamo-killercoda-sre/           (3 scénarios)
 ├── worketyamo-killercoda-cicd/          (4 scénarios)
-└── worketyamo-killercoda-iac/           (3 scénarios)
+├── worketyamo-killercoda-iac/           (3 scénarios)
+└── worketyamo-killercoda-cloud-aws/     (3 scénarios)
       ├── structure.json   ← { "items": [ { "path": "atelier-01-…" }, … ] }
       ├── README.md   LICENSE
       └── atelier-01-…/   atelier-02-…/ …   (même structure dans chaque dépôt)
@@ -173,13 +178,18 @@ Les liens du contenu des scénarios (vers les cours) sont des **URL absolues** v
 | 18 | 13 — IaC | `atelier-01-premier-projet-terraform` | `ubuntu` | ✅ |
 | 19 | 13 — IaC | `atelier-02-ansible-playbook-idempotent` | `ubuntu` | ✅ |
 | 20 | 13 — IaC | `atelier-03-modules-et-roles` | `ubuntu` | ✅ |
-| 21-28 | 01 à 04 — Linux | 8 scénarios `*-killercoda` (voir la [section 5](#5-et-les-scénarios-linux-01-à-04-)) | `ubuntu` | ❌ **non déclarés** (donc ignorés par Killercoda) |
+| 21 | 14 — Cloud AWS | `atelier-01-localstack-premiers-pas` | `ubuntu` | ✅ |
+| 22 | 14 — Cloud AWS | `atelier-02-s3-avec-awscli` | `ubuntu` | ✅ |
+| 23 | 14 — Cloud AWS | `atelier-03-iam-policies` | `ubuntu` | ✅ |
+| 24-31 | 01 à 04 — Linux | 8 scénarios `*-killercoda` (voir la [section 5](#5-et-les-scénarios-linux-01-à-04-)) | `ubuntu` | ❌ **non déclarés** (donc ignorés par Killercoda) |
 
-**20 scénarios sont déclarés** (modules 08 à 13). Les 8 scénarios Linux existent dans le dépôt mais ne sont pas dans `structure.json` : décision à prendre (section 5). Vérifiez à tout moment avec `python3 scripts/check-killercoda.py`.
+**23 scénarios sont déclarés** (modules 08 à 14). Les 8 scénarios Linux existent dans le dépôt mais ne sont pas dans `structure.json` : décision à prendre (section 5). Vérifiez à tout moment avec `python3 scripts/check-killercoda.py`.
 
 > **Note — module 12 (CI/CD)** : le module 12 utilise `act` pour exécuter GitHub Actions localement, car Killercoda ne peut pas déclencher de vrais workflows GitHub (il n'est pas relié à votre dépôt et n'a pas vos secrets). `act` imite GitHub sans être identique ; voir [`12-cicd/ateliers-killercoda/README.md`](12-cicd/ateliers-killercoda/README.md).
 
 > **Note — module 13 (IaC)** : les 3 scénarios du module 13 **installent eux-mêmes Terraform et Ansible** sur la machine Ubuntu du scénario (binaire HashiCorp, paquet `ansible`) et n'ont **besoin d'aucun compte cloud** : Terraform y gère des fichiers locaux (provider `local`), Ansible configure `localhost`. Prévoyez quelques minutes de téléchargement au premier lancement ; voir [`13-iac/ateliers-killercoda/README.md`](13-iac/ateliers-killercoda/README.md).
+
+> **Note — module 14 (Cloud AWS)** : les 3 scénarios du module 14 n'utilisent **aucun compte AWS** : ils installent `awscli` v2 et lancent **LocalStack** (`localstack/localstack:3.8`, image épinglée d'environ 1 Go, téléchargée par `docker run`) sur la machine Ubuntu du scénario. LocalStack est un **émulateur** : les données sont éphémères et certaines fonctions (notamment l'application des policies IAM en édition communautaire) ne sont pas supportées ; voir [`14-cloud-aws/ateliers-killercoda/README.md`](14-cloud-aws/ateliers-killercoda/README.md). Prévoyez 2 à 4 minutes de démarrage au premier lancement.
 
 ## 3. Procédure d'import
 

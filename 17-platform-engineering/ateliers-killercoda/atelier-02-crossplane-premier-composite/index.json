@@ -1,0 +1,29 @@
+{
+  "title": "Platform Engineering : premier composite Crossplane",
+  "description": "Installez Crossplane avec Helm et provider-kubernetes, définissez une API XWebApp (XRD) et sa Composition, créez une ressource composite et vérifiez les ressources réelles.",
+  "difficulty": "advanced",
+  "time": "35 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Installer Crossplane, un provider et une ressource gérée",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Définir une API, une Composition et un composite",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

@@ -5,7 +5,7 @@
 # Usage :
 #   scripts/export-killercoda-repos.sh [--all] [dossier_de_sortie]
 #
-#   (sans option)  modules 08, 09, 10, 11, 12, 13, 14, 15, 16  →  9 dépôts : docker, kubernetes, monitoring, sre, cicd, iac, cloud-aws, gitops, devsecops
+#   (sans option)  modules 08, 09, 10, 11, 12, 13, 14, 15, 16, 17  →  10 dépôts : docker, kubernetes, monitoring, sre, cicd, iac, cloud-aws, gitops, devsecops, platform
 #   --all          ajoute les modules Linux 01 à 04  →  + 1 dépôt « linux » (8 scénarios)
 #   dossier_de_sortie : défaut = ../worketyamo-killercoda-export (HORS du dépôt courant)
 #
@@ -30,7 +30,7 @@ for arg in "$@"; do
 done
 SORTIE="${SORTIE:-$RACINE/../worketyamo-killercoda-export}"
 
-MODULES="08-docker-approfondi 09-kubernetes-approfondi 10-monitoring-observabilite 11-sre-pratiques 12-cicd 13-iac 14-cloud-aws 15-gitops-argocd 16-devsecops"
+MODULES="08-docker-approfondi 09-kubernetes-approfondi 10-monitoring-observabilite 11-sre-pratiques 12-cicd 13-iac 14-cloud-aws 15-gitops-argocd 16-devsecops 17-platform-engineering"
 [[ "$TOUT" -eq 1 ]] && MODULES="01-linux-fondamentaux 02-linux-intermediaire 03-linux-avance 04-linux-expert $MODULES"
 
 depot_pour() {                # module -> nom du dépôt de destination
@@ -45,6 +45,7 @@ depot_pour() {                # module -> nom du dépôt de destination
         14-*) echo "worketyamo-killercoda-cloud-aws" ;;
         15-*) echo "worketyamo-killercoda-gitops" ;;
         16-*) echo "worketyamo-killercoda-devsecops" ;;
+        17-*) echo "worketyamo-killercoda-platform" ;;
         *) echo "worketyamo-killercoda-autre" ;;
     esac
 }

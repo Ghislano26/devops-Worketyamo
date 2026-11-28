@@ -1,0 +1,29 @@
+{
+  "title": "Platform Engineering : catalogue Backstage",
+  "description": "Déployez Backstage avec Helm, décrivez un Group, un System et des Components dans un catalog-info.yaml, interrogez le graphe de relations et ajoutez une entité.",
+  "difficulty": "advanced",
+  "time": "35 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Déployer Backstage avec un premier catalogue",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Ajouter une entité et ses relations",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

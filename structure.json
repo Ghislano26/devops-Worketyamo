@@ -28,6 +28,8 @@
     { "path": "15-gitops-argocd/ateliers-killercoda/atelier-03-applicationset-multi-env" },
     { "path": "16-devsecops/ateliers-killercoda/atelier-01-sbom-et-scan-vulnerabilites" },
     { "path": "16-devsecops/ateliers-killercoda/atelier-02-signature-image-cosign" },
-    { "path": "16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies" }
+    { "path": "16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies" },
+    { "path": "17-platform-engineering/ateliers-killercoda/atelier-01-backstage-catalogue" },
+    { "path": "17-platform-engineering/ateliers-killercoda/atelier-02-crossplane-premier-composite" }
   ]
 }

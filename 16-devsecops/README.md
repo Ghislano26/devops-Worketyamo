@@ -59,5 +59,5 @@ Cours 01 → Cours 02 → Atelier 01 (SBOM et scan)
 ## Navigation
 
 - [← Module 15 — GitOps avec Argo CD](../15-gitops-argocd/README.md)
-- [→ Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md) (étape suivante du parcours)
+- [→ Module 17 — Platform Engineering](../17-platform-engineering/README.md) (module senior, facultatif) puis [Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md)
 - [← README principal](../README.md)

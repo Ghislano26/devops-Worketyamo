@@ -189,5 +189,6 @@ Après les contrôles, on **signe** l'artefact et on enregistre sa **provenance*
 
 - OWASP : <https://owasp.org/> (Top 10, *CI/CD Security Risks*) ; Trivy : <https://trivy.dev/> ; Semgrep : <https://semgrep.dev/>.
 - *GitHub : Security hardening for Actions* ; OpenSSF Scorecard : <https://scorecard.dev/>.
+- **Approfondir** : le [module 16 — DevSecOps](../../16-devsecops/README.md) détaille la sécurité de toute la chaîne d'approvisionnement (SLSA, SBOM, signature et provenance avec cosign, policy as code avec Kyverno, secrets avec Vault, durcissement CIS), avec trois ateliers Killercoda.
 - Cours suivant : [Stratégies de déploiement](07-strategies-de-deploiement.md).
 - Atelier associé : [Sécurité : SAST, SBOM et scan d'image](../ateliers-killercoda/atelier-03-securite-sast-sbom/intro.md).

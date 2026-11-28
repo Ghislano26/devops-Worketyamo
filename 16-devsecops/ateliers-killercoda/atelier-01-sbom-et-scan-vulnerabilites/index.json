@@ -1,0 +1,29 @@
+{
+  "title": "DevSecOps : SBOM et scan de vulnérabilités",
+  "description": "Générez des SBOM CycloneDX et SPDX avec Syft, scannez-les avec Trivy, comparez une image ancienne et une image minimale, et lisez une CVE.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Générer des SBOM avec Syft",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Scanner avec Trivy et comparer",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

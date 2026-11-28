@@ -25,6 +25,9 @@
     { "path": "14-cloud-aws/ateliers-killercoda/atelier-03-iam-policies" },
     { "path": "15-gitops-argocd/ateliers-killercoda/atelier-01-argo-cd-installation-premier-deploiement" },
     { "path": "15-gitops-argocd/ateliers-killercoda/atelier-02-selfheal-et-prune" },
-    { "path": "15-gitops-argocd/ateliers-killercoda/atelier-03-applicationset-multi-env" }
+    { "path": "15-gitops-argocd/ateliers-killercoda/atelier-03-applicationset-multi-env" },
+    { "path": "16-devsecops/ateliers-killercoda/atelier-01-sbom-et-scan-vulnerabilites" },
+    { "path": "16-devsecops/ateliers-killercoda/atelier-02-signature-image-cosign" },
+    { "path": "16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies" }
   ]
 }

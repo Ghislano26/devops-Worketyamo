@@ -1,0 +1,29 @@
+{
+  "title": "DevSecOps : politiques Kyverno (interdire :latest)",
+  "description": "Installez Kyverno avec Helm, créez une ClusterPolicy qui interdit le tag latest, testez un pod conforme et des pods non conformes, puis passez en mode Audit.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Installer Kyverno et créer la politique",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Tester pods conformes et non conformes",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

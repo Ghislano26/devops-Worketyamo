@@ -1,0 +1,29 @@
+{
+  "title": "DevSecOps : signature d'image avec cosign",
+  "description": "Signez une image avec cosign, vérifiez sa signature, détectez une image non signée et un tag réécrit, et simulez un contrôleur d'admission qui refuse l'image non signée.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Registre local, clés et signature",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Vérifier, détecter et refuser",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

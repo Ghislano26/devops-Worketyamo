@@ -59,5 +59,5 @@ Cours 01 → Cours 02 → Atelier 01 (installer Argo CD)
 ## Navigation
 
 - [← Module 14 — Cloud AWS](../14-cloud-aws/README.md)
-- [→ Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md) (étape suivante du parcours)
+- [→ Module 16 — DevSecOps](../16-devsecops/README.md) (étape suivante du parcours)
 - [← README principal](../README.md)

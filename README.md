@@ -59,12 +59,13 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 | [13 — Infrastructure as Code (Terraform et Ansible)](13-iac/README.md) | Terraform / OpenTofu, Ansible, rôles et modules, bonnes pratiques IaC | Avancé | 7 | 0 | 3 scénario(s) ✅ |
 | [14 — Cloud AWS](14-cloud-aws/README.md) | AWS : IAM, EC2/EKS/Lambda, VPC, S3/EBS/EFS, coûts et FinOps (ateliers LocalStack) | Avancé | 6 | 0 | 3 scénario(s) ✅ |
 | [15 — GitOps avec Argo CD (approfondissement)](15-gitops-argocd/README.md) | Argo CD en profondeur, ApplicationSets, Kustomize et Helm, secrets, Flux CD | Avancé | 7 | 0 | 3 scénario(s) ✅ |
+| [16 — DevSecOps (supply chain, signature, policy as code)](16-devsecops/README.md) | Supply chain, SBOM, signature (cosign), policy as code (Kyverno), secrets, durcissement CIS | Avancé | 6 | 0 | 3 scénario(s) ✅ |
 
-> ℹ️ **Le tableau suit la numérotation des dossiers**, pas l'ordre pédagogique : les modules **12 (CI/CD)**, **13 (IaC)**, **14 (Cloud AWS)** puis **15 (GitOps)** se lisent après Kubernetes (09) et avant Monitoring (10) et SRE (11) — voir le [parcours recommandé](#parcours-recommande).
+> ℹ️ **Le tableau suit la numérotation des dossiers**, pas l'ordre pédagogique : les modules **12 (CI/CD)**, **13 (IaC)**, **14 (Cloud AWS)**, **15 (GitOps)** puis **16 (DevSecOps)** se lisent après Kubernetes (09) et avant Monitoring (10) et SRE (11) — voir le [parcours recommandé](#parcours-recommande).
 
-> 🐧 **Où s'exécute chaque module ?** Les modules 01 à 04 s'exécutent sur la **VM Rocky 9** (`dnf`, `firewalld`, SELinux). Les modules 08 à 15 s'exécutent sur **Killercoda** (Ubuntu, outils conteneurisés).
+> 🐧 **Où s'exécute chaque module ?** Les modules 01 à 04 s'exécutent sur la **VM Rocky 9** (`dnf`, `firewalld`, SELinux). Les modules 08 à 16 s'exécutent sur **Killercoda** (Ubuntu, outils conteneurisés).
 
-*« Nb ateliers » compte les ateliers guidés (dossier `ateliers/`) ; les modules 08 à 15 proposent leurs ateliers **uniquement sur Killercoda**. « ⚠️ non déclarés » : voir la section [Ateliers Killercoda](#-ateliers-killercoda).*
+*« Nb ateliers » compte les ateliers guidés (dossier `ateliers/`) ; les modules 08 à 16 proposent leurs ateliers **uniquement sur Killercoda**. « ⚠️ non déclarés » : voir la section [Ateliers Killercoda](#-ateliers-killercoda).*
 
 <a id="parcours-recommande"></a>
 
@@ -81,16 +82,17 @@ L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de
 7. **Infrastructure as Code** — **Module 13** : Terraform / OpenTofu et Ansible, rôles et modules, bonnes pratiques IaC.
 8. **Cloud AWS** — **Module 14** : IAM, calcul, réseau VPC, stockage, coûts et FinOps ; ateliers avec LocalStack.
 9. **GitOps** — **Module 15** : Argo CD en profondeur, ApplicationSets, Kustomize et Helm, secrets, Flux CD.
-10. **Observabilité et fiabilité** — Modules 10 (Monitoring) puis 11 (SRE) : Prometheus, Grafana, Loki, OpenTelemetry, puis SLO, incidents, postmortems, chaos engineering.
+10. **DevSecOps** — **Module 16** : supply chain, SBOM, signature cosign, policy as code Kyverno, secrets, durcissement CIS.
+11. **Observabilité et fiabilité** — Modules 10 (Monitoring) puis 11 (SRE) : Prometheus, Grafana, Loki, OpenTelemetry, puis SLO, incidents, postmortems, chaos engineering.
 
 ```text
-00 → 01 → 02 → 03 → 04 → 06 → 05 → 07 → 08 → 09 → 12 → 13 → 14 → 15 → 10 → 11
-                                                      ▲    ▲    ▲    ▲
-                                      CI/CD (12), IaC (13), Cloud AWS (14) et GitOps (15) : numéros de dossier, lus ici
+00 → 01 → 02 → 03 → 04 → 06 → 05 → 07 → 08 → 09 → 12 → 13 → 14 → 15 → 16 → 10 → 11
+                                                      ▲    ▲    ▲    ▲    ▲
+                                      CI/CD (12), IaC (13), Cloud AWS (14), GitOps (15) et DevSecOps (16) : numéros de dossier, lus ici
 ```
 
 > ⚠️ **Note sur la numérotation des dossiers**
-> Les modules **CI/CD (12)**, **Infrastructure as Code (13)**, **Cloud AWS (14)** et **GitOps (15)** portent des numéros élevés dans l'arborescence, mais ils se lisent **après Kubernetes (09) et avant Monitoring (10) et SRE (11)**, dans cet ordre : 12, 13, 14 puis 15. Cette numérotation a été gelée pour éviter des renommages risqués de dossiers existants (liens, scénarios Killercoda, historique Git). **Fiez-vous à l'ordre pédagogique ci-dessus, pas au numéro du dossier.** La logique est simple : on livre d'abord (CI/CD, 12), on décrit et on provisionne l'infrastructure qui accueille la livraison (IaC, 13), on la déploie sur un cloud public (Cloud AWS, 14), puis on la **fait vivre en continu par GitOps** (Argo CD, 15) : **on provisionne l'infra cloud, on la déploie, on l'observe**, on observe ensuite (Monitoring, 10), puis on définit la fiabilité à partir de ce qu'on observe (SRE, 11).
+> Les modules **CI/CD (12)**, **Infrastructure as Code (13)**, **Cloud AWS (14)**, **GitOps (15)** et **DevSecOps (16)** portent des numéros élevés dans l'arborescence, mais ils se lisent **après Kubernetes (09) et avant Monitoring (10) et SRE (11)**, dans cet ordre : 12, 13, 14, 15 puis 16. Cette numérotation a été gelée pour éviter des renommages risqués de dossiers existants (liens, scénarios Killercoda, historique Git). **Fiez-vous à l'ordre pédagogique ci-dessus, pas au numéro du dossier.** La logique est simple : on livre d'abord (CI/CD, 12), on décrit et on provisionne l'infrastructure qui accueille la livraison (IaC, 13), on la déploie sur un cloud public (Cloud AWS, 14), puis on la **fait vivre en continu par GitOps** (Argo CD, 15), on **sécurise ce qui est déployé** (DevSecOps, 16) : **on provisionne l'infra cloud, on la déploie, on l'observe**, on observe ensuite (Monitoring, 10), puis on définit la fiabilité à partir de ce qu'on observe (SRE, 11).
 
 ### Étape par étape
 
@@ -105,8 +107,9 @@ L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de
 | **Infrastructure as Code** (13) | L'application livrée a besoin d'une infrastructure : on la **décrit**, la **provisionne** et la **configure** par du code | Modules 04, 06, 07, 12 | Terraform, Ansible, rôles et modules, pipeline IaC, dérive |
 | **Cloud AWS** (14) | L'infrastructure décrite en code vit sur un **cloud public** : il faut comprendre ses briques (IAM, calcul, réseau, stockage) et son coût | Modules 04, 06, 08, 13 | IAM de moindre privilège, choix EC2/EKS/Lambda, VPC trois tiers, S3, FinOps ; pratique avec LocalStack |
 | **GitOps** (15) | Livrer en continu par **réconciliation** : Git devient la source de vérité du cluster ; on approfondit Argo CD, les ApplicationSets et les secrets | Modules 09, 12, 13 | Argo CD en profondeur, selfHeal et prune, ApplicationSets, Kustomize/Helm, secrets, Flux |
-| **Observabilité** (10) | Une application livrée n'est pas maîtrisée : il faut la **mesurer** | Modules 04, 06, 08, 09 (12 à 15 recommandés) | Mesurer, visualiser, alerter, monitorer un cluster |
-| **Fiabilité** (11) | Des **pratiques**, pas des outils : elles ne prennent sens qu'avec la livraison **et** l'observation | Modules 01 à 10 et 12 à 15 | Fixer des SLO, gérer un incident, écrire un postmortem, tester la résilience |
+| **DevSecOps** (16) | Ce qui est déployé en continu doit être **sûr** : on sécurise la chaîne d'approvisionnement, on signe, on impose des politiques et on durcit | Modules 08, 09, 12, 15 | SBOM et scan, signature cosign, politiques Kyverno, secrets, durcissement CIS |
+| **Observabilité** (10) | Une application livrée n'est pas maîtrisée : il faut la **mesurer** | Modules 04, 06, 08, 09 (12 à 16 recommandés) | Mesurer, visualiser, alerter, monitorer un cluster |
+| **Fiabilité** (11) | Des **pratiques**, pas des outils : elles ne prennent sens qu'avec la livraison **et** l'observation | Modules 01 à 10 et 12 à 16 | Fixer des SLO, gérer un incident, écrire un postmortem, tester la résilience |
 
 Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis passez au suivant**. Gardez les [cheatsheets](ressources/cheatsheets/commandes-linux.md) sous la main.
 
@@ -114,7 +117,7 @@ Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis p
 
 ## 🎯 Catalogue détaillé des modules
 
-*Les modules sont présentés dans l'**ordre pédagogique** : les modules 12 (CI/CD), 13 (IaC), 14 (Cloud AWS) et 15 (GitOps) figurent donc entre Kubernetes (09) et Monitoring (10).*
+*Les modules sont présentés dans l'**ordre pédagogique** : les modules 12 (CI/CD), 13 (IaC), 14 (Cloud AWS), 15 (GitOps) et 16 (DevSecOps) figurent donc entre Kubernetes (09) et Monitoring (10).*
 
 ### [Module 00 — Installation de Rocky Linux 9 en machine virtuelle](00-installation-ubuntu-vm/README.md)
 
@@ -546,11 +549,40 @@ L'**approfondissement GitOps** : principes OpenGitOps, architecture d'Argo CD, p
 - Générer des applications multi-environnements avec un ApplicationSet
 - Structurer un dépôt avec Kustomize et Helm, gérer les secrets sans les commiter, comparer Argo CD et Flux
 
+### [Module 16 — DevSecOps (supply chain, signature, policy as code)](16-devsecops/README.md)
+
+Le **DevSecOps** approfondi : sécurité de toute la chaîne d'approvisionnement logicielle (SLSA, SBOM, SCA), signature et provenance des artefacts (cosign, Sigstore), politiques d'admission Kubernetes (Kyverno, Gatekeeper, ValidatingAdmissionPolicy), gestion des secrets (Vault, secrets dynamiques) et durcissement (CIS, Pod Security Standards). Le dossier porte le numéro 16, mais **ce module se lit après le GitOps (15)** et avant Monitoring (10) : on déploie en continu, on sécurise ce qui est déployé, on observe.
+
+**Prérequis** : Modules 08 (Docker), 09 (Kubernetes), 12 (CI/CD) et 15 (GitOps).
+
+**Cours** :
+
+1. [Introduction au DevSecOps](16-devsecops/cours/01-introduction-devsecops.md)
+2. [Sécurité de la chaîne d'approvisionnement logicielle](16-devsecops/cours/02-supply-chain-security.md)
+3. [Signature et provenance](16-devsecops/cours/03-signature-et-provenance.md)
+4. [Policy as code pour Kubernetes](16-devsecops/cours/04-policy-as-code-kubernetes.md)
+5. [Gestion des secrets](16-devsecops/cours/05-secrets-management.md)
+6. [Durcissement et CIS Benchmarks](16-devsecops/cours/06-hardening-et-cis-benchmarks.md)
+
+**Ateliers Killercoda** (déclarés dans `structure.json`) :
+
+- [DevSecOps : SBOM et scan de vulnérabilités](16-devsecops/ateliers-killercoda/atelier-01-sbom-et-scan-vulnerabilites/)
+- [DevSecOps : signature d'image avec cosign](16-devsecops/ateliers-killercoda/atelier-02-signature-image-cosign/)
+- [DevSecOps : politiques Kyverno (interdire :latest)](16-devsecops/ateliers-killercoda/atelier-03-kyverno-policies/)
+
+**Compétences acquises** :
+
+- Décrire un pipeline sécurisé et situer les contrôles dans les quatre piliers (code, build, deploy, runtime)
+- Produire une SBOM, scanner avec Trivy et prioriser les vulnérabilités
+- Signer une image avec cosign, vérifier signature et provenance, comprendre keyless et attestations
+- Écrire, tester et déployer des politiques d'admission (Audit puis Enforce)
+- Choisir une stratégie de secrets (Vault, gestionnaires cloud) et durcir nœuds, cluster et pods
+
 ### [Module 10 — Monitoring & Observabilité](10-monitoring-observabilite/README.md)
 
 Observer, mesurer et alerter sur un système en production, avec les trois piliers : **métriques**, **logs** et **traces**.
 
-**Prérequis** : Modules 04, 06, 08 et 09 ; les modules 12 (CI/CD), 13 (IaC), 14 (Cloud AWS) et 15 (GitOps Argo CD) sont recommandés avant.
+**Prérequis** : Modules 04, 06, 08 et 09 ; les modules 12 (CI/CD), 13 (IaC), 14 (Cloud AWS), 15 (GitOps Argo CD) et 16 (DevSecOps) sont recommandés avant.
 
 **Cours** :
 
@@ -581,7 +613,7 @@ Observer, mesurer et alerter sur un système en production, avec les trois pilie
 
 Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux rôles de SRE, Platform Engineer ou DevOps senior. *Ce module se vit plus qu'il ne s'apprend.*
 
-**Prérequis** : Modules 01 à 10 et 12 à 15, surtout le module 10 (observabilité).
+**Prérequis** : Modules 01 à 10 et 12 à 16, surtout le module 10 (observabilité).
 
 **Cours** :
 
@@ -613,7 +645,7 @@ Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux
 
 - **Publier et lancer les scénarios** : procédure d'import (lien du dépôt au profil, mises à jour, tests) dans [**KILLERCODA.md**](KILLERCODA.md) ; liste des scénarios déclarés dans [`structure.json`](structure.json).
 - **Backends utilisés** : `ubuntu` (machine Ubuntu avec Docker préinstallé) et `kubernetes-kubeadm-1node` (cluster Kubernetes à un nœud, `kubectl` prêt).
-- **Modules couverts et déclarés** : 08 (Docker), 09 (Kubernetes), 12 (CI/CD), 13 (IaC), 14 (Cloud AWS, avec LocalStack), 15 (GitOps Argo CD), 10 (Monitoring) et 11 (SRE) — **26 scénarios** déclarés dans `structure.json`.
+- **Modules couverts et déclarés** : 08 (Docker), 09 (Kubernetes), 12 (CI/CD), 13 (IaC), 14 (Cloud AWS, avec LocalStack), 15 (GitOps Argo CD), 16 (DevSecOps), 10 (Monitoring) et 11 (SRE) — **29 scénarios** déclarés dans `structure.json`.
 - **Modules Linux (01 à 04)** : **8 scénarios Killercoda** existent (dossiers `*/ateliers-killercoda/`) mais ne sont **pas encore déclarés** dans `structure.json` : tant qu'ils n'y figurent pas, Killercoda les ignore. Les ajouter est une décision à prendre (voir [KILLERCODA.md, section 5](KILLERCODA.md#5-et-les-scénarios-linux-01-à-04-)). En attendant, leurs ateliers guidés se pratiquent sur votre VM.
 
 - **Module 12 (CI/CD)** : il utilise `act` pour exécuter GitHub Actions localement, car Killercoda ne peut pas déclencher de vrais workflows GitHub.
@@ -637,7 +669,7 @@ Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9**
 - **Installer** : le plus simple est Vagrant (voir le [Guide de l'environnement](GUIDE-ENVIRONNEMENT.md)) ; pour une installation manuelle, guides [VMware](00-installation-ubuntu-vm/guide-installation-vmware.md) ou [VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md), puis la [checklist post-installation](00-installation-ubuntu-vm/checklist-post-installation.md).
 - **Se connecter** : en **SSH** depuis votre machine hôte (`vagrant ssh` dans `environnement/vagrant`, ou `ssh` avec les paramètres de `vagrant ssh-config`) plutôt que depuis la fenêtre de la VM. Procédure détaillée dans [`SERVEUR.md`](01-linux-fondamentaux/SERVEUR.md).
 - **Snapshots** : un snapshot `00-installation-propre`, puis un snapshot avant chaque jour ou atelier (`jour-XX-avant`). Pour revenir en arrière, restaurez-le.
-- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 15 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
+- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 16 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
 - **Ressources matérielles** : la pile de monitoring (module 10) et Kubernetes demandent plus de mémoire : arrêtez les conteneurs d'un atelier avant de lancer le suivant.
 
 ### Variantes de la box
@@ -683,10 +715,10 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 
 | | |
 |---|---|
-| Modules | **16** (00 à 15) |
-| Cours | **84** |
+| Modules | **17** (00 à 16) |
+| Cours | **90** |
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
-| Scénarios Killercoda | **34** (26 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 44 800** |
+| Scénarios Killercoda | **37** (29 déclarés dans `structure.json`, 8 à déclarer) |
+| Lignes de contenu (approximatif) | **≈ 46 900** |
 

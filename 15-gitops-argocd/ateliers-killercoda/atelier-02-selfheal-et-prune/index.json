@@ -1,0 +1,29 @@
+{
+  "title": "Argo CD : self-heal et prune",
+  "description": "Activez la synchronisation automatique avec selfHeal et prune, observez Argo CD annuler une modification manuelle, puis supprimer une ressource retirée de Git.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Application automatique et self-heal",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Supprimer une ressource dans Git : le prune",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "title": "Argo CD : installation et premier déploiement",
+  "description": "Installez Argo CD avec les manifestes officiels, connectez-vous (mot de passe, port-forward, CLI) et déployez une Application depuis un dépôt Git public.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Installer Argo CD",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Accéder à Argo CD (mot de passe, port-forward, CLI)",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      },
+      {
+        "title": "Déployer une première Application",
+        "text": "step3/text.md",
+        "verify": "step3/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

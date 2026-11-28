@@ -1,0 +1,29 @@
+{
+  "title": "Argo CD : ApplicationSet multi-environnements",
+  "description": "Créez un ApplicationSet avec le générateur List pour générer les Applications dev, staging et prod, vérifiez les namespaces, puis ajoutez un environnement.",
+  "difficulty": "advanced",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Générer dev, staging et prod avec un ApplicationSet",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Ajouter un environnement et constater la propriété",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-1node"
+  }
+}

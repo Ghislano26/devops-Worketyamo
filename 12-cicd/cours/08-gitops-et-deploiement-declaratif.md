@@ -240,4 +240,5 @@ GitOps rejoint la **fiabilité** : la dérive supprimée, les changements tracé
 
 - OpenGitOps : <https://opengitops.dev/> ; Argo CD : <https://argo-cd.readthedocs.io/> ; Flux : <https://fluxcd.io/docs/>.
 - Sealed Secrets : <https://github.com/bitnami-labs/sealed-secrets> ; External Secrets : <https://external-secrets.io/>.
+- **Approfondir** : le [module 15 — GitOps avec Argo CD](../../15-gitops-argocd/README.md) détaille l'architecture d'Argo CD, les politiques de synchronisation, les ApplicationSets, Kustomize/Helm, les secrets et Flux CD (avec trois ateliers Killercoda).
 - Retour au [sommaire du module 12](../README.md), puis le module [Monitoring et observabilité](../../10-monitoring-observabilite/README.md) pour observer ce que vous livrez.

@@ -65,5 +65,5 @@ Un module **FinOps** dédié est prévu pour approfondir le dernier cours. Pour 
 ## Navigation
 
 - [← Module 13 — Infrastructure as Code](../13-iac/README.md)
-- [→ Module 10 — Monitoring et observabilité](../10-monitoring-observabilite/README.md) (étape suivante du parcours)
+- [→ Module 15 — GitOps avec Argo CD](../15-gitops-argocd/README.md) (étape suivante du parcours)
 - [← README principal](../README.md)

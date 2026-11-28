@@ -22,6 +22,9 @@
     { "path": "13-iac/ateliers-killercoda/atelier-03-modules-et-roles" },
     { "path": "14-cloud-aws/ateliers-killercoda/atelier-01-localstack-premiers-pas" },
     { "path": "14-cloud-aws/ateliers-killercoda/atelier-02-s3-avec-awscli" },
-    { "path": "14-cloud-aws/ateliers-killercoda/atelier-03-iam-policies" }
+    { "path": "14-cloud-aws/ateliers-killercoda/atelier-03-iam-policies" },
+    { "path": "15-gitops-argocd/ateliers-killercoda/atelier-01-argo-cd-installation-premier-deploiement" },
+    { "path": "15-gitops-argocd/ateliers-killercoda/atelier-02-selfheal-et-prune" },
+    { "path": "15-gitops-argocd/ateliers-killercoda/atelier-03-applicationset-multi-env" }
   ]
 }

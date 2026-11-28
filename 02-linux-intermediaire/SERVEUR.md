@@ -1,6 +1,6 @@
 # Mon serveur d'entraînement — Module 02 : Intermédiaire
 
-Dans ce cursus, **chaque cours doit être pratiqué sur un serveur, pas seulement lu**. Ton serveur d'entraînement est la VM **Rocky Linux 9** (`devops-lab`), fournie par Vagrant : voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md). Cette page rappelle comment t'y connecter, la protéger (snapshots) et la remettre à zéro. Si tu dois recréer une VM **à la main** (sans Vagrant), la procédure est au [module 00](../00-installation-ubuntu-vm/README.md).
+Dans ce cursus, **chaque cours doit être pratiqué sur un serveur, pas seulement lu**. Ton serveur d'entraînement est la VM **Rocky Linux 9** (`devops-lab`), construite par chaque étudiant avec Vagrant (`make up`) : voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md). Cette page rappelle comment t'y connecter, la protéger (snapshots) et la remettre à zéro. Si tu dois recréer une VM **à la main** (sans Vagrant), la procédure est au [module 00](../00-installation-ubuntu-vm/README.md).
 
 > 💡 **Conseil** : traite cette VM **comme un vrai serveur distant** : tu t'y connectes en SSH, tu n'utilises pas l'interface graphique de l'hyperviseur. C'est exactement ce que tu feras plus tard en entreprise.
 
@@ -22,7 +22,8 @@ Dans la VM, vérifie où tu es :
 hostname                   # devops-lab
 cat /etc/rocky-release     # Rocky Linux release 9.x
 whoami                     # vagrant
-ip -br a                   # enp0s3 (NAT, 10.0.2.15) et enp0s8 (réseau privé, 192.168.56.10)
+ip -br a                   # interface NAT (10.0.2.15) et interface du réseau privé (192.168.56.10)
+                           # leurs noms varient selon la box : eth0/eth1, enp0s3/enp0s8, ens33/ens34…
 systemctl is-active sshd   # doit répondre « active »
 ```
 
@@ -88,7 +89,7 @@ rsync -avz -e ssh ./scripts/ luc:~/scripts/              # synchroniser un dossi
 vagrant ssh -- -L 8080:localhost:80                      # tunnel : http://localhost:8080 sur l'hôte → port 80 de la VM
 ```
 
-Le dossier **`/vagrant`** de la VM est la **racine du dépôt** côté hôte : le plus simple pour échanger des fichiers (voir le [guide, chapitre 5](../GUIDE-ENVIRONNEMENT.md#5-partager-des-fichiers-entre-lhôte-et-la-vm)).
+Le dossier **`/vagrant`** de la VM est la **racine du dépôt** côté hôte (si `ls /vagrant` est vide, installe `vagrant-vbguest` : voir le guide, § 5.1) : le plus simple pour échanger des fichiers (voir le [guide, chapitre 5](../GUIDE-ENVIRONNEMENT.md#5-partager-des-fichiers-entre-lhôte-et-la-vm)).
 
 ## 5. Particularités de ce module
 

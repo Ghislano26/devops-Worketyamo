@@ -81,13 +81,13 @@ Choisissez une ligne et décodez-la : type, droits, propriétaire, groupe, taill
 ```bash
 ls -l /etc/hosts        # fichier ordinaire
 ls -ld /etc             # répertoire
-ls -l /dev/null /dev/tty /dev/sda* 2>/dev/null   # périphériques c et b
+ls -l /dev/null /dev/tty /dev/sd* /dev/vd* 2>/dev/null   # périphériques c et b (ton disque : sda ou vda, selon la box ; `lsblk` le montre)
 file /bin/ls /etc/hosts /etc
 ```
 
 Relevez un exemple de chaque type : `-`, `d`, `l`, `c`, `b`.
 
-> ❓ **Question 5** : Pourquoi `/dev/null` est-il un périphérique de type `c` (caractère) et `/dev/sda` de type `b` (bloc) ?
+> ❓ **Question 5** : Pourquoi `/dev/null` est-il un périphérique de type `c` (caractère) et ton disque (`/dev/sda` ou `/dev/vda`) de type `b` (bloc) ?
 
 ### Étape 6 — Inodes
 

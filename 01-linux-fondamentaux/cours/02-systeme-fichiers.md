@@ -136,23 +136,46 @@ Le fichier n'est réellement supprimé que lorsque son **compteur de liens** tom
 
 ## 6. Systèmes de fichiers, partitions et montage
 
-Un disque est découpé en **partitions**. Chacune reçoit un **système de fichiers** (ext4, xfs, btrfs…) qui organise les données. Ubuntu utilise **ext4** par défaut ; **Rocky/RHEL utilisent XFS** par défaut, et la VM du cours est formatée en **ext4** (installation par kickstart).
+Un disque est découpé en **partitions**. Chacune reçoit un **système de fichiers** (ext4, xfs, btrfs…) qui organise les données. Ubuntu utilise **ext4** par défaut ; **Rocky/RHEL utilisent XFS** par défaut. Sur ta VM `make up` (box publique `rockylinux/9`), `/` est **probablement en XFS**, parfois sur LVM, mais ce n'est pas garanti : **vérifie-le** (voir plus bas).
 
 ```bash
 lsblk                     # disques et partitions sous forme d'arbre
 lsblk -f                  # + type de FS, UUID, point de montage
 df -hT                    # espace utilisé par FS monté
 findmnt /                 # détails du montage de /
-mount | grep ext4         # systèmes ext4 montés
+mount | grep -E 'ext4|xfs'   # systèmes ext4 ou XFS montés
 cat /etc/fstab            # montages permanents au démarrage
 ```
 
 ```text
-Disque /dev/sda (40 Go)
-├─ sda1  1 Go   /boot   (ext4)
+# Exemple A (partitions simples) — disque SATA/SCSI
+Disque /dev/sda
+├─ sda1  1 Go   /boot   (xfs ou ext4)
 ├─ sda2  2 Go   [SWAP]
-└─ sda3  37 Go  /       (ext4)
+└─ sda3  reste  /       (xfs ou ext4)
+
+# Exemple B (LVM) — disque virtio, très courant sur Rocky/RHEL
+Disque /dev/vda
+├─ vda1  1 Go   /boot                (xfs)
+└─ vda2  reste  LVM
+   ├─ rocky-root   /                 (xfs)  → /dev/mapper/rocky-root
+   └─ rocky-swap   [SWAP]
 ```
+
+> 🧩 **Variantes de la box**
+> Ces deux schémas sont des **exemples** : sur certaines box tu verras `sda1`/`sda2`/`sda3`, sur d'autres `vda1` avec LVM (`/dev/mapper/rocky-root`). Le système de fichiers de `/` est XFS ou ext4, et la taille du disque dépend de la box (généralement 20 Go ou plus : `df -h /`).
+> **La disposition exacte dépend de la box. Ce qui compte, c'est de savoir la lire avec `lsblk` et `df -T`.**
+
+### Vérifie ta propre disposition
+
+```bash
+lsblk -f                  # disques, partitions, LVM, type de FS, UUID, point de montage
+df -T                     # type de FS et espace pour chaque système monté (-h : tailles lisibles)
+df -h /                   # taille et occupation du système de fichiers racine
+cat /etc/fstab            # montages permanents au démarrage
+```
+
+> 📓 **Exercice** : note dans ton journal de bord (`environnement/journaux/<pseudo>.md`) le nom de ton disque (`sda`, `vda`…), le type de FS de `/` (XFS ou ext4), la présence de LVM, et la taille de `/`.
 
 ### Pseudo-systèmes de fichiers
 

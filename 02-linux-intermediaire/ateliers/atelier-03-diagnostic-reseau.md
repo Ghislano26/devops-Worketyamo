@@ -16,7 +16,11 @@
 - Paquets : `bind-utils` (`dig`), `nmap-ncat` (`nc`), `traceroute`, `curl`, `tcpdump` : déjà installés dans la VM du cours.
 - Un second terminal **sur votre ordinateur hôte** (pour tester le pare-feu depuis l'extérieur de la VM).
 
-> ⚠️ **Attention** : cet atelier modifie temporairement la résolution DNS et le pare-feu. Prenez un **snapshot** (`vagrant snapshot save avant-reseau`) et gardez la console VirtualBox comme accès de secours. Ne touchez pas à `enp0s3` (NAT, utilisée par `vagrant ssh`) autrement que comme décrit.
+> ⚠️ **Attention** : cet atelier modifie temporairement la résolution DNS et le pare-feu. Prenez un **snapshot** (`vagrant snapshot save avant-reseau`) et gardez la console VirtualBox comme accès de secours. Ne touchez pas à l'interface NAT (celle qui porte `10.0.2.15`, utilisée par `vagrant ssh`) autrement que comme décrit.
+
+> 🧩 **Variantes de la box**
+>
+> 📌 **Nom des interfaces** : sur `rockylinux/9`, les noms peuvent être `eth0`/`eth1`, `enp0s3`/`enp0s8`, ou `ens33`/`ens34` selon la version de la box et l'hyperviseur. **Vérifie toujours avec `ip -br a` avant de lancer une commande.** Ci-dessous, `<interface>` est à remplacer par le nom réel ; l'atelier le calcule pour vous quand c'est possible (`$IF`, `$IF_PRIVEE`).
 
 ## 🧪 Scénario
 
@@ -32,7 +36,8 @@ télécharger de mises à jour ni à joindre le site ». Vous jouez le technicie
 ip -br a
 ip route
 nmcli device status
-nmcli device show enp0s3 | grep -E 'IP4.DNS|IP4.GATEWAY'
+IF=$(ip route show default | cut -d' ' -f5)     # interface de la route par défaut (NAT)
+nmcli device show "$IF" | grep -E 'IP4.DNS|IP4.GATEWAY'
 grep -v '^#' /etc/resolv.conf
 ```
 
@@ -45,6 +50,8 @@ mkdir -p ~/reseau && {
   echo; echo "DNS :"; grep '^nameserver' /etc/resolv.conf
 } > ~/reseau/etat-normal.txt
 ```
+
+> 📓 **Exercice** : lance `ip -br a` et **note les noms réels de tes interfaces** (NAT et privée) dans ton journal de bord (`environnement/journaux/<pseudo>.md`).
 
 > ❓ **Question 1** : Quelle est l'adresse de votre passerelle ? Quelle ligne de `ip route` l'indique ?
 
@@ -148,7 +155,7 @@ sudo firewall-cmd --list-services
 sudo firewall-cmd --permanent --remove-service=http && sudo firewall-cmd --reload
 ```
 
-> ❓ **Question 6** : Quelle différence observe-t-on entre un port **rejeté** (la zone `public` répond tout de suite « No route to host » / `Connection refused`) et un port **abandonné silencieusement** (délai d'attente) ? Testez : depuis l'hôte, `nc -zv -w 3 192.168.56.10 9999` ; puis dans la VM `sudo firewall-cmd --zone=drop --change-interface=enp0s8` et relancez le test (délai) ; enfin `sudo firewall-cmd --zone=public --change-interface=enp0s8` pour revenir.
+> ❓ **Question 6** : Quelle différence observe-t-on entre un port **rejeté** (la zone `public` répond tout de suite « No route to host » / `Connection refused`) et un port **abandonné silencieusement** (délai d'attente) ? Testez : depuis l'hôte, `nc -zv -w 3 192.168.56.10 9999` ; puis dans la VM `IF_PRIVEE=$(ip -br a | awk '/192\.168\.56\./ {print $1}')` et `sudo firewall-cmd --zone=drop --change-interface="$IF_PRIVEE"`, relancez le test (délai) ; enfin `sudo firewall-cmd --zone=public --change-interface="$IF_PRIVEE"` pour revenir.
 
 ### Étape 6 — Observer le trafic
 
@@ -211,7 +218,7 @@ Remplissez-le à partir de ce que vous avez observé dans les étapes 4 et 5.
 ### Étape 10 — Remise en état
 
 ```bash
-sudo firewall-cmd --get-active-zones      # enp0s8 doit être revenue en zone « public »
+sudo firewall-cmd --get-active-zones      # l'interface privée doit être revenue en zone « public »
 sudo firewall-cmd --list-services       # seulement ssh (et dhcpv6-client)
 sudo systemctl disable --now nginx
 sudo dnf remove -y nginx && sudo dnf autoremove -y

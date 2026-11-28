@@ -1,6 +1,7 @@
 # Module 00 — Installation de Rocky Linux 9 en machine virtuelle
 
-> 📘 **La VM de référence est fournie par le formateur via Vagrant** (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)) : c'est la voie normale, elle ne demande aucune installation de système.
+> 📘 **Tu vas construire ta propre VM Rocky 9** en suivant les instructions de `environnement/` (`make up`). Voir [GUIDE-ENVIRONNEMENT.md](../GUIDE-ENVIRONNEMENT.md) pour la procédure complète : c'est la voie recommandée, elle ne demande aucune installation manuelle du système.
+> **Si tu ne peux pas utiliser Vagrant**, ou si tu veux comprendre ce qui se passe sous le capot, voici la procédure d'installation **manuelle** de Rocky Linux 9 (VirtualBox ou VMware).
 > **Si tu dois recréer la VM manuellement** (pas de Vagrant possible, VMware imposé, besoin de comprendre l'installation), voici la procédure pour **Rocky Linux 9** : ce module la décrit pas à pas avec VirtualBox et VMware.
 
 > 🐧 *Le nom du dossier (`00-installation-ubuntu-vm`) est conservé pour ne pas casser les liens du dépôt ; son contenu décrit Rocky Linux 9.*
@@ -19,7 +20,7 @@ un *snapshot* (instantané) permet de revenir à un état sain en quelques secon
 │  │ Hyperviseur (VMware / VirtualBox)      │  │
 │  │  ┌──────────────────────────────────┐  │  │
 │  │  │ VM invitée : Rocky Linux 9       │  │  │
-│  │  │ 2 vCPU · 4 Go RAM · 40 Go disque │  │  │
+│  │  │ 2 vCPU · 4 Go RAM · disque ≥20Go │  │  │
 │  │  └──────────────────────────────────┘  │  │
 │  └────────────────────────────────────────┘  │
 └──────────────────────────────────────────────┘
@@ -55,12 +56,12 @@ personnel depuis 2024.
 |---|---|
 | vCPU | 2 (4 si votre machine le permet) |
 | Mémoire | 4 Go (4096 Mo) |
-| Disque | 40 Go (allocation dynamique) |
+| Disque | 40 Go (allocation dynamique) pour une **installation manuelle**. La VM `make up` a le disque de la box (généralement 20 Go ou plus) : vérifie avec `df -h /` |
 | Réseau | NAT (+ réseau privé *Host-only* si vous voulez joindre la VM depuis l'hôte) |
-| Firmware | BIOS ou UEFI (la VM Vagrant du cours est en BIOS) |
+| Firmware | BIOS ou UEFI (les deux conviennent ; pour la VM `make up`, `ls /sys/firmware/efi` existe seulement en UEFI) |
 | Image | **Rocky Linux 9** (`Rocky-9.x-x86_64-minimal.iso`, 64 bits) : <https://rockylinux.org/download> |
 | Nom d'hôte | `devops-lab` |
-| Utilisateur | `vagrant` (pour reproduire la VM de référence) ou votre identifiant |
+| Utilisateur | `vagrant` (comme dans la VM `make up`) ou votre identifiant |
 
 > ⚠️ **Attention** : sur Mac à processeur Apple Silicon (M1 à M4), l'architecture est **aarch64** (arm64).
 > Téléchargez l'ISO « aarch64 » et utilisez **UTM** (gratuit) ou VMware Fusion. VirtualBox ne
@@ -71,7 +72,7 @@ personnel depuis 2024.
 - **Minimal** (ISO `minimal`) : sans interface graphique, léger, très proche d'un vrai serveur. Idéal pour un cursus « console-first » : **recommandé**.
 - **DVD** avec *Server with GUI* : interface graphique. Plus confortable pour débuter (copier-coller, navigateur). Ouvrez simplement un terminal depuis les applications.
 
-Les ateliers fonctionnent sur les deux. Ce cursus recommande **Minimal** (la VM Vagrant du cours est une installation minimale).
+Les ateliers fonctionnent sur les deux. Ce cursus recommande **Minimal** (proche de la box `rockylinux/9` utilisée par `make up`).
 
 ## Checklist de fin de module
 

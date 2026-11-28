@@ -54,14 +54,25 @@ ip neigh                  # table ARP (voisins du réseau local)
 ```
 
 ```text
-default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100
-10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100
-192.168.56.0/24 dev enp0s8 proto kernel scope link src 192.168.56.10 metric 101
+default via 10.0.2.2 dev <interface-NAT> proto dhcp src 10.0.2.15 metric 100
+10.0.2.0/24 dev <interface-NAT> proto kernel scope link src 10.0.2.15 metric 100
+192.168.56.0/24 dev <interface-privée> proto kernel scope link src 192.168.56.10 metric 101
+# <interface-NAT> / <interface-privée> : eth0 / eth1, enp0s3 / enp0s8, ens33 / ens34… selon ta box
 ```
 
-La route `default via …` est la **passerelle** : par où part tout ce qui n'est pas dans un réseau local. Dans la VM du cours, `enp0s3` est l'interface **NAT** (Internet, et SSH de Vagrant) et `enp0s8` le **réseau privé** `192.168.56.10` (accessible depuis votre ordinateur).
+La route `default via …` est la **passerelle** : par où part tout ce qui n'est pas dans un réseau local. Dans la VM du cours, une interface est en **NAT** (Internet, et SSH de Vagrant ; adresse `10.0.2.15`) et une autre sur le **réseau privé** `192.168.56.10` (accessible depuis votre ordinateur).
 
-> ⚠️ **Attention** : ne modifiez **pas** `enp0s3` ni `enp0s8` dans les exercices : vous couperiez votre propre connexion `vagrant ssh`. Les manipulations d'adresses se font sur une **interface factice** `dummy0`.
+> 🧩 **Variantes de la box**
+>
+> 📌 **Nom des interfaces** : sur `rockylinux/9`, les noms peuvent être `eth0`/`eth1`, `enp0s3`/`enp0s8`, ou `ens33`/`ens34` selon la version de la box et l'hyperviseur. **Vérifie toujours avec `ip -br a` avant de lancer une commande.** Dans ce cours, `<interface>` désigne **le nom réel** sur ta VM : à toi de le remplacer. Repère-les ainsi :
+>
+> ```bash
+> ip -br a                                          # toutes les interfaces et leurs adresses
+> ip -br a | awk '/10\.0\.2\./ {print $1}'            # interface NAT (Internet) : adresse en 10.0.2.x
+> ip -br a | awk '/192\.168\.56\./ {print $1}'        # interface du réseau privé (192.168.56.10)
+> ```
+
+> ⚠️ **Attention** : ne modifiez **pas** ces deux interfaces dans les exercices : vous couperiez votre propre connexion `vagrant ssh`. Les manipulations d'adresses se font sur une **interface factice** `dummy0`.
 
 Configuration **temporaire** (perdue au redémarrage), sur une interface factice :
 
@@ -82,7 +93,7 @@ Ubuntu Server utilise **Netplan** (fichiers YAML dans `/etc/netplan/`). **Rocky 
 nmcli device status                     # interfaces et connexion active de chacune
 nmcli connection show                   # profils enregistrés
 nmcli -p connection show "Wired connection 1" | head -n 20   # détail d'un profil (adaptez le nom)
-nmcli device show enp0s3 | grep -E 'IP4|DNS'                 # adresses, passerelle, DNS d'une interface
+nmcli device show <interface> | grep -E 'IP4|DNS'            # adresses, passerelle, DNS d'une interface
 sudo nmtui                              # assistant en mode texte
 ```
 
@@ -97,7 +108,7 @@ nmcli connection show lab-dummy | grep -E 'ipv4\.(method|addresses|dns)'
 sudo nmcli connection delete lab-dummy
 ```
 
-Modifier un profil existant (exemple, à ne **pas** exécuter sur `enp0s3`) :
+Modifier un profil existant (exemple, à ne **pas** exécuter sur l'interface NAT) :
 
 ```bash
 sudo nmcli connection modify "<profil>" ipv4.method manual \
@@ -139,7 +150,7 @@ Application → /etc/resolv.conf (rempli par NetworkManager) → serveur DNS (1.
 
 ```bash
 cat /etc/resolv.conf                  # serveurs DNS utilisés (écrit par NetworkManager)
-nmcli device show enp0s3 | grep DNS   # serveurs DNS reçus par l'interface
+nmcli device show <interface> | grep DNS   # serveurs DNS reçus par l'interface
 dig rockylinux.org                    # requête DNS détaillée (paquet bind-utils)
 dig +short A rockylinux.org           # seulement les adresses IPv4
 dig +short MX gmail.com               # enregistrement de messagerie
@@ -221,8 +232,8 @@ Une **zone** est un niveau de confiance auquel on rattache des interfaces ou des
 | `trusted` | Tout est accepté |
 
 ```bash
-sudo firewall-cmd --get-zones
-sudo firewall-cmd --zone=internal --change-interface=enp0s8 --permanent
+sudo firewall-cmd --get-zones                # (remplacez <interface-privée> ci-dessous par le nom réel : `ip -br a`)
+sudo firewall-cmd --zone=internal --change-interface=<interface-privée> --permanent
 sudo firewall-cmd --zone=internal --list-all
 ```
 

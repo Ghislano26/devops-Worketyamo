@@ -1,6 +1,6 @@
 # Guide d'installation de Rocky Linux 9 avec VirtualBox
 
-> 📘 **Rappel** : la VM de référence est fournie par le formateur via Vagrant (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)). Ce guide sert si vous devez **recréer la VM manuellement**.
+> ⚠️ **Méthode recommandée** : `make up` (voir [GUIDE-ENVIRONNEMENT.md](../GUIDE-ENVIRONNEMENT.md)). Ce guide décrit l'installation manuelle, utile si tu veux comprendre ce qui se passe sous le capot ou si tu ne peux pas utiliser Vagrant.
 
 VirtualBox (Oracle) est gratuit, open source et disponible sous Windows, Linux et macOS
 (Intel). Ce guide utilise VirtualBox 7.x.
@@ -39,7 +39,7 @@ Cliquez sur **Nouvelle** :
 2. **Image ISO** : sélectionnez l'ISO.
 3. Cochez **Ignorer l'installation automatique** (*Skip Unattended Installation*) : vous voulez voir et comprendre chaque étape.
 4. **Type** : Linux — **Version** : Red Hat (64-bit) (ou *Oracle Linux 9 (64-bit)*).
-5. **Matériel** : mémoire **4096 Mo**, processeurs **2** (4 si possible). *EFI* : facultatif (la VM de référence est en BIOS).
+5. **Matériel** : mémoire **4096 Mo**, processeurs **2** (4 si possible). *EFI* : facultatif (BIOS ou EFI : les deux conviennent).
 6. **Disque dur** : *Créer un disque dur virtuel maintenant*, **40 Go**, **ne pas** cocher « Pré-allouer toute la taille » (allocation dynamique).
 7. Terminez.
 
@@ -75,10 +75,10 @@ Démarrez la VM : le menu de démarrage propose **Install Rocky Linux 9** (valid
 2. **Heure et date** (*Time & Date*) : choisissez votre fuseau horaire (ex. Africa/Douala) et laissez l'heure réseau activée.
 3. **Source d'installation** : par défaut (l'ISO ; pour l'ISO minimale, le réseau peut servir de source).
 4. **Sélection de logiciels** (*Software Selection*) : **Minimal Install** (serveur sans interface graphique) ou *Server with GUI* si vous voulez un bureau.
-5. **Destination d'installation** : sélectionnez le disque virtuel de 40 Go, laissez **Automatique** (le partitionnement par défaut utilise LVM et XFS ; la VM de référence utilise ext4 sans LVM : les cours le précisent).
+5. **Destination d'installation** : sélectionnez le disque virtuel de 40 Go, laissez **Automatique** (le partitionnement par défaut utilise LVM et XFS ; la disposition exacte — XFS ou ext4, LVM ou partitions simples — varie selon l'installation et la box : les cours expliquent comment la lire avec `lsblk -f` et `df -T`).
 6. **Réseau et nom d'hôte** : activez l'interface (interrupteur sur **ON** : DHCP, IP du type `10.0.2.15` en NAT VirtualBox) et saisissez le nom d'hôte **`devops-lab`**.
 7. **Mot de passe root** : *Disable root account* (recommandé : on utilisera `sudo`), ou un mot de passe robuste.
-8. **Création d'utilisateur** : nom `vagrant` (pour reproduire la VM de référence) ou votre identifiant, mot de passe robuste, cochez **Make this user administrator** : l'utilisateur rejoint le groupe `wheel` (droits `sudo`).
+8. **Création d'utilisateur** : nom `vagrant` (comme dans la VM `make up`) ou votre identifiant, mot de passe robuste, cochez **Make this user administrator** : l'utilisateur rejoint le groupe `wheel` (droits `sudo`).
 9. Cliquez sur **Begin Installation** (environ 5 à 10 minutes).
 10. Fin de l'installation → **Reboot System**. Quand l'écran de démarrage réapparaît avec l'ISO, faites **Périphériques → Lecteurs optiques → Retirer le disque** (ou *Forcer le démontage*), puis laissez la VM redémarrer.
 
@@ -110,7 +110,8 @@ sudo umount /mnt
 sudo reboot
 ```
 
-> 💡 **Conseil** : pour un serveur en console seule, les Additions ne sont pas indispensables (mais elles sont nécessaires pour les **dossiers partagés** comme `/vagrant`). Si l'installation signale « Could not find the Linux kernel headers », vérifiez que `kernel-devel-$(uname -r)` correspond bien au noyau (`uname -r`) : faites d'abord `sudo dnf upgrade -y && sudo reboot`.
+> 💡 **Conseil** : pour un serveur en console seule, les Additions ne sont pas indispensables (mais elles sont nécessaires pour les **dossiers partagés** comme `/vagrant`).
+> 🧱 Avec `make up`, tu n'as normalement rien à installer : si `ls /vagrant` ne renvoie rien, installe le plugin `vagrant-vbguest` (voir le [guide, § 5.1](../GUIDE-ENVIRONNEMENT.md#51-méthode-1--le-dossier-synchronisé-vagrant)). Si l'installation signale « Could not find the Linux kernel headers », vérifiez que `kernel-devel-$(uname -r)` correspond bien au noyau (`uname -r`) : faites d'abord `sudo dnf upgrade -y && sudo reboot`.
 
 ## 8. Snapshot
 

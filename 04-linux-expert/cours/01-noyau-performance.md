@@ -145,8 +145,10 @@ Les **hugepages** (2 Mo ou 1 Go) réduisent la pression sur la table des pages (
 ```bash
 iostat -xz 1 3                 # (sysstat) latences et utilisation par disque
 pidstat -d 1 3                 # E/S par processus (sysstat) ; alternative : iotop (sudo dnf install iotop, si le dépôt le propose)
-sudo blktrace -d /dev/sda      # trace avancée
-cat /sys/block/sda/queue/scheduler    # ordonnanceur d'E/S : [mq-deadline] none
+lsblk -d -o NAME,SIZE,TYPE     # repère le nom de TON disque : sda, vda, nvme0n1…
+DISQUE=$(lsblk -dn -o NAME,TYPE | awk '$2=="disk" {print $1; exit}')   # premier disque détecté
+sudo blktrace -d /dev/$DISQUE  # trace avancée
+cat /sys/block/$DISQUE/queue/scheduler    # ordonnanceur d'E/S : [mq-deadline] none
 df -h ; df -i
 ```
 

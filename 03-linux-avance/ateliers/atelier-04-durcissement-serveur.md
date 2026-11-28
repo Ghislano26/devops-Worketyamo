@@ -1,6 +1,6 @@
 # Atelier 04 — Durcissement d'un serveur Rocky Linux
 
-> 🐧 *Version Rocky Linux 9 : `dnf-automatic`, `firewalld` et SELinux remplacent `unattended-upgrades`, `ufw` et AppArmor. La box livrée applique déjà un durcissement SSH minimal et active `firewalld` : l'état « avant » n'est donc pas celui d'un serveur vierge.*
+> 🐧 *Version Rocky Linux 9 : `dnf-automatic`, `firewalld` et SELinux remplacent `unattended-upgrades`, `ufw` et AppArmor. Le provisioning de la VM (`make up`) applique déjà un durcissement SSH minimal et active `firewalld` : l'état « avant » n'est donc pas celui d'un serveur vierge.*
 
 ## 🎯 Objectifs
 

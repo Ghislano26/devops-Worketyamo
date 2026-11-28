@@ -1,6 +1,6 @@
 # Guide d'installation de Rocky Linux 9 avec VMware
 
-> 📘 **Rappel** : la VM de référence est fournie par le formateur via Vagrant (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)). Ce guide sert si vous devez **recréer la VM manuellement** (par exemple avec VMware).
+> ⚠️ **Méthode recommandée** : `make up` (voir [GUIDE-ENVIRONNEMENT.md](../GUIDE-ENVIRONNEMENT.md)). Ce guide décrit l'installation manuelle, utile si tu veux comprendre ce qui se passe sous le capot ou si tu ne peux pas utiliser Vagrant.
 
 > 🐧 **Ubuntu ?** La création de la VM est identique pour Ubuntu (système invité *Ubuntu 64-bit*) ; seuls l'installeur et les commandes (`apt`…) diffèrent. Le cursus suppose **Rocky Linux 9**.
 
@@ -48,7 +48,7 @@ Comparez l'empreinte obtenue avec celle publiée. Si elles diffèrent, retéléc
    Choisissez plutôt **« I will install the operating system later »**, puis attachez l'ISO à l'étape 6.
 5. Système invité : **Linux**, version **Red Hat Enterprise Linux 9 64-bit** (ou *Rocky Linux 64-bit* si proposé ; *… 64-bit Arm* sur Apple Silicon).
 6. Nom : `rocky9-devops`. Emplacement : un disque avec assez de place.
-7. Firmware : **BIOS** (comme la VM de référence) ou **UEFI**. Avec UEFI, désactivez *Secure Boot* si l'installation échoue au démarrage.
+7. Firmware : **BIOS** ou **UEFI**. Avec UEFI, désactivez *Secure Boot* si l'installation échoue au démarrage.
 
 ## 4. Paramètres recommandés
 
@@ -83,7 +83,7 @@ Démarrez la VM (**Power on**). Le menu de démarrage propose **Install Rocky Li
 5. **Destination d'installation** : sélectionnez le disque de 40 Go, partitionnement **Automatique** (LVM + XFS par défaut ; nous étudierons LVM au module 03).
 6. **Réseau et nom d'hôte** : activez l'interface (**ON**, DHCP : une adresse du type `192.168.xx.xx` doit apparaître) et saisissez le nom d'hôte **`devops-lab`**.
 7. **Mot de passe root** : *Disable root account* (recommandé), ou un mot de passe robuste.
-8. **Création d'utilisateur** : identifiant (`vagrant` pour reproduire la VM de référence, ou le vôtre), mot de passe robuste, cochez **Make this user administrator** (groupe `wheel` : droits `sudo`).
+8. **Création d'utilisateur** : identifiant (`vagrant` comme dans la VM `make up`, ou le vôtre), mot de passe robuste, cochez **Make this user administrator** (groupe `wheel` : droits `sudo`).
 9. **Begin Installation**, attendez la fin, puis **Reboot System**. VMware éjecte l'ISO automatiquement ; sinon, déconnectez le lecteur CD/DVD dans *VM → Settings*.
 
 > 💡 **Conseil** : avec *Server with GUI*, un assistant de premier démarrage (*Initial Setup*) peut demander d'accepter la licence : acceptez et terminez.

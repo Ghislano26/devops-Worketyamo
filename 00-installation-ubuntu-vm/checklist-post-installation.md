@@ -2,7 +2,7 @@
 
 > 🐧 **Note Red Hat**
 > Cette checklist utilise les commandes **Rocky Linux 9** (binaire-compatible RHEL 9). Si tu croises une documentation Ubuntu (`apt`, `ufw`, AppArmor), sache que l'équivalent Red Hat est `dnf`, `firewalld`, SELinux. Les concepts sont identiques, seule la commande change.
-> **VM Vagrant du cours** : ces étapes sont déjà faites (voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)). Cette checklist sert pour une **installation manuelle**.
+> **VM `make up`** : une grande partie de ces étapes est déjà faite par les scripts de provisioning (`environnement/scripts/`, voir le [Guide de l'environnement](../GUIDE-ENVIRONNEMENT.md)). Cette checklist sert pour une **installation manuelle**.
 
 À exécuter **une seule fois**, juste après l'installation, avant le premier cours. Toutes les
 commandes sont à saisir dans le terminal de la VM (ou en SSH).
@@ -133,7 +133,7 @@ getenforce                            # « Enforcing » après une installation 
 > ⚠️ **Attention** : ne retirez **jamais** le service `ssh` de `firewalld` sur une machine distante, sinon vous perdez
 > votre accès. Nous le configurerons proprement au module 02 (réseau) puis au module 03 (durcissement).
 
-> 🐧 La VM Vagrant du cours est livrée avec SELinux en mode **Permissive** (choix pédagogique) ; une installation manuelle standard est en **Enforcing**. Les deux conviennent pour suivre le cursus : voir la [section SELinux](../03-linux-avance/cours/04-securite-durcissement.md#8-selinux--contrôle-daccès-obligatoire).
+> 🐧 La VM `make up` passe SELinux en mode **Permissive** (script `03-hardening.sh`, choix pédagogique) ; une installation manuelle standard est en **Enforcing**. Les deux conviennent pour suivre le cursus : voir la [section SELinux](../03-linux-avance/cours/04-securite-durcissement.md#8-selinux--contrôle-daccès-obligatoire).
 
 ## 9. Prendre le snapshot de référence
 

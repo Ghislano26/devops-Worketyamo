@@ -256,7 +256,7 @@ Pour rendre un mode **persistant**, on modifie `/etc/selinux/config` (`SELINUX=e
 
 > 📌 **À retenir** : **ne désactivez pas SELinux** pour « faire marcher » un programme. Passez en *permissive* le temps du diagnostic, lisez les refus, corrigez (étiquette, booléen, port), puis revenez en *enforcing*.
 
-> 🐧 **Dans la VM du cours** : la box est livrée en mode **permissive** (réglage persistant dans `/etc/selinux/config`). C'est un choix **pédagogique** : en laboratoire, un refus SELinux imprévu bloquerait des exercices dont ce n'est pas le sujet. Les refus restent **journalisés** (vous pouvez les lire avec `ausearch`). Le passage en *enforcing* est prévu (`TODO` dans `environnement/scripts/03-hardening.sh`) quand le cursus comportera une partie SELinux complète. En production, on vise toujours **enforcing**.
+> 🐧 **Dans la VM du cours** : le provisioning (`03-hardening.sh`, lancé par `make up`) met SELinux en mode **permissive** (réglage persistant dans `/etc/selinux/config`). C'est un choix **pédagogique** : en laboratoire, un refus SELinux imprévu bloquerait des exercices dont ce n'est pas le sujet. Les refus restent **journalisés** (vous pouvez les lire avec `ausearch`). Le passage en *enforcing* est prévu (`TODO` dans `environnement/scripts/03-hardening.sh`) quand le cursus comportera une partie SELinux complète. En production, on vise toujours **enforcing**.
 
 ### 8.2 Les contextes (étiquettes)
 
@@ -347,7 +347,7 @@ Exemple de message et de sa traduction :
 
 ```text
 type=AVC msg=audit(1731000000.123:456): avc:  denied  { read } for  pid=1200 comm="nginx"
-  name="index.html" dev="sda3" ino=131073 scontext=system_u:system_r:httpd_t:s0
+  name="index.html" dev="<disque>" ino=131073 scontext=system_u:system_r:httpd_t:s0
   tcontext=unconfined_u:object_r:var_t:s0 tclass=file permissive=0
 ```
 

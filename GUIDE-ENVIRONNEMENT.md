@@ -527,6 +527,15 @@ cp /vagrant/modele/script.sh ~/ateliers/                   # hôte → VM
 
 Un fichier copié dans `/vagrant/mes-travaux/` **apparaît immédiatement** dans le dossier correspondant sur ton ordinateur (et inversement).
 
+> 🧱 **Si `/vagrant` est vide** : le montage `/vagrant` dépend des **Guest Additions** de VirtualBox. Si `ls /vagrant` ne renvoie rien, installe le plugin `vagrant-vbguest` (sur l'hôte, dans `environnement/vagrant`), puis recharge la VM :
+>
+> ```bash
+> vagrant plugin install vagrant-vbguest
+> vagrant reload
+> ```
+>
+> Si l'erreur apparaît dès le `make up` (`vboxsf`), ajoute `--provision` : `vagrant reload --provision`. Voir aussi le [§ 10.9](#109-problèmes-liés-à-la-box-et-au-provisioning).
+
 **Limites à connaître**
 
 | Limite | Explication |
@@ -1101,6 +1110,8 @@ sudo dnf install -y htop stress-ng fail2ban lynis ncdu
 Si le dépôt EPEL est temporairement injoignable, `01-base.sh` **continue** (les paquets EPEL sont facultatifs et signalés par `! <paquet> indisponible`) ; relance `vagrant provision --provision-with 01-base` plus tard.
 
 **Dossier `/vagrant` vide / erreur `vboxsf`**
+
+*(Voir aussi le [§ 5.1](#51-méthode-1--le-dossier-synchronisé-vagrant), qui décrit ce montage.)*
 
 Certaines box n'embarquent pas les Guest Additions de VirtualBox. Installe le plugin qui les ajoute automatiquement, puis recharge :
 

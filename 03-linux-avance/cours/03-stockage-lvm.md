@@ -47,7 +47,19 @@ blkid                         # UUID et types
 cat /etc/fstab                # montages permanents
 ```
 
-Les disques apparaissent sous la forme `/dev/sda`, `/dev/sdb` (SATA/SCSI/virtio) ou `/dev/nvme0n1`. Les partitions : `sda1`, `sda2`.
+Les disques apparaissent sous la forme `/dev/sda`, `/dev/sdb` (SATA/SCSI), `/dev/vda` (virtio) ou `/dev/nvme0n1`. Les partitions : `sda1`, `sda2` (ou `vda1`…). Les noms ci-dessous sont des **exemples** : adaptez-les à ta VM.
+
+### Vérifie ta propre disposition
+
+```bash
+lsblk -f           # disques, partitions, LVM, type de FS, UUID, points de montage
+df -T              # type de FS (xfs, ext4…) et espace
+cat /etc/fstab     # montages permanents
+sudo pvs ; sudo vgs ; sudo lvs   # LVM déjà utilisé par le système ? (Rocky : souvent le groupe « rocky »)
+```
+
+> 🧩 **Variantes de la box**
+> La box publique `rockylinux/9` utilise **probablement XFS** pour `/`, avec ou sans LVM, mais la disposition exacte (`sda1/sda2/sda3` ou `vda1` + LVM `/dev/mapper/rocky-root`) et la taille du disque (généralement 20 Go ou plus : `df -h /`) **dépendent de la box**. Ce qui compte, c'est de savoir la lire avec `lsblk -f` et `df -T`.
 
 > ⚠️ **Attention** : avant toute opération sur un disque, **identifiez-le avec `lsblk`** : une erreur de lettre (`sda` au lieu de `sdb`) peut détruire votre système.
 
@@ -81,7 +93,7 @@ sudo umount /mnt/donnees
 | Réduire | ✅ (démonté) | ❌ |
 | Usage | Général (**défaut Ubuntu**) | Gros fichiers, serveurs (**défaut Rocky / RHEL**) |
 
-> 🐧 **ext4 ou XFS sous Rocky ?** Une installation Rocky/RHEL « classique » formate `/` en **XFS** ; la VM du cours (installée par kickstart) utilise **ext4** pour `/`. Les exemples utilisent donc **ext4** (`mkfs.ext4`, `resize2fs`). Avec XFS, les commandes changent : `mkfs.xfs`, **`xfs_growfs <point de montage>`** pour agrandir (à chaud, sur le point de montage et non sur le périphérique), `xfs_repair` à la place de `fsck`, et **un XFS ne se réduit jamais** (il faut sauvegarder, recréer, restaurer). `lvextend -r` choisit automatiquement le bon outil.
+> 🐧 **ext4 ou XFS sous Rocky ?** Une installation Rocky/RHEL « classique » formate `/` en **XFS** ; ta VM `make up` peut être en **XFS ou en ext4** (vérifie avec `df -T /`). Les exemples de ce cours et de l'atelier utilisent **ext4** (`mkfs.ext4`, `resize2fs`) **par choix pédagogique**, sur des volumes que **tu** crées : le système de fichiers de `/` n'a donc pas d'importance pour les suivre. **Les deux existent : ext4** (`resize2fs`, **réductible** démonté) **et XFS** (`xfs_growfs`, **non réductible**). Avec XFS, les commandes changent : `mkfs.xfs`, **`xfs_growfs <point de montage>`** pour agrandir (à chaud, sur le point de montage et non sur le périphérique), `xfs_repair` à la place de `fsck`, et **un XFS ne se réduit jamais** (il faut sauvegarder, recréer, restaurer). `lvextend -r` choisit automatiquement le bon outil.
 
 ### Montage permanent avec `/etc/fstab`
 

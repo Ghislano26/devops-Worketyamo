@@ -541,6 +541,16 @@ Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9**
 - **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 12 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
 - **Ressources matérielles** : la pile de monitoring (module 10) et Kubernetes demandent plus de mémoire : arrêtez les conteneurs d'un atelier avant de lancer le suivant.
 
+### Variantes de la box
+
+Ce cours utilise la box publique `rockylinux/9`. Selon la version de la box et l'hyperviseur, tu peux observer des différences mineures :
+
+- **Système de fichiers** : XFS (par défaut sur Rocky) ou ext4.
+- **Disposition disque** : `sda1/sda2/sda3` ou LVM (`/dev/mapper/rocky-root`).
+- **Interfaces réseau** : `eth0`, `enp0s3` ou `ens33`.
+
+Ce sont des variantes normales. Les cours expliquent comment les **identifier** (avec `lsblk -f`, `ip -br a`, `df -T`) pour que tu puisses adapter les commandes. Note les valeurs réelles de ton environnement dans ton journal de bord (`environnement/journaux/<pseudo>.md`).
+
 ## 📚 Ressources transverses
 
 | Ressource | Contenu |

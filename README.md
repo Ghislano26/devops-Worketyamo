@@ -56,12 +56,13 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 | [10 — Monitoring & Observabilité](10-monitoring-observabilite/README.md) | Prometheus, PromQL, Grafana, Alertmanager, Loki, OpenTelemetry | Avancé | 7 | 0 | 4 scénario(s) ✅ |
 | [11 — SRE : pratiques d'ingénierie de fiabilité](11-sre-pratiques/README.md) | SLO, incidents, postmortems, runbooks, chaos engineering, patterns de fiabilité | Avancé | 7 | 0 | 3 scénario(s) ✅ |
 | [12 — CI/CD complet](12-cicd/README.md) | Pipelines as code, artefacts, tests, sécurité, déploiements progressifs, GitOps | Avancé | 8 | 0 | 4 scénario(s) ✅ |
+| [13 — Infrastructure as Code (Terraform et Ansible)](13-iac/README.md) | Terraform / OpenTofu, Ansible, rôles et modules, bonnes pratiques IaC | Avancé | 7 | 0 | 3 scénario(s) ✅ |
 
-> ℹ️ **Le tableau suit la numérotation des dossiers**, pas l'ordre pédagogique : le module **12 (CI/CD)** se lit après Kubernetes (09) et avant Monitoring (10) et SRE (11) — voir le [parcours recommandé](#parcours-recommande).
+> ℹ️ **Le tableau suit la numérotation des dossiers**, pas l'ordre pédagogique : les modules **12 (CI/CD)** puis **13 (IaC)** se lisent après Kubernetes (09) et avant Monitoring (10) et SRE (11) — voir le [parcours recommandé](#parcours-recommande).
 
-> 🐧 **Où s'exécute chaque module ?** Les modules 01 à 04 s'exécutent sur la **VM Rocky 9** (`dnf`, `firewalld`, SELinux). Les modules 08 à 12 s'exécutent sur **Killercoda** (Ubuntu, outils conteneurisés).
+> 🐧 **Où s'exécute chaque module ?** Les modules 01 à 04 s'exécutent sur la **VM Rocky 9** (`dnf`, `firewalld`, SELinux). Les modules 08 à 13 s'exécutent sur **Killercoda** (Ubuntu, outils conteneurisés).
 
-*« Nb ateliers » compte les ateliers guidés (dossier `ateliers/`) ; les modules 08 à 12 proposent leurs ateliers **uniquement sur Killercoda**. « ⚠️ non déclarés » : voir la section [Ateliers Killercoda](#-ateliers-killercoda).*
+*« Nb ateliers » compte les ateliers guidés (dossier `ateliers/`) ; les modules 08 à 13 proposent leurs ateliers **uniquement sur Killercoda**. « ⚠️ non déclarés » : voir la section [Ateliers Killercoda](#-ateliers-killercoda).*
 
 <a id="parcours-recommande"></a>
 
@@ -75,16 +76,17 @@ L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de
 4. **Conteneurs** — Module 08 : Docker approfondi.
 5. **Orchestration** — Module 09 : Kubernetes approfondi.
 6. **Livraison continue** — **Module 12** : CI/CD, pipelines, sécurité, stratégies de déploiement, GitOps.
-7. **Observabilité et fiabilité** — Modules 10 (Monitoring) puis 11 (SRE) : Prometheus, Grafana, Loki, OpenTelemetry, puis SLO, incidents, postmortems, chaos engineering.
+7. **Infrastructure as Code** — **Module 13** : Terraform / OpenTofu et Ansible, rôles et modules, bonnes pratiques IaC.
+8. **Observabilité et fiabilité** — Modules 10 (Monitoring) puis 11 (SRE) : Prometheus, Grafana, Loki, OpenTelemetry, puis SLO, incidents, postmortems, chaos engineering.
 
 ```text
-00 → 01 → 02 → 03 → 04 → 06 → 05 → 07 → 08 → 09 → 12 → 10 → 11
-                                                      ▲
-                                        CI/CD : numéro 12, lu ici
+00 → 01 → 02 → 03 → 04 → 06 → 05 → 07 → 08 → 09 → 12 → 13 → 10 → 11
+                                                      ▲    ▲
+                                      CI/CD (12) et IaC (13) : numéros de dossier, lus ici
 ```
 
 > ⚠️ **Note sur la numérotation des dossiers**
-> Le module **CI/CD porte le numéro 12** dans l'arborescence, mais il se lit **après Kubernetes (09) et avant Monitoring (10) et SRE (11)**. Cette numérotation a été gelée pour éviter des renommages risqués de dossiers existants (liens, scénarios Killercoda, historique Git). **Fiez-vous à l'ordre pédagogique ci-dessus, pas au numéro du dossier.** La logique est simple : on livre d'abord (CI/CD), on observe ensuite (Monitoring), on définit la fiabilité à partir de ce qu'on observe (SRE).
+> Les modules **CI/CD (12)** et **Infrastructure as Code (13)** portent des numéros élevés dans l'arborescence, mais ils se lisent **après Kubernetes (09) et avant Monitoring (10) et SRE (11)**, dans cet ordre : 12 puis 13. Cette numérotation a été gelée pour éviter des renommages risqués de dossiers existants (liens, scénarios Killercoda, historique Git). **Fiez-vous à l'ordre pédagogique ci-dessus, pas au numéro du dossier.** La logique est simple : on livre d'abord (CI/CD, 12), on décrit et on provisionne l'infrastructure qui accueille la livraison (IaC, 13), on observe ensuite (Monitoring, 10), puis on définit la fiabilité à partir de ce qu'on observe (SRE, 11).
 
 ### Étape par étape
 
@@ -96,8 +98,9 @@ L'ordre pédagogique recommandé est le suivant. **Attention** : les numéros de
 | **Conteneurs** (08) | L'image est l'artefact de toute la chaîne de livraison | Modules 04, 06 | Construire, orchestrer et durcir des conteneurs |
 | **Orchestration** (09) | La cible des déploiements | Modules 04, 06, 08 | Déployer, exposer et sécuriser sur un cluster |
 | **Livraison continue** (12) | Une fois qu'on sait empaqueter et orchestrer, on **automatise la livraison** | Modules 07, 08, 09 | Pipelines as code, artefacts signés, CI sécurisée, canary, GitOps |
-| **Observabilité** (10) | Une application livrée n'est pas maîtrisée : il faut la **mesurer** | Modules 04, 06, 08, 09 (12 recommandé) | Mesurer, visualiser, alerter, monitorer un cluster |
-| **Fiabilité** (11) | Des **pratiques**, pas des outils : elles ne prennent sens qu'avec la livraison **et** l'observation | Modules 01 à 10 et 12 | Fixer des SLO, gérer un incident, écrire un postmortem, tester la résilience |
+| **Infrastructure as Code** (13) | L'application livrée a besoin d'une infrastructure : on la **décrit**, la **provisionne** et la **configure** par du code | Modules 04, 06, 07, 12 | Terraform, Ansible, rôles et modules, pipeline IaC, dérive |
+| **Observabilité** (10) | Une application livrée n'est pas maîtrisée : il faut la **mesurer** | Modules 04, 06, 08, 09 (12 et 13 recommandés) | Mesurer, visualiser, alerter, monitorer un cluster |
+| **Fiabilité** (11) | Des **pratiques**, pas des outils : elles ne prennent sens qu'avec la livraison **et** l'observation | Modules 01 à 10, 12 et 13 | Fixer des SLO, gérer un incident, écrire un postmortem, tester la résilience |
 
 Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis passez au suivant**. Gardez les [cheatsheets](ressources/cheatsheets/commandes-linux.md) sous la main.
 
@@ -105,7 +108,7 @@ Pour chaque module : **lisez le cours, pratiquez l'atelier correspondant, puis p
 
 ## 🎯 Catalogue détaillé des modules
 
-*Les modules sont présentés dans l'**ordre pédagogique** : le module 12 (CI/CD) figure donc entre Kubernetes (09) et Monitoring (10).*
+*Les modules sont présentés dans l'**ordre pédagogique** : les modules 12 (CI/CD) et 13 (IaC) figurent donc entre Kubernetes (09) et Monitoring (10).*
 
 ### [Module 00 — Installation de Rocky Linux 9 en machine virtuelle](00-installation-ubuntu-vm/README.md)
 
@@ -448,11 +451,41 @@ La chaîne de **livraison continue** : écrire des pipelines as code, produire d
 - Déployer en rolling, blue/green ou canary avec un retour arrière prêt
 - Mettre en place GitOps avec Argo CD et un dépôt de configuration séparé
 
+### [Module 13 — Infrastructure as Code (Terraform et Ansible)](13-iac/README.md)
+
+L'**Infrastructure as Code** : décrire l'infrastructure dans des fichiers versionnés, la **provisionner** avec Terraform / OpenTofu et la **configurer** avec Ansible. Le dossier porte le numéro 13, mais **ce module se lit juste après le CI/CD (12)** et avant Monitoring (10).
+
+**Prérequis** : Modules 04 (Linux), 06 (Réseaux), 07 (Git) et 12 (CI/CD) ; des notions de cloud aident mais ne sont pas nécessaires.
+
+**Cours** :
+
+1. [Introduction à l'Infrastructure as Code](13-iac/cours/01-introduction-iac.md)
+2. [Terraform : les fondamentaux](13-iac/cours/02-terraform-fondamentaux.md)
+3. [Terraform avancé](13-iac/cours/03-terraform-avance.md)
+4. [Ansible : les fondamentaux](13-iac/cours/04-ansible-fondamentaux.md)
+5. [Ansible avancé](13-iac/cours/05-ansible-avance.md)
+6. [Terraform ou Ansible ?](13-iac/cours/06-terraform-vs-ansible.md)
+7. [Bonnes pratiques IaC](13-iac/cours/07-bonnes-pratiques-iac.md)
+
+**Ateliers Killercoda** (déclarés dans `structure.json`) :
+
+- [IaC : premier projet Terraform (provider local)](13-iac/ateliers-killercoda/atelier-01-premier-projet-terraform/)
+- [IaC : playbook Ansible idempotent (nginx)](13-iac/ateliers-killercoda/atelier-02-ansible-playbook-idempotent/)
+- [IaC : rôle Ansible et modularité](13-iac/ateliers-killercoda/atelier-03-modules-et-roles/)
+
+**Compétences acquises** :
+
+- Expliquer l'IaC, la dérive et l'idempotence, et choisir déclaratif ou impératif
+- Écrire un projet Terraform (providers, variables, state, modules) et lire ses plans
+- Écrire des playbooks et des rôles Ansible idempotents (templates, handlers, Vault)
+- Choisir Terraform, Ansible ou Packer selon le besoin et les combiner
+- Bâtir un pipeline IaC (plan en PR, apply au merge, détection de dérive) avec tests
+
 ### [Module 10 — Monitoring & Observabilité](10-monitoring-observabilite/README.md)
 
 Observer, mesurer et alerter sur un système en production, avec les trois piliers : **métriques**, **logs** et **traces**.
 
-**Prérequis** : Modules 04, 06, 08 et 09 ; le module 12 (CI/CD) est recommandé avant.
+**Prérequis** : Modules 04, 06, 08 et 09 ; les modules 12 (CI/CD) et 13 (IaC) sont recommandés avant.
 
 **Cours** :
 
@@ -483,7 +516,7 @@ Observer, mesurer et alerter sur un système en production, avec les trois pilie
 
 Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux rôles de SRE, Platform Engineer ou DevOps senior. *Ce module se vit plus qu'il ne s'apprend.*
 
-**Prérequis** : Modules 01 à 10 et 12, surtout le module 10 (observabilité).
+**Prérequis** : Modules 01 à 10, 12 et 13, surtout le module 10 (observabilité).
 
 **Cours** :
 
@@ -515,7 +548,7 @@ Des **pratiques** d'ingénierie de fiabilité (et non des outils) : prépare aux
 
 - **Publier et lancer les scénarios** : procédure d'import (lien du dépôt au profil, mises à jour, tests) dans [**KILLERCODA.md**](KILLERCODA.md) ; liste des scénarios déclarés dans [`structure.json`](structure.json).
 - **Backends utilisés** : `ubuntu` (machine Ubuntu avec Docker préinstallé) et `kubernetes-kubeadm-1node` (cluster Kubernetes à un nœud, `kubectl` prêt).
-- **Modules couverts et déclarés** : 08 (Docker), 09 (Kubernetes), 12 (CI/CD), 10 (Monitoring) et 11 (SRE) — **17 scénarios** déclarés dans `structure.json`.
+- **Modules couverts et déclarés** : 08 (Docker), 09 (Kubernetes), 12 (CI/CD), 13 (IaC), 10 (Monitoring) et 11 (SRE) — **20 scénarios** déclarés dans `structure.json`.
 - **Modules Linux (01 à 04)** : **8 scénarios Killercoda** existent (dossiers `*/ateliers-killercoda/`) mais ne sont **pas encore déclarés** dans `structure.json` : tant qu'ils n'y figurent pas, Killercoda les ignore. Les ajouter est une décision à prendre (voir [KILLERCODA.md, section 5](KILLERCODA.md#5-et-les-scénarios-linux-01-à-04-)). En attendant, leurs ateliers guidés se pratiquent sur votre VM.
 
 - **Module 12 (CI/CD)** : il utilise `act` pour exécuter GitHub Actions localement, car Killercoda ne peut pas déclencher de vrais workflows GitHub.
@@ -539,7 +572,7 @@ Tout le cursus Linux (modules 01 à 04) se pratique sur une **VM Rocky Linux 9**
 - **Installer** : le plus simple est Vagrant (voir le [Guide de l'environnement](GUIDE-ENVIRONNEMENT.md)) ; pour une installation manuelle, guides [VMware](00-installation-ubuntu-vm/guide-installation-vmware.md) ou [VirtualBox](00-installation-ubuntu-vm/guide-installation-virtualbox.md), puis la [checklist post-installation](00-installation-ubuntu-vm/checklist-post-installation.md).
 - **Se connecter** : en **SSH** depuis votre machine hôte (`vagrant ssh` dans `environnement/vagrant`, ou `ssh` avec les paramètres de `vagrant ssh-config`) plutôt que depuis la fenêtre de la VM. Procédure détaillée dans [`SERVEUR.md`](01-linux-fondamentaux/SERVEUR.md).
 - **Snapshots** : un snapshot `00-installation-propre`, puis un snapshot avant chaque jour ou atelier (`jour-XX-avant`). Pour revenir en arrière, restaurez-le.
-- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 12 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
+- **Killercoda en complément** : pour s'échauffer ou réviser sans VM, ou quand une machine plus puissante est nécessaire (Kubernetes, pile de monitoring). Les modules 08 à 13 s'appuient sur Killercoda ; sur votre VM Rocky, les commandes équivalentes fonctionnent (Podman est installé ; pour Docker : [module 05](05-devops-outils/cours/02-docker-fondamentaux.md)).
 - **Ressources matérielles** : la pile de monitoring (module 10) et Kubernetes demandent plus de mémoire : arrêtez les conteneurs d'un atelier avant de lancer le suivant.
 
 ### Variantes de la box
@@ -585,10 +618,10 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 
 | | |
 |---|---|
-| Modules | **13** (00 à 12) |
-| Cours | **64** |
+| Modules | **14** (00 à 13) |
+| Cours | **71** |
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
-| Scénarios Killercoda | **25** (17 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 37 600** |
+| Scénarios Killercoda | **28** (20 déclarés dans `structure.json`, 8 à déclarer) |
+| Lignes de contenu (approximatif) | **≈ 40 100** |
 

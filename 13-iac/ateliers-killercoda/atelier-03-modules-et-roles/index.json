@@ -1,0 +1,29 @@
+{
+  "title": "IaC : rôle Ansible et modularité",
+  "description": "Refactorisez un playbook en rôle Ansible (tâches, handlers, templates, defaults), surchargez ses variables et prouvez son idempotence.",
+  "difficulty": "intermediate",
+  "time": "30 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Créer le rôle webserver",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Surcharger, rejouer, documenter",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "IaC : premier projet Terraform (provider local)",
+  "description": "Installez Terraform, décrivez un fichier avec le provider local, observez plan, apply, state, dérive et destroy.",
+  "difficulty": "beginner",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Écrire, planifier, appliquer",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Modifier, détecter une dérive, détruire",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

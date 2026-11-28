@@ -1,0 +1,29 @@
+{
+  "title": "IaC : playbook Ansible idempotent (nginx)",
+  "description": "Installez Ansible, écrivez un playbook qui installe nginx et sa configuration, puis prouvez l'idempotence avec un second passage à changed=0.",
+  "difficulty": "intermediate",
+  "time": "25 minutes",
+  "details": {
+    "intro": {
+      "text": "intro.md"
+    },
+    "steps": [
+      {
+        "title": "Écrire et lancer le playbook",
+        "text": "step1/text.md",
+        "verify": "step1/verify.sh"
+      },
+      {
+        "title": "Prouver l'idempotence",
+        "text": "step2/text.md",
+        "verify": "step2/verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

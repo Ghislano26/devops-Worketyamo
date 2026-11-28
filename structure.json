@@ -16,6 +16,9 @@
     { "path": "12-cicd/ateliers-killercoda/atelier-01-premier-workflow-actions" },
     { "path": "12-cicd/ateliers-killercoda/atelier-02-pipeline-build-test-push" },
     { "path": "12-cicd/ateliers-killercoda/atelier-03-securite-sast-sbom" },
-    { "path": "12-cicd/ateliers-killercoda/atelier-04-deploiement-canary-kubernetes" }
+    { "path": "12-cicd/ateliers-killercoda/atelier-04-deploiement-canary-kubernetes" },
+    { "path": "13-iac/ateliers-killercoda/atelier-01-premier-projet-terraform" },
+    { "path": "13-iac/ateliers-killercoda/atelier-02-ansible-playbook-idempotent" },
+    { "path": "13-iac/ateliers-killercoda/atelier-03-modules-et-roles" }
   ]
 }

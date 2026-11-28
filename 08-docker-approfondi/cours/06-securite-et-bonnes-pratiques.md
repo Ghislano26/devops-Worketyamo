@@ -106,6 +106,8 @@ Le profil `docker-default` interdit notamment l'écriture dans `/proc/sys`, `/sy
 
 > ⚠️ **Attention** : désactiver seccomp/AppArmor « pour que ça marche » est une **dette de sécurité**. Cherchez plutôt **quel appel/accès** est refusé (`dmesg | grep -i apparmor`, `journalctl -k`) et autorisez-le précisément.
 
+> 🔗 **Pour comprendre ce que seccomp filtre réellement** (les appels système, la frontière user/kernel, `strace` pour trouver quel syscall est refusé) : voir le cours [Appels système et transitions user/kernel](../../04-linux-expert/cours/04-syscalls-user-kernel.md) du module 04.
+
 ## 4. Utilisateurs : root, rootless et userns-remap
 
 Par défaut, **root dans le conteneur = UID 0 sur l'hôte** (même si ses pouvoirs sont limités par les capabilities). En cas d'évasion, l'attaquant est root sur l'hôte.

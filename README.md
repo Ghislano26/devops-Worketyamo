@@ -47,7 +47,7 @@ Sans cette étape, aucun atelier ne fonctionnera. Ne saute pas ce guide.
 | [01 — Linux fondamentaux](01-linux-fondamentaux/README.md) | La console, les fichiers, les permissions | Débutant | 4 | 3 | 3 scénario(s) ⚠️ non déclarés |
 | [02 — Linux intermédiaire](02-linux-intermediaire/README.md) | Processus, paquets, réseau de base, SSH | Intermédiaire | 4 | 4 | 2 scénario(s) ⚠️ non déclarés |
 | [03 — Linux avancé](03-linux-avance/README.md) | Scripting, traitement de texte, LVM, durcissement | Avancé | 4 | 4 | 2 scénario(s) ⚠️ non déclarés |
-| [04 — Linux expert](04-linux-expert/README.md) | Performance du noyau, namespaces et cgroups, journalisation | Expert | 3 | 3 | 1 scénario(s) ⚠️ non déclarés |
+| [04 — Linux expert](04-linux-expert/README.md) | Performance du noyau, namespaces et cgroups, journalisation | Expert | 4 | 3 | 1 scénario(s) ⚠️ non déclarés |
 | [05 — Outils DevOps : Git, Docker et CI/CD](05-devops-outils/README.md) | Introduction à Git, Docker et CI/CD | Intermédiaire | 3 | 3 | — |
 | [06 — Réseaux pour DevOps](06-reseaux-devops/README.md) | DNS, ports, routage et NAT, TLS, diagnostic | Intermédiaire à avancé | 5 | 4 | — |
 | [07 — Git branching interactif](07-git-branching-interactif/README.md) | Git avancé avec exercices interactifs animés | Intermédiaire | 5 | 4 + 4 exercices interactifs | — |
@@ -242,6 +242,7 @@ Comprendre Linux en profondeur : diagnostiquer la performance, construire un « 
 1. [Noyau Linux et performance](04-linux-expert/cours/01-noyau-performance.md)
 2. [Conteneurs : namespaces et cgroups](04-linux-expert/cours/02-conteneurs-namespaces.md)
 3. [Observabilité et journalisation](04-linux-expert/cours/03-observabilite-logs.md)
+4. [Appels système et transitions user/kernel](04-linux-expert/cours/04-syscalls-user-kernel.md)
 
 **Ateliers guidés** :
 
@@ -585,9 +586,9 @@ Le contenu pédagogique est publié sous licence **[CC BY-SA 4.0](LICENSE)** : v
 | | |
 |---|---|
 | Modules | **13** (00 à 12) |
-| Cours | **63** |
+| Cours | **64** |
 | Ateliers guidés (fichiers `ateliers/`) | **25** |
 | Exercices interactifs animés (module 07) | **4** |
 | Scénarios Killercoda | **25** (17 déclarés dans `structure.json`, 8 à déclarer) |
-| Lignes de contenu (approximatif) | **≈ 37 100** |
+| Lignes de contenu (approximatif) | **≈ 37 600** |
 

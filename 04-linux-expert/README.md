@@ -33,6 +33,7 @@ Le contenu théorique est celui des cours existants : rien n'a été supprimé.
 | 1 | [01 — Noyau et performance](cours/01-noyau-performance.md) | [Atelier 01 — Tuning du noyau](ateliers/atelier-01-tuning-noyau.md) |
 | 2 | [02 — Conteneurs : namespaces et cgroups](cours/02-conteneurs-namespaces.md) | [Atelier 02 — Namespaces et cgroups](ateliers/atelier-02-namespaces-cgroups.md) |
 | 3 | [03 — Observabilité et logs](cours/03-observabilite-logs.md) | [Atelier 03 — Journalisation centralisée](ateliers/atelier-03-journalisation-centralisee.md) |
+| Complément | [04 — Appels système et transitions user/kernel](cours/04-syscalls-user-kernel.md) | *(pas d'atelier dédié : la pratique avec `strace`, `perf trace` et `bpftrace` est intégrée au cours)* |
 
 ## 🏆 Défis du jour
 

@@ -267,4 +267,5 @@ sudo nsenter -t "$PID" -n ip a             # sa vue réseau
 - Spécification **OCI**, `runc`, `containerd`, **Podman** rootless, **gVisor** et **Kata Containers**.
 - Série d'articles « Namespaces in operation » sur LWN.net.
 - Atelier associé : [Namespaces et cgroups](../ateliers/atelier-02-namespaces-cgroups.md).
+- Le mécanisme sous-jacent : [Appels système et transitions user/kernel](04-syscalls-user-kernel.md) (pourquoi un conteneur est une frontière de sécurité, mais pas totale ; `clone`, `unshare`, `setns`, seccomp, capabilities).
 - Cours suivant : [Observabilité et logs](03-observabilite-logs.md).
